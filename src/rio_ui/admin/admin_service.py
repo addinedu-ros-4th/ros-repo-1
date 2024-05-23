@@ -14,6 +14,7 @@ from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 import os
 import sys
 import numpy as np
+import yaml
 
 admin_ui = uic.loadUiType("./gui/admin_service.ui")[0]
 
@@ -41,13 +42,36 @@ class WindowClass(QMainWindow, admin_ui):
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.ros_spin)
+        self.timer.timeout.connect(self.updateMap)
         self.timer.start(100)
+        
+        self.yLine.setText("0")
+        self.yawLine.setText("0")
+        
+        my_map = "./gui/maps/map_name.yaml"
+        with open(my_map) as f:
+            map_data = yaml.full_load(f)
+            
+        self.map_resolution = map_data["resolution"]
+        self.map_origin = map_data["origin"][:2]
+            
+        self.pixmap = QPixmap("./gui/maps/map_name.pgm")
+        self.height = self.pixmap.size().height()
+        self.width = self.pixmap.size().width()
+        self.image_scale = 2
+        self.pixmap = self.pixmap.transformed(QTransform().scale(-1, -1))
+        self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+        self.Map_label.setAlignment(Qt.AlignCenter)
+        
+        self.x_location = 0.0
+        self.y_location = 0.0
 
     def update_goal_pose(self):
-        x, y, z = 5.0, 0.0, 0.0
-        roll, pitch, yaw = 0.0, 0.0, 0.0  # yaw는 radian 단위
+        x, y, z = float(self.xLine.text()), float(self.yLine.text()), 0.0
+      
+        # yaw는 radian 단위
+        roll, pitch, yaw = 0.0, 0.0, float(self.yawLine.text()) 
 
-        # Euler 각도를 쿼터니언으로 변환
         quaternion = quaternion_from_euler(roll, pitch, yaw)
 
         self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
@@ -77,16 +101,36 @@ class WindowClass(QMainWindow, admin_ui):
 
     def callback(self, data):
         q = [0, 0, 0, 0]
-        self.xx.setText(str(data.pose.pose.position.x))
-        self.yy.setText(str(data.pose.pose.position.y))
+        self.x_location = data.pose.pose.position.x
+        self.y_location = data.pose.pose.position.y
         
-        q[0] = data.pose.pose.orientation.x
-        q[1] = data.pose.pose.orientation.y
-        q[2] = data.pose.pose.orientation.z
-        q[3] = data.pose.pose.orientation.w
+        # q[0] = data.pose.pose.orientation.x
+        # q[1] = data.pose.pose.orientation.y
+        # q[2] = data.pose.pose.orientation.z
+        # q[3] = data.pose.pose.orientation.w
         
-        self.zz.setText(str(euler_from_quaternion(q)[2]))
+        # self.zz.setText(str(euler_from_quaternion(q)[2]))
         
+    def updateMap(self):
+        self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+        self.Map_label.setAlignment(Qt.AlignCenter)
+        
+        painter = QPainter(self.Map_label.pixmap())
+        
+        painter.setPen(QPen(Qt.red, 20, Qt.SolidLine))
+        
+        x, y = self.calc_coord(self.x_location, self.y_location)
+        
+        painter.drawPoint(int((self.width - x) * self.image_scale), int(y * self.image_scale))
+        painter.drawText(int((self.width - x) * self.image_scale + 13), int(y * self.image_scale + 5), '1')
+        
+        
+        
+    def calc_coord(self, x, y):
+        pos_x = (x - self.map_origin[0]) / self.map_resolution
+        pos_y = (y - self.map_origin[1]) / self.map_resolution
+        
+        return pos_x, pos_y
     
     def ros_spin(self):
         rclpy.spin_once(self.pose_node, timeout_sec=0.1)
