@@ -8,6 +8,9 @@ import rclpy
 
 from tf_transformations import quaternion_from_euler
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from nav_msgs.msg import Path
+from example_interfaces.msg import Float64MultiArray
+import math
 
 import sys
 import yaml
@@ -22,6 +25,8 @@ class WindowClass(QMainWindow, admin_ui):
         self.setupUi(self)
         self.requestButton1.clicked.connect(self.topic_test)
         
+        self.feedback = None
+        
         rclpy.init(args=None)
         self.nav = BasicNavigator()
         self.goal_pose = PoseStamped()
@@ -32,7 +37,23 @@ class WindowClass(QMainWindow, admin_ui):
         self.pose_subscription = self.pose_node.create_subscription(
             PoseWithCovarianceStamped, 
             "/amcl_pose", 
-            self.callback, 
+            self.pos_callback, 
+            10
+        )
+        
+        self.req_node = rclpy.create_node("req_node")
+        self.req_subscription = self.req_node.create_subscription(
+            Float64MultiArray,
+            "/task_request",
+            self.req_callback,
+            10
+        )
+        
+        self.path_node = rclpy.create_node("path_node")
+        self.path_subscription = self.path_node.create_subscription(
+            Path,
+            "/plan",
+            self.path_callback,
             10
         )
         
@@ -83,32 +104,41 @@ class WindowClass(QMainWindow, admin_ui):
     def topic_test(self):
         self.update_goal_pose()
         self.nav.goToPose(self.goal_pose)
-        
-        i = 0
-        # while not self.nav.isTaskComplete():
-        #     feedback = self.nav.getFeedback()
-        #     if feedback and i % 5 == 0:
-        #         print("Distance remaining: " + "{:.2f}".format(feedback.distance_remaining) + " meters.")
-        #     i += 1
-        #     rclpy.spin_once(self.pose_node, timeout_sec=0.1)
-        
-        result = self.nav.getResult()
-        if result == TaskResult.SUCCEEDED:
-            print("Success!!")
-        elif result == TaskResult.FAILED:
-            print("Failed!")
 
-    def callback(self, data):
-        q = [0, 0, 0, 0]
+    def pos_callback(self, data):
+            
         self.x_location = data.pose.pose.position.x
         self.y_location = data.pose.pose.position.y
+
         
-        # q[0] = data.pose.pose.orientation.x
-        # q[1] = data.pose.pose.orientation.y
-        # q[2] = data.pose.pose.orientation.z
-        # q[3] = data.pose.pose.orientation.w
+    def req_callback(self, msg):
+        data = msg.data
         
-        # self.zz.setText(str(euler_from_quaternion(q)[2]))
+        if len(data) == 3:
+            self.xLine.setText(str(data[0]))
+            self.yLine.setText(str(data[1]))
+            self.yawLine.setText(str(data[2]))
+            self.topic_test()
+            
+    
+    def path_callback(self, msg):
+        distance = self.calculate_total_distance(msg.poses)
+        
+        if distance < 0.4:
+            distance = 0
+        else:
+            self.remainLine.setText(str("{:.2f}".format(distance)))
+        
+    def calculate_total_distance(self, poses):
+        total_distance = 0.0
+        for i in range(len(poses) - 1):
+            total_distance += self.euclidean_distance(poses[i].pose.position, poses[i + 1].pose.position)
+        return total_distance
+    
+    def euclidean_distance(self, p1, p2):
+        return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2 + (p2.z - p1.z)**2)
+            
+            
         
     def updateMap(self):
         self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
@@ -132,7 +162,9 @@ class WindowClass(QMainWindow, admin_ui):
         return pos_x, pos_y
     
     def ros_spin(self):
-        rclpy.spin_once(self.pose_node, timeout_sec=0.1)
+        rclpy.spin_once(self.pose_node, timeout_sec = 0.1)
+        rclpy.spin_once(self.req_node, timeout_sec = 0.1)
+        rclpy.spin_once(self.path_node, timeout_sec = 0.1)
 
     def closeEvent(self, event):
         self.timer.stop()
