@@ -4,19 +4,15 @@ from PyQt5 import uic
 from PyQt5.QtCore import *
 
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
-import rclpy
-from rclpy.node import Node
+import rclpy 
 
 from tf_transformations import quaternion_from_euler
-from tf_transformations import euler_from_quaternion
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 
-import os
 import sys
-import numpy as np
 import yaml
 
-admin_ui = uic.loadUiType("./gui/admin_service.ui")[0]
+admin_ui = uic.loadUiType("./rio_ui/admin/admin_service.ui")[0]
 
 
 class WindowClass(QMainWindow, admin_ui):
@@ -45,17 +41,18 @@ class WindowClass(QMainWindow, admin_ui):
         self.timer.timeout.connect(self.updateMap)
         self.timer.start(100)
         
+        self.xLine.setText("0")
         self.yLine.setText("0")
         self.yawLine.setText("0")
         
-        my_map = "./gui/maps/map_name.yaml"
+        my_map = "./rio_ui/admin/maps/map_name.yaml"
         with open(my_map) as f:
             map_data = yaml.full_load(f)
             
         self.map_resolution = map_data["resolution"]
         self.map_origin = map_data["origin"][:2]
             
-        self.pixmap = QPixmap("./gui/maps/map_name.pgm")
+        self.pixmap = QPixmap("./rio_ui/admin/maps/map_name.pgm")
         self.height = self.pixmap.size().height()
         self.width = self.pixmap.size().width()
         self.image_scale = 2
@@ -84,7 +81,9 @@ class WindowClass(QMainWindow, admin_ui):
         self.goal_pose.pose.orientation.w = quaternion[3]
 
     def topic_test(self):
+        self.update_goal_pose()
         self.nav.goToPose(self.goal_pose)
+        
         i = 0
         # while not self.nav.isTaskComplete():
         #     feedback = self.nav.getFeedback()
