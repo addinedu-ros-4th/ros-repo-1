@@ -4,18 +4,18 @@ from PyQt5 import uic
 from PyQt5.QtCore import *
 
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
-import rclpy
-from rclpy.node import Node
+import rclpy 
 
 from tf_transformations import quaternion_from_euler
-from tf_transformations import euler_from_quaternion
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from nav_msgs.msg import Path
+from example_interfaces.msg import Float64MultiArray
+import math
 
-import os
 import sys
-import numpy as np
+import yaml
 
-admin_ui = uic.loadUiType("./gui/admin_service.ui")[0]
+admin_ui = uic.loadUiType("./rio_ui/admin/admin_service.ui")[0]
 
 
 class WindowClass(QMainWindow, admin_ui):
@@ -24,6 +24,8 @@ class WindowClass(QMainWindow, admin_ui):
         
         self.setupUi(self)
         self.requestButton1.clicked.connect(self.topic_test)
+        
+        self.feedback = None
         
         rclpy.init(args=None)
         self.nav = BasicNavigator()
@@ -35,19 +37,59 @@ class WindowClass(QMainWindow, admin_ui):
         self.pose_subscription = self.pose_node.create_subscription(
             PoseWithCovarianceStamped, 
             "/amcl_pose", 
-            self.callback, 
+            self.pos_callback, 
+            10
+        )
+        
+        self.req_node = rclpy.create_node("req_node")
+        self.req_subscription = self.req_node.create_subscription(
+            Float64MultiArray,
+            "/task_request",
+            self.req_callback,
+            10
+        )
+        
+        self.path_node = rclpy.create_node("path_node")
+        self.path_subscription = self.path_node.create_subscription(
+            Path,
+            "/plan",
+            self.path_callback,
             10
         )
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.ros_spin)
+        self.timer.timeout.connect(self.updateMap)
         self.timer.start(100)
+        
+        self.xLine.setText("0")
+        self.yLine.setText("0")
+        self.yawLine.setText("0")
+        
+        my_map = "./rio_ui/admin/maps/map_name.yaml"
+        with open(my_map) as f:
+            map_data = yaml.full_load(f)
+            
+        self.map_resolution = map_data["resolution"]
+        self.map_origin = map_data["origin"][:2]
+            
+        self.pixmap = QPixmap("./rio_ui/admin/maps/map_name.pgm")
+        self.height = self.pixmap.size().height()
+        self.width = self.pixmap.size().width()
+        self.image_scale = 2
+        self.pixmap = self.pixmap.transformed(QTransform().scale(-1, -1))
+        self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+        self.Map_label.setAlignment(Qt.AlignCenter)
+        
+        self.x_location = 0.0
+        self.y_location = 0.0
 
     def update_goal_pose(self):
-        x, y, z = 5.0, 0.0, 0.0
-        roll, pitch, yaw = 0.0, 0.0, 0.0  # yaw는 radian 단위
+        x, y, z = float(self.xLine.text()), float(self.yLine.text()), 0.0
+      
+        # yaw는 radian 단위
+        roll, pitch, yaw = 0.0, 0.0, float(self.yawLine.text()) 
 
-        # Euler 각도를 쿼터니언으로 변환
         quaternion = quaternion_from_euler(roll, pitch, yaw)
 
         self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
@@ -60,36 +102,69 @@ class WindowClass(QMainWindow, admin_ui):
         self.goal_pose.pose.orientation.w = quaternion[3]
 
     def topic_test(self):
+        self.update_goal_pose()
         self.nav.goToPose(self.goal_pose)
-        i = 0
-        # while not self.nav.isTaskComplete():
-        #     feedback = self.nav.getFeedback()
-        #     if feedback and i % 5 == 0:
-        #         print("Distance remaining: " + "{:.2f}".format(feedback.distance_remaining) + " meters.")
-        #     i += 1
-        #     rclpy.spin_once(self.pose_node, timeout_sec=0.1)
-        
-        result = self.nav.getResult()
-        if result == TaskResult.SUCCEEDED:
-            print("Success!!")
-        elif result == TaskResult.FAILED:
-            print("Failed!")
 
-    def callback(self, data):
-        q = [0, 0, 0, 0]
-        self.xx.setText(str(data.pose.pose.position.x))
-        self.yy.setText(str(data.pose.pose.position.y))
+    def pos_callback(self, data):
+            
+        self.x_location = data.pose.pose.position.x
+        self.y_location = data.pose.pose.position.y
+
         
-        q[0] = data.pose.pose.orientation.x
-        q[1] = data.pose.pose.orientation.y
-        q[2] = data.pose.pose.orientation.z
-        q[3] = data.pose.pose.orientation.w
+    def req_callback(self, msg):
+        data = msg.data
         
-        self.zz.setText(str(euler_from_quaternion(q)[2]))
+        if len(data) == 3:
+            self.xLine.setText(str(data[0]))
+            self.yLine.setText(str(data[1]))
+            self.yawLine.setText(str(data[2]))
+            self.topic_test()
+            
+    
+    def path_callback(self, msg):
+        distance = self.calculate_total_distance(msg.poses)
         
+        if distance < 0.4:
+            distance = 0
+        else:
+            self.remainLine.setText(str("{:.2f}".format(distance)))
+        
+    def calculate_total_distance(self, poses):
+        total_distance = 0.0
+        for i in range(len(poses) - 1):
+            total_distance += self.euclidean_distance(poses[i].pose.position, poses[i + 1].pose.position)
+        return total_distance
+    
+    def euclidean_distance(self, p1, p2):
+        return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2 + (p2.z - p1.z)**2)
+            
+            
+        
+    def updateMap(self):
+        self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+        self.Map_label.setAlignment(Qt.AlignCenter)
+        
+        painter = QPainter(self.Map_label.pixmap())
+        
+        painter.setPen(QPen(Qt.red, 20, Qt.SolidLine))
+        
+        x, y = self.calc_coord(self.x_location, self.y_location)
+        
+        painter.drawPoint(int((self.width - x) * self.image_scale), int(y * self.image_scale))
+        painter.drawText(int((self.width - x) * self.image_scale + 13), int(y * self.image_scale + 5), '1')
+        
+        
+        
+    def calc_coord(self, x, y):
+        pos_x = (x - self.map_origin[0]) / self.map_resolution
+        pos_y = (y - self.map_origin[1]) / self.map_resolution
+        
+        return pos_x, pos_y
     
     def ros_spin(self):
-        rclpy.spin_once(self.pose_node, timeout_sec=0.1)
+        rclpy.spin_once(self.pose_node, timeout_sec = 0.1)
+        rclpy.spin_once(self.req_node, timeout_sec = 0.1)
+        rclpy.spin_once(self.path_node, timeout_sec = 0.1)
 
     def closeEvent(self, event):
         self.timer.stop()

@@ -656,40 +656,105 @@
   <widget class="QLabel" name="xx">
    <property name="geometry">
     <rect>
-     <x>590</x>
+     <x>570</x>
      <y>580</y>
-     <width>67</width>
+     <width>70</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>x</string>
    </property>
   </widget>
   <widget class="QLabel" name="yy">
    <property name="geometry">
     <rect>
-     <x>590</x>
+     <x>570</x>
      <y>610</y>
-     <width>67</width>
+     <width>70</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>y</string>
    </property>
   </widget>
   <widget class="QLabel" name="zz">
    <property name="geometry">
     <rect>
-     <x>590</x>
+     <x>570</x>
      <y>640</y>
-     <width>67</width>
+     <width>70</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>yaw</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="xLine">
+   <property name="geometry">
+    <rect>
+     <x>650</x>
+     <y>572</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="yLine">
+   <property name="geometry">
+    <rect>
+     <x>650</x>
+     <y>605</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="yawLine">
+   <property name="geometry">
+    <rect>
+     <x>650</x>
+     <y>638</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="remain">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>672</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>remain</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="remainLine">
+   <property name="geometry">
+    <rect>
+     <x>650</x>
+     <y>670</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>0</string>
    </property>
   </widget>
  </widget>
