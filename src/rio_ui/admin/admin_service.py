@@ -12,17 +12,28 @@ from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray
 import math
 
+import os
 import sys
 import yaml
 
-admin_ui = uic.loadUiType("./rio_ui/admin/admin_service.ui")[0]
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir))
+sys.path.append(src_dir)
+
+from rio_db_manager.db_manager import DBManager
+from rio_db_manager.create_init_db import CreateInitDB
+
+admin_ui = uic.loadUiType("../admin/admin_service.ui")[0]
 
 
 class WindowClass(QMainWindow, admin_ui):
-    def __init__(self):
+    def __init__(self, db_manager):
         super().__init__()
         
         self.setupUi(self)
+        self.db_manager = db_manager
+        self.select_all()
+        self.detail_bt.clicked.connect(self.table_datail)
         self.requestButton1.clicked.connect(self.topic_test)
         
         self.feedback = None
@@ -83,6 +94,7 @@ class WindowClass(QMainWindow, admin_ui):
         
         self.x_location = 0.0
         self.y_location = 0.0
+
 
     def update_goal_pose(self):
         x, y, z = float(self.xLine.text()), float(self.yLine.text()), 0.0
@@ -171,8 +183,54 @@ class WindowClass(QMainWindow, admin_ui):
         rclpy.shutdown()
         event.accept()
 
+    def select_all(self):
+        tables = self.db_manager.show_tables()
+        for table in tables:
+            self.select_table_cbx.addItem(table)
+
+    def table_datail(self):
+        selected_table = self.select_table_cbx.currentText()
+        detail_data = self.db_manager.read(selected_table)
+
+        detail_table = self.findChild(QTableWidget, "detail_table")
+
+        # 데이터가 없는 경우 테이블을 초기화하고 종료
+        if not detail_data:
+            detail_table.clear()
+            return
+
+        # 테이블의 열 수를 설정
+        num_columns = len(detail_data[0].keys())
+        detail_table.setColumnCount(num_columns)
+
+        # 각 열에 대한 헤더 레이블 추가
+        header_labels = list(detail_data[0].keys())
+        detail_table.setHorizontalHeaderLabels(header_labels)
+
+        # 데이터 표시
+        detail_table.setRowCount(len(detail_data))
+        for i, row_data in enumerate(detail_data):
+            for j, column_name in enumerate(header_labels):
+                item = QTableWidgetItem(str(row_data[column_name])) 
+                detail_table.setItem(i, j, item)
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    myWindow = WindowClass()
+
+    db_info = {
+        'host': 'localhost',
+        'port': 3306,  # MySQL 포트 번호
+        'user': 'root',
+        'password': '1234',
+        'database': 'RiO_DB'
+    }
+    db_manager = DBManager(db_info)
+
+    db_initializer = CreateInitDB(db_manager)
+    db_initializer.create_database()
+    db_initializer.create_tables()
+
+    myWindow = WindowClass(db_manager)
     myWindow.show()
     sys.exit(app.exec_())
