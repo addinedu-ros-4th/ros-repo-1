@@ -1,4 +1,5 @@
 import os
+import sys
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
@@ -13,13 +14,13 @@ class KeySaveLoad():
         self.public_key_path = os.path.join(keys_dir, 'public_key.pem')
 
     def generate_keys(self):
-
+        
         private_key = rsa.generate_private_key(
             public_exponent=65537,
-            key_size=2048,
+            key_size=4096,
             backend=default_backend()
         )
-        
+
         public_key = private_key.public_key()
         
         # 개인 키 저장
@@ -67,3 +68,8 @@ class KeySaveLoad():
             print(f"Public key file not found: {self.public_key_path}")
         except Exception as e:
             print(f"An error occurred while loading the public key: {str(e)}")
+
+
+if __name__ == "__main__":
+    myWindows = KeySaveLoad()
+    myWindows.generate_keys()
