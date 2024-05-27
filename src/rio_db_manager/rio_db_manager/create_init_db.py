@@ -1,4 +1,4 @@
-class CreateInitDB:
+class CreateInitDB():
     def __init__(self, db_manager):
         self.db_manager = db_manager
 
@@ -67,6 +67,7 @@ class CreateInitDB:
 
         for table_name, table_definition in tables.items():
             self.create_table(table_name, table_definition)
+        
 
     def create_table(self, table_name, table_definition):
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ({table_definition});"

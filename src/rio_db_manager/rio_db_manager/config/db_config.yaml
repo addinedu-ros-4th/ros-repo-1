@@ -1,0 +1,6 @@
+rio_database:
+  host: "localhost"
+  user: "joe"
+  password: "0000"
+  port: 3306
+  database: "RiO_DB"

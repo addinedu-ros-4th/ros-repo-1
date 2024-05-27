@@ -2,12 +2,17 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtCore import *
 
+from ament_index_python.packages import get_package_share_directory
 import rclpy
+
 from example_interfaces.msg import Float64MultiArray
 
 import sys
+import os
 
-user_ui = uic.loadUiType("./rio_ui/user/user_service.ui")[0]
+
+ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "user_service.ui")
+user_ui = uic.loadUiType(ui_file)[0]
 
 class WindowClass(QMainWindow, user_ui):
     def __init__(self):
@@ -22,11 +27,6 @@ class WindowClass(QMainWindow, user_ui):
         
         # 버튼 클릭 시 publish_task 함수 호출
         self.callRobotButton.clicked.connect(self.publish_task)
-        
-        # QTimer 설정
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.ros_spin)
-        self.timer.start(100)
 
     def publish_task(self):
         req = Float64MultiArray()
@@ -38,16 +38,15 @@ class WindowClass(QMainWindow, user_ui):
         self.publisher.publish(req)
         print("Published:", req.data)
     
-    def ros_spin(self):
-        rclpy.spin_once(self.node, timeout_sec=0.1)
-    
     def closeEvent(self, event):
-        self.timer.stop()
         rclpy.shutdown()
         event.accept()
-
-if __name__ == "__main__":
+        
+def main():
     app = QApplication(sys.argv)
     myWindow = WindowClass()
     myWindow.show()
     sys.exit(app.exec_())
+        
+if __name__ == "__main__":
+    main()
