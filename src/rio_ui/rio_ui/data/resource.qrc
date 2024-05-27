@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="Icon">
+    <file>smile.png</file>
+    <file>normal.png</file>
+  </qresource>
+</RCC>
