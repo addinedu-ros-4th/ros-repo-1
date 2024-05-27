@@ -10,7 +10,7 @@ from std_msgs.msg import String
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 import numpy as np
 
-from_class = uic.loadUiType("./ui/visitor_service.ui")[0]
+from_class = uic.loadUiType("./ui/guide_service.ui")[0]
 
 class WindowClass(QMainWindow, from_class):
     def __init__(self):
