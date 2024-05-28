@@ -3,9 +3,11 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from example_interfaces.msg import Int64MultiArray
 from threading import Thread
+import datetime
 
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
+
 
 
 class RFIDSubscriber(Node):
@@ -30,35 +32,54 @@ class RFIDSubscriber(Node):
         
     def info_callback(self, msg):
         self.user_id = msg.data[0]
-        self.user_point = msg.data[1]
+        self.change_total = msg.data[1]
+        self.user_credit = msg.data[2]
         self.ID_check()
+        
         
 
     def ID_check(self):
         uid_list = []
         detail_data = self.db_manager.read("Payment")
         try:
-            for data in detail_data:  # 각 딕셔너리에 대해 반복
-                uid = data.get('rfid_uid')  # 'rfid_UID' 키에 해당하는 값을 가져옴
-                if uid is not None:  # 값이 None이 아니면 uid_list에 추가
-                    # uid_int = int.from_bytes(uid, byteorder='little', signed=False)
+            for data in detail_data:  
+                uid = data.get('rfid_uid')  
+                if uid is not None:  
                     uid_list.append(uid)
-            print(uid_list)        
+
             if self.user_id in uid_list:
                 self.data[0] = 1
                 self.data[1] = self.user_id
-                self.data[2] = self.user_point
-                print("---------")
+                self.data[2] = self.user_credit
+                self.calc_total(self.user_id)
                 
             else:
                 self.data[0] = 0
                 self.data[1] = self.user_id
-                self.data[2] = self.user_point
-            msg = Int64MultiArray(data = self.data)
-            self.publisher.publish(msg)
+                self.data[2] = self.user_credit
+            
                 
         except Exception as e:
             self.get_logger().error(f'Error check UID: {e}')
+            
+    def calc_total(self, id):
+        try:
+            total_list = []
+            criteria = {"rfid_uid": id}
+            change_total_log = self.db_manager.read("Payment", criteria)
+            for data in change_total_log:
+                total = data.get("total_credit")
+                total_list.append(total)
+            current_credit = total_list[-1]    
+        except Exception as e:
+            self.get_logger().error(f'Error check UID: {e}')
+        
+        
+        
+    def publish_msg(self):
+        msg = Int64MultiArray(data = self.data)
+        self.publisher.publish(msg)
+        
  
         
         
