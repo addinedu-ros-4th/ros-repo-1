@@ -22,7 +22,7 @@ class CreateInitDB():
                 payment_id INT AUTO_INCREMENT PRIMARY KEY,
                 date DATETIME NOT NULL,
                 user_id INT NOT NULL,
-                rfid_UID BINARY(32) NOT NULL,
+                rfid_UID BIGINT NOT NULL,
                 change_info VARCHAR(32) NOT NULL,
                 change_credit INT NOT NULL,
                 total_credit INT NOT NULL

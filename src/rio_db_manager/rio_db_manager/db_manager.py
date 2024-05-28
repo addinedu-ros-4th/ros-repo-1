@@ -22,7 +22,8 @@ class DBManager():
             host=self.config['host'],
             user=self.config['user'],
             password=self.config['password'],
-            port=self.config['port']
+            port=self.config['port'],
+            database=self.config["database"]
         )
         except pymysql.MySQLError as e:
             print(f"Error connecting to MySQL: {e}")

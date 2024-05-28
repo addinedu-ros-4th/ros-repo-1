@@ -17,7 +17,6 @@ from tf_transformations import quaternion_from_euler
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray
-
 from ament_index_python.packages import get_package_share_directory
 
 from rio_db_manager.db_manager import DBManager

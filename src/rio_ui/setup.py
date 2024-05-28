@@ -25,7 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
             'admin_service = rio_ui.admin_service:main',
-            "user_service = rio_ui.user_service:main"
+            "user_service = rio_ui.user_service:main",
+            "rfid_service=rio_ui.rfid_service:main",
         ],
     },
 )
