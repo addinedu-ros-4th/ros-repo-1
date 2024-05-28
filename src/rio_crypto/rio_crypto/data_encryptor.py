@@ -5,7 +5,7 @@ from pyzbar.pyzbar import decode
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 
-from key_save_load import KeySaveLoad
+from rio_crypto.key_save_load import KeySaveLoad
 
 class DataEncryptor():
     def __init__(self):
@@ -13,8 +13,6 @@ class DataEncryptor():
         self.public_key = key_save_load.load_public_key()
 
     def encrypt_data(self, data):
-        if self.public_key is None:
-            raise ValueError("Public key could not be loaded.")
         if isinstance(data, dict):
             data = json.dumps(data)
 

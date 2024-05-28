@@ -6,110 +6,136 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>443</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QLabel" name="zz">
+  <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>152</y>
-     <width>70</width>
-     <height>17</height>
+     <x>30</x>
+     <y>20</y>
+     <width>381</width>
+     <height>151</height>
     </rect>
    </property>
-   <property name="text">
-    <string>yaw</string>
+   <property name="title">
+    <string>Waypoint Sender</string>
    </property>
-  </widget>
-  <widget class="QLineEdit" name="yLine">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>117</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="xx">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>92</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>x</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="yy">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>122</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>y</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="xLine">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>84</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="yawLine">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>150</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="callRobotButton">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>80</y>
-     <width>101</width>
-     <height>91</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>11</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>Call
+   <widget class="QPushButton" name="callRobotButton">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>40</y>
+      <width>101</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Call
 Robot</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="yy">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>82</y>
+      <width>70</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="xx">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>52</y>
+      <width>70</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>x</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="yawLine">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>110</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="xLine">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>44</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="zz">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>112</y>
+      <width>70</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>yaw</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="yLine">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>77</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="pre_arrangement_bt">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>220</y>
+     <width>381</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>write Pre-arrangement</string>
    </property>
   </widget>
  </widget>

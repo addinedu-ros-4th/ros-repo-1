@@ -1,12 +1,15 @@
 import os
-import sys
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 
+from ament_index_python.packages import get_package_share_directory
+
 class KeySaveLoad():
     def __init__(self):
-        keys_dir = 'keys'
+        # ui_file = os.path.join(get_package_share_directory("rio_crypto"), "config", "keys" "admin_service.ui")
+
+        keys_dir = os.path.join(get_package_share_directory("rio_crypto"), "config", "keys")
         if not os.path.exists(keys_dir):
             os.makedirs(keys_dir)
 
@@ -14,7 +17,6 @@ class KeySaveLoad():
         self.public_key_path = os.path.join(keys_dir, 'public_key.pem')
 
     def generate_keys(self):
-        
         private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=4096,
@@ -71,5 +73,5 @@ class KeySaveLoad():
 
 
 if __name__ == "__main__":
-    myWindows = KeySaveLoad()
-    myWindows.generate_keys()
+    keysaveload = KeySaveLoad()
+    keysaveload.generate_keys()

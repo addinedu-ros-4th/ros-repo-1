@@ -13,9 +13,7 @@ class DataDecryptor():
         key_save_load = KeySaveLoad()
         self.private_key = key_save_load.load_private_key()
 
-    def decrypt_data(self, data):
-        if self.private_key is None:
-            raise ValueError("Private key could not be loaded.")
+    def decrypt_data(self, encrypted_data):
         encrypted_data = base64.b64decode(encrypted_data.encode('utf-8'))
         decrypted_data = self.private_key.decrypt(
             encrypted_data,

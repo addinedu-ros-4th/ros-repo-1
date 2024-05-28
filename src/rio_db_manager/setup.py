@@ -11,9 +11,9 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ("share/" + package_name + "/config/", glob.glob('rio_db_manager/config/*.yaml')),
+        ("share/" + package_name + "/config/", glob.glob('rio_db_manager/config/*.json')),
     ],
-    install_requires=['setuptools', "pymysql", "yaml"],
+    install_requires=['setuptools', "pymysql", "json"],
     zip_safe=True,
     maintainer='joe',
     maintainer_email='dlwlgh0106@gmail.com',
@@ -22,6 +22,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'db_manager = rio_db_manager.db_manager:main',
+            'create_init_db = rio_db_manager.create_init_db:main'
         ],
     },
 )
