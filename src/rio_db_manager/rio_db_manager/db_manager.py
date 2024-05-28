@@ -1,5 +1,5 @@
 import pymysql
-import yaml
+import json
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -10,10 +10,12 @@ class DBManager():
         self.load_config(config_file)
         self.connection = None
         self.connect_db()
-        
+
     def load_config(self, config_file):
-        with open(os.path.join(get_package_share_directory("rio_db_manager"), "config", config_file)) as f:
-            self.config = yaml.safe_load(f)
+        config_path = os.path.join(get_package_share_directory("rio_db_manager"), "config", config_file)
+
+        with open(config_path, 'r') as f:
+            self.config = json.load(f)
             self.config = self.config["rio_database"]
 
     def connect_db(self):

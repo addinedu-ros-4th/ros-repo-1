@@ -19,19 +19,15 @@ from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray
 from ament_index_python.packages import get_package_share_directory
 
-from rio_db_manager.db_manager import DBManager
-from rio_db_manager.create_init_db import CreateInitDB
-
 import math
 import os
 import sys
 import yaml
 
-ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
+from rio_db_manager.db_manager import DBManager
+from rio_db_manager.create_init_db import CreateInitDB
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir))
-sys.path.append(src_dir)
+ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
 
 admin_ui = uic.loadUiType(ui_file)[0]
 
@@ -233,7 +229,7 @@ class WindowClass(QMainWindow, admin_ui):
 
 def main():
     
-    db_manager = DBManager("db_config.yaml")
+    db_manager = DBManager("db_config.json")
     db_initializer = CreateInitDB(db_manager)
     db_initializer.create_database()
     db_initializer.create_tables()

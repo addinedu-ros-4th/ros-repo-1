@@ -52,7 +52,6 @@ class CreateInitDB():
             """,
             "VisitorInfo": """
                 visitor_id INT AUTO_INCREMENT PRIMARY KEY,
-                edit_time DATETIME NOT NULL,
                 visit_place VARCHAR(16) NOT NULL,
                 purpose VARCHAR(64) NOT NULL,
                 name VARCHAR(16) NOT NULL,
@@ -61,7 +60,9 @@ class CreateInitDB():
                 visit_date DATE NOT NULL,
                 visit_time TIME NOT NULL,
                 robot_guidance BOOLEAN NOT NULL, 
-                has_visited BOOLEAN NOT NULL
+                status VARCHAR(16) NOT NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL
             """
         }
 
