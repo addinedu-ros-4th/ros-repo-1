@@ -14,24 +14,45 @@ class TCPIPServer(Node):
         self.server_socket.bind(('0.0.0.0', 5607))
         self.server_socket.listen(1)
         self.get_logger().info("Waiting for connection...")
-        self.client_socket, self.client_address = self.server_socket.accept()
-        self.connection = self.client_socket.makefile('wb')
-        self.get_logger().info(f"Connected to {self.client_address}")
-        self.cap = cv2.VideoCapture(0)
         
-        self.server_thread = threading.Thread(target=self.publish_frames)
-        self.server_thread.start()
+        self.accept_thread = threading.Thread(target=self.accept_connections)
+        self.accept_thread.start()
+
+    def accept_connections(self):
+        while rclpy.ok():
+            try:
+                self.client_socket, self.client_address = self.server_socket.accept()
+                self.connection = self.client_socket.makefile('wb')
+                self.get_logger().info(f"Connected to {self.client_address}")
+                
+                self.cap = cv2.VideoCapture(0)
+                self.publish_frames()
+            except Exception as e:
+                self.get_logger().error(f"Error accepting connection: {e}")
 
     def publish_frames(self):
-        while rclpy.ok():
-            ret, frame = self.cap.read()
-            if ret:
-                encoded, buffer = cv2.imencode('.jpg', frame)
-                data = np.array(buffer)
-                string_data = data.tobytes()
-                self.connection.write(struct.pack('<L', len(string_data)))
-                self.connection.write(string_data)
-                self.connection.flush()
+        try:
+            while rclpy.ok():
+                ret, frame = self.cap.read()
+                if ret:
+                    encoded, buffer = cv2.imencode('.jpg', frame)
+                    data = np.array(buffer)
+                    string_data = data.tobytes()
+                    self.connection.write(struct.pack('<L', len(string_data)))
+                    self.connection.write(string_data)
+                    self.connection.flush()
+                else:
+                    break
+        except Exception as e:
+            self.get_logger().error(f"Error publishing frames: {e}")
+        finally:
+            if self.cap.isOpened():
+                self.cap.release()
+            if self.client_socket:
+                self.client_socket.close()
+            if self.connection:
+                self.connection.close()
+            self.get_logger().info("Connection closed, ready to accept new connection.")
 
 def main(args=None):
     rclpy.init(args=args)
@@ -46,3 +67,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
