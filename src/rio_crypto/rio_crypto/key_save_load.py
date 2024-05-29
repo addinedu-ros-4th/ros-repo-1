@@ -71,7 +71,9 @@ class KeySaveLoad():
         except Exception as e:
             print(f"An error occurred while loading the public key: {str(e)}")
 
+def main():
+    keysaveload = KeySaveLoad()
+    keysaveload.generate_keys()    
 
 if __name__ == "__main__":
-    keysaveload = KeySaveLoad()
-    keysaveload.generate_keys()
+    main()
