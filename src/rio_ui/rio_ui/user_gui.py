@@ -11,10 +11,6 @@ import sys
 import os
 import datetime
 
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# src_dir = os.path.abspath(os.path.join(current_dir, '../../..', 'rio_crypto'))
-# sys.path.append(src_dir)
-
 from rio_crypto.data_encryptor import DataEncryptor
 
 main_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "user_service.ui")
@@ -22,7 +18,8 @@ sub_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "pre_arr
 user_ui = uic.loadUiType(main_ui_file)[0]
 sub_ui = uic.loadUiType(sub_ui_file)[0]
 
-class WindowClass(QMainWindow, user_ui):
+
+class UserGUI(QMainWindow, user_ui):
     def __init__(self):
         super().__init__()
         
@@ -48,14 +45,14 @@ class WindowClass(QMainWindow, user_ui):
         print("Published:", req.data)
 
     def write_pre_arrangement(self):
-        pre_arrangement_window = SubWindowClass()
+        pre_arrangement_window = SubGUI()
         pre_arrangement_window.exec_()
     
     def closeEvent(self, event):
         rclpy.shutdown()
         event.accept()
 
-class SubWindowClass(QDialog, sub_ui):
+class SubGUI(QDialog, sub_ui):
     def __init__(self):
         super().__init__()
         
@@ -92,15 +89,11 @@ class SubWindowClass(QDialog, sub_ui):
             "updated_at": button_click_time
         }
 
-        # return_data = self.encryptor.encrypt_data(visit_info)
-        # print(return_data)
-
         return self.encryptor.encrypt_data(visit_info)
 
-        
 def main():
     app = QApplication(sys.argv)
-    myWindow = WindowClass()
+    myWindow = UserGUI()
     myWindow.show()
 
     sys.exit(app.exec_())

@@ -26,7 +26,7 @@ setup(
         'console_scripts': [
             'admin_service = rio_ui.admin_service:main',
             'admin_gui = rio_ui.admin_gui:main',
-            'user_service = rio_ui.user_service:main'
+            'user_gui = rio_ui.user_gui:main'
         ],
     },
 )

@@ -73,7 +73,11 @@ class KeySaveLoad():
 
 def main():
     keysaveload = KeySaveLoad()
-    keysaveload.generate_keys()    
+    if not os.path.exists(keysaveload.private_key_path) or not os.path.exists(keysaveload.public_key_path):
+        keysaveload.generate_keys()
+        print(f"Keys saved at :{keysaveload.public_key_path}") 
+    else:
+        print("Keys already exist. No need to generate new keys.")
 
 if __name__ == "__main__":
     main()
