@@ -33,7 +33,7 @@ def main(args=None) :
     rp.init(args=args)
     node = ImageSubscriber()
 
-    node.facerecognition.add_known_face("wooks/wook_0.jpg", "wook")
+    node.facerecognition.add_known_face("/home/joe/ros-repo-1/src/rio_recognition/face_recog/data/ho_0.jpg", "joe")
 
     try :
         rp.spin(node)
