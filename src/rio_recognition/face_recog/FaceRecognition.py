@@ -21,6 +21,11 @@ class FaceRecognition:
             plt.xticks([]), plt.yticks([])
             plt.show()
 
+    def get_landmark(self, input_image):
+        face_landmarks = face_recognition.face_landmarks(input_image)
+        
+        return face_landmarks
+    
     def name_labeling(self, input_image, show_result=True):
         image = input_image.copy()
         face_locations = face_recognition.face_locations(image)

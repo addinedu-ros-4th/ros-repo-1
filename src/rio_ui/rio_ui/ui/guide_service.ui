@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1123</width>
-    <height>698</height>
+    <width>1722</width>
+    <height>999</height>
    </rect>
   </property>
   <property name="font">
@@ -22,7 +22,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>10</y>
+     <y>620</y>
      <width>1121</width>
      <height>681</height>
     </rect>
@@ -160,7 +160,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
       <x>40</x>
       <y>30</y>
       <width>601</width>
-      <height>471</height>
+      <height>461</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -174,7 +174,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
   <widget class="QGroupBox" name="registerGroup">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>930</x>
      <y>70</y>
      <width>681</width>
      <height>531</height>
@@ -186,10 +186,10 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
    <widget class="QLabel" name="frame">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>160</y>
-      <width>521</width>
-      <height>341</height>
+      <x>100</x>
+      <y>140</y>
+      <width>491</width>
+      <height>361</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -202,11 +202,16 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>70</y>
-      <width>321</width>
+      <x>40</x>
+      <y>50</y>
+      <width>431</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
     </property>
     <property name="text">
      <string/>
@@ -215,8 +220,8 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
    <widget class="QPushButton" name="pushBack">
     <property name="geometry">
      <rect>
-      <x>450</x>
-      <y>70</y>
+      <x>510</x>
+      <y>50</y>
       <width>141</width>
       <height>41</height>
      </rect>
