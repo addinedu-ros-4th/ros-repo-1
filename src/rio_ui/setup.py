@@ -13,6 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/ui/", glob.glob('rio_ui/ui/*.ui')),
+        ('share/' + package_name + "/data/keys/", glob.glob('rio_ui/data/keys/*.pem')),
         
 
     ],
@@ -27,7 +28,8 @@ setup(
         'console_scripts': [
             'admin_service = rio_ui.admin_service:main',
             'admin_gui = rio_ui.admin_gui:main',
-            'user_gui = rio_ui.user_gui:main'
+            'user_gui = rio_ui.user_gui:main',
+            'key_save_load = rio_ui.key_save_load:main'
         ],
     },
 )

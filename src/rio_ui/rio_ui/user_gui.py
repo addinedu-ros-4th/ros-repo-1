@@ -15,8 +15,6 @@ import os
 import json
 from datetime import datetime
 
-from rio_crypto.data_encryptor import DataEncryptor
-
 main_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "user_service.ui")
 sub_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "pre_arrangement.ui")
 user_ui = uic.loadUiType(main_ui_file)[0]
@@ -70,22 +68,21 @@ class SubGUI(QDialog, sub_ui):
 
     def handle_submit(self):
         button_click_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.visit_date = self.info_6.date()
-        self.visit_date = self.visit_date.toString('yyyy-MM-dd')
-        self.visit_time = self.info_7.time()
-        self.visit_time = self.visit_time.toString('hh:mm:ss')
+        date = self.info_6.date().toString('yyyy-MM-dd')
+        
+        time = self.info_7.time().toString('hh:mm:ss')
+        visit_datetime = date + " " + time
         visit_info = {
             "visit_place": self.info_1.currentText(),
             "purpose": self.info_2.currentText(),
             "name": self.info_3.text(),
             "phone_number": self.info_4.text(),
             "affiliation": self.info_5.text(),
-            "visit_date": self.visit_date,
-            "visit_time": self.visit_time,
+            "visit_datetime": visit_datetime,
             "robot_guidance": self.info_8.currentText(),
-            "status": "registered",
-            "created_at": button_click_time,
-            "updated_at": button_click_time
+            "status": "",
+            "registered_at": button_click_time,
+            "updated_at": ""
         }
         self.request_qr(visit_info)
 
