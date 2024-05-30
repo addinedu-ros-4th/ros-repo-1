@@ -7,7 +7,9 @@ from ament_index_python.packages import get_package_share_directory
 
 class KeySaveLoad():
     def __init__(self):
-        keys_dir = os.path.join(get_package_share_directory("rio_ui"), "data", "keys")
+        # keys_dir = os.path.join(get_package_share_directory("rio_ui"), "data", "keys")
+        keys_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../src/rio_ui/rio_ui/data/keys/'))
+        os.makedirs(keys_dir, exist_ok=True)
         # if not os.path.exists(keys_dir):
         #     os.makedirs(keys_dir)
         os.makedirs(keys_dir, exist_ok=True)
