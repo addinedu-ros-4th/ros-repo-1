@@ -177,10 +177,13 @@ def main():
     amcl_subscriber = AmclSubscriber(signals)
     path_subscriber = PathSubscriber(signals)
     request_subscriber = RequestSubscriber(signals)
+    user_service_server = UserService()
+
 
     executor.add_node(amcl_subscriber)
     executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
+    executor.add_node(user_service_server)
 
     thread = Thread(target=executor.spin)
     thread.start()

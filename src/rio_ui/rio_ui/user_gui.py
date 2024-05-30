@@ -6,10 +6,14 @@ from ament_index_python.packages import get_package_share_directory
 import rclpy
 
 from example_interfaces.msg import Float64MultiArray
+from rio_ui.admin_service import *
+from rio_ui_msgs.srv import VisitInfo
+
 
 import sys
 import os
-import datetime
+import json
+from datetime import datetime
 
 from rio_crypto.data_encryptor import DataEncryptor
 
@@ -57,39 +61,48 @@ class SubGUI(QDialog, sub_ui):
         super().__init__()
         
         self.setupUi(self)
+
+        self.node = rclpy.create_node('subgui_node')
+        self.cli = self.node.create_client(VisitInfo, 'generate_qr')        
         
         self.submit_bt.setDefault(True)
-        self.submit_bt.clicked.connect(self.get_info)  
-        self.encryptor = DataEncryptor()
+        self.submit_bt.clicked.connect(self.handle_submit)  
 
-    def get_info(self):
-        self.visit_place = self.info_1.currentText()
-        self.purpose = self.info_2.currentText()
-        self.name = self.info_3.text()
-        self.phone_number = self.info_4.text()
-        self.affiliation = self.info_5.text()
+    def handle_submit(self):
+        button_click_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.visit_date = self.info_6.date()
         self.visit_date = self.visit_date.toString('yyyy-MM-dd')
         self.visit_time = self.info_7.time()
         self.visit_time = self.visit_time.toString('hh:mm:ss')
-        self.robot_guidance = self.info_8.currentText()   
-        button_click_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
         visit_info = {
-            "visit_place": self.visit_place,
-            "purpose": self.purpose,
-            "name": self.name,
-            "phone_number": self.phone_number,
-            "affiliation": self.affiliation,
+            "visit_place": self.info_1.currentText(),
+            "purpose": self.info_2.currentText(),
+            "name": self.info_3.text(),
+            "phone_number": self.info_4.text(),
+            "affiliation": self.info_5.text(),
             "visit_date": self.visit_date,
             "visit_time": self.visit_time,
-            "robot_guidance": self.robot_guidance,
+            "robot_guidance": self.info_8.currentText(),
             "status": "registered",
             "created_at": button_click_time,
             "updated_at": button_click_time
         }
+        self.request_qr(visit_info)
 
-        return self.encryptor.encrypt_data(visit_info)
+    def request_qr(self, visit_info):
+        request = VisitInfo.Request()
+        request.visitor_info = json.dumps(visit_info)
+        future = self.cli.call_async(request)
+        future.add_done_callback(self.handle_response)
+
+    def handle_response(self, future):
+        response = future.result()
+        qr_code_path = response.qr_code_path
+        # QR 코드 디스플레이 로직 추가 (예: QLabel에 이미지 표시)
+
+    def closeEvent(self, event):
+        event.accept()
+
 
 def main():
     app = QApplication(sys.argv)

@@ -1,5 +1,6 @@
 from setuptools import find_packages, setup
 import glob
+import os
 
 package_name = 'rio_ui'
 

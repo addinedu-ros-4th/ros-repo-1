@@ -10,8 +10,30 @@ from threading import Thread
 from PyQt5.QtCore import pyqtSignal, QObject
 import math
 
+import json
+import qrcode
+from rio_ui_msgs.srv import VisitInfo
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
+from rio_crypto.data_encryptor import DataEncryptor
+
+class UserService(Node):
+    def __init__(self):
+        super().__init__('admin_service')
+        self.srv = self.create_service(VisitInfo, 'generate_qr', self.generate_qr_callback)      
+        self.encryptor = DataEncryptor()
+
+    def generate_qr_callback(self, request, response):
+        print(request.visitor_info)
+        visit_info = json.loads(request.visitor_info)
+        # print(visit_info)
+        encrypted_info = self.encryptor.encrypt_data(visit_info)
+        qr = qrcode.make(encrypted_info)
+        qr_code_path = './qr_code.png'
+        qr.save(qr_code_path)
+        response.qr_code_path = qr_code_path
+        return response
+    
 
 class ROSNodeSignals(QObject):
     amcl_pose_received = pyqtSignal(float, float)
@@ -97,19 +119,11 @@ class DBConnector():
 
         return all_table_data
         
+def main(args=None):
+    rclpy.init(args=args)
+    admin_service = UserService()
+    rclpy.spin(admin_service)
+    rclpy.shutdown()
 
-# def start_ros2_nodes(signals):
-#     rclpy.init()
-#     executor = MultiThreadedExecutor()
-
-#     amcl_subscriber = AmclSubscriber(signals)
-#     path_subscriber = PathSubscriber(signals)
-#     request_subscriber = RequestSubscriber(signals)
-
-#     executor.add_node(amcl_subscriber)
-#     executor.add_node(path_subscriber)
-#     executor.add_node(request_subscriber)
-
-#     thread = Thread(target=executor.spin)
-#     # thread.start()
-#     return thread
+if __name__ == '__main__':
+    main()
