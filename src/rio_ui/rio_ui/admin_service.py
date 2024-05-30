@@ -13,7 +13,9 @@ import math
 import os
 import json
 import base64 
+import socket
 import qrcode
+import netifaces
 import threading
 import http.server
 import socketserver
@@ -21,8 +23,6 @@ from datetime import datetime
 from pyzbar.pyzbar import decode
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
-
-
 
 from rio_ui_msgs.srv import VisitInfo
 from rio_ui.key_save_load import KeySaveLoad
@@ -41,7 +41,16 @@ class UserService(Node):
 
         self.db_connector = DBConnector()
         self.server = None
-        self.port = 8000
+
+    def get_ip_address(self):
+        add = netifaces.ifaddresses('wlo1')
+        server_ip = add[netifaces.AF_INET][0]['addr']
+        return server_ip
+
+    def find_free_port(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', 0))
+            return s.getsockname()[1]
 
     def generate_qr_callback(self, request, response):
         try:
@@ -72,16 +81,17 @@ class UserService(Node):
             visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             self.db_connector.db_manager.create("VisitorInfo", visit_info)
             print(f"QR code saved at: {qr_code_path}")
-            self.send_sms(name, phone_number)
+            self.send_sms(name, phone_number, qr_code_path)
 
             # Start HTTP server with the generated QR code
-            self.port += 1  # Increase the port number for each server
-            server = ThreadedHTTPServer('192.168.0.24', self.port, qr_code_path)
+            port = self.find_free_port()
+            ip_address = self.get_ip_address()
+            server = ThreadedHTTPServer(ip_address, port, qr_code_path)
             server.start()
-            self.get_logger().info(f"Server started at http://192.168.0.24:{self.port} with QR {qr_code_path}")
+            self.get_logger().info(f"Server started at http://{ip_address}:{port} with QR {qr_code_path}")
 
             response.success = True
-            response.message = f"QR code generated and server started at port {self.port}"
+            response.message = f"QR code generated and server started at port {port}"
             response.qr_code_path = qr_code_path
 
         except json.JSONDecodeError:
@@ -97,7 +107,7 @@ class UserService(Node):
 
         return response
     
-    def send_sms(self, client_name, client_number, qr_url):
+    def send_sms(self, client_name, client_number, qr_code_path):
         # account_sid = '***'
         # auth_token = '***'
         # client = Client(account_sid, auth_token)
