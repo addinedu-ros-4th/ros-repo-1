@@ -57,11 +57,10 @@ class CreateInitDB():
                 name VARCHAR(16) NOT NULL,
                 phone_number VARCHAR(16) NOT NULL,
                 affiliation VARCHAR(32) NOT NULL,
-                visit_date DATE NOT NULL,
-                visit_time TIME NOT NULL,
-                robot_guidance BOOLEAN NOT NULL, 
+                visit_datetime DATETIME NOT NULL,
+                robot_guidance VARCHAR(8) NOT NULL, 
                 status VARCHAR(16) NOT NULL,
-                created_at DATETIME NOT NULL,
+                registered_at DATETIME NOT NULL,
                 updated_at DATETIME NOT NULL
             """
         }
