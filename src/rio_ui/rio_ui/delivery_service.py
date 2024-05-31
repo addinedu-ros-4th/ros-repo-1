@@ -5,8 +5,8 @@ from example_interfaces.msg import Int64MultiArray
 from threading import Thread
 import datetime
 
-from rio_db_manager.db_manager import DBManager
-from rio_db_manager.create_init_db import CreateInitDB
+from rio_ui.admin_service import *
+
 
 
 
@@ -89,7 +89,8 @@ class RFIDSubscriber(Node):
         
 def main():
     rclpy.init()
-    db_manager = DBManager("db_config.yaml")
+    db_connector = DBConnector()
+    db_manager = db_connector.db_manager
     rfid_node = RFIDSubscriber(db_manager) 
     rclpy.spin(rfid_node)
     rclpy.shutdown()
