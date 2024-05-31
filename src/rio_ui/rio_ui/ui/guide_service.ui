@@ -397,7 +397,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
   <zorder>pushNormal</zorder>
  </widget>
  <resources>
-  <include location="../data/resource.qrc"/>
+  <include location="~/amr_ws/project/final/ros-repo-1/src/rio_ui/rio_ui/data/resource.qrc"/>
  </resources>
  <connections/>
 </ui>

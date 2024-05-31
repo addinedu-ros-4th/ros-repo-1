@@ -13,9 +13,10 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/ui/", glob.glob('rio_ui/ui/*.ui')),
-        
-
+        # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.qrc')),
+        # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.png')),
     ],
+    # py_modules=['rio_ui.resource_rc'],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='joe',
@@ -27,7 +28,9 @@ setup(
         'console_scripts': [
             'admin_service = rio_ui.admin_service:main',
             'admin_gui = rio_ui.admin_gui:main',
-            'user_gui = rio_ui.user_gui:main'
+            'user_gui = rio_ui.user_gui:main',
+            'guide_service = rio_ui.guide_service:main',
+            'guide_gui = rio_ui.guide_gui:main'
         ],
     },
 )
