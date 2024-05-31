@@ -7,10 +7,10 @@ from PyQt5.QtCore import *
 import sys
 import os
 import yaml
-import math
 
 from tf_transformations import quaternion_from_euler
 from nav2_simple_commander.robot_navigator import BasicNavigator
+from geometry_msgs.msg import PoseStamped
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
@@ -39,9 +39,9 @@ class AdminGUI(QMainWindow, admin_ui):
         self.timer.timeout.connect(self.update_map)
         self.timer.start(100)
         
-        self.db_connect = DBConnector()
+        self.db_connector = DBConnector()
         # self.db_manager = db_manager
-        tables = self.db_connect.show_all_tables()
+        tables = self.db_connector.show_all_tables()
         self.select_table_update(tables)
         self.detail_bt.clicked.connect(self.table_detail)
         
@@ -89,7 +89,7 @@ class AdminGUI(QMainWindow, admin_ui):
 
     def table_detail(self):
         selected_table = self.select_table_cbx.currentText()
-        detail_data = self.db_connect.select_all(selected_table)
+        detail_data = self.db_connector.select_all(selected_table)
 
         detail_table = self.findChild(QTableWidget, "detail_table")
         
@@ -106,7 +106,6 @@ class AdminGUI(QMainWindow, admin_ui):
             detail_table.clear()
             return
 
-    
         # 데이터 표시
         detail_table.setRowCount(len(detail_data))
         for i, row_data in enumerate(detail_data):
@@ -158,8 +157,8 @@ class AdminGUI(QMainWindow, admin_ui):
     
     def closeEvent(self, event):
         self.timer.stop()
-        if self.db_connect and self.db_connect.db_manager:
-            self.db_connect.db_manager.close()
+        if self.db_connector and self.db_connector.db_manager:
+            self.db_connector.db_manager.close()
         rclpy.shutdown()
         event.accept()
 
@@ -177,10 +176,13 @@ def main():
     amcl_subscriber = AmclSubscriber(signals)
     path_subscriber = PathSubscriber(signals)
     request_subscriber = RequestSubscriber(signals)
+    user_service_server = UserService()
+
 
     executor.add_node(amcl_subscriber)
     executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
+    executor.add_node(user_service_server)
 
     thread = Thread(target=executor.spin)
     thread.start()

@@ -1,4 +1,4 @@
-from PyQt5 import uic
+from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -12,6 +12,9 @@ from rclpy.executors import MultiThreadedExecutor
 from std_srvs.srv import SetBool
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
+
+from PIL import Image
+from db_manager import DBManager
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -27,6 +30,7 @@ guide_ui = uic.loadUiType(ui_file)[0]
 
 class WindowClass(QMainWindow, guide_ui):
     update_image_signal = pyqtSignal(np.ndarray, list, bool)
+    face_registered = pyqtSignal(QPixmap)
 
     def __init__(self):
         super().__init__()
@@ -37,6 +41,8 @@ class WindowClass(QMainWindow, guide_ui):
 
         self.pushNormal.show()
         self.mainGroup.hide()
+        self.registerGroup.hide()
+        self.registerGroup2.hide()
         self.cameraGroup.hide()
         self.pushRegister.setEnabled(True)
         self.pushVisitor.setEnabled(False)
@@ -45,18 +51,29 @@ class WindowClass(QMainWindow, guide_ui):
 
         self.pushNormal.clicked.connect(self.setmain)
         self.pushRegister.clicked.connect(self.register)
+        self.pushRetake.clicked.connect(self.retake)
+        self.pushRegister2.clicked.connect(self.registerinfo)
         self.pushCommute.clicked.connect(self.setcamera)
         self.pushBack.clicked.connect(self.setmain)
+
+        self.birthEdit.setCalendarPopup(True)
+        self.birthEdit.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.pixmap = QPixmap()
         # self.pixmap = self.pixmap.scaled(self.frame2.width(), self.frame2.height())
 
         self.update_image_signal.connect(self.update_image)
+        self.face_registered.connect(self.info_registration)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.send_service_request)
 
+        # self.register_timer = QTimer(self)
+        # self.register_timer_count = 0       
+
         self.create_service_client()
+
+        self.db_manager = DBManager("db_config.json")
 
     def create_service_client(self):
         self.node = rp.create_node('pyqt_service_client')
@@ -89,6 +106,7 @@ class WindowClass(QMainWindow, guide_ui):
         self.pushNormal.hide()
         self.mainGroup.show()
         self.registerGroup.hide()
+        self.registerGroup2.hide()
         self.cameraGroup.hide()
         self.timer.stop()
 
@@ -97,11 +115,68 @@ class WindowClass(QMainWindow, guide_ui):
         self.pushNormal.hide()
         self.mainGroup.hide()
         self.registerGroup.show()
+        self.registerGroup2.hide()
         self.cameraGroup.hide()
         self.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
 
         self.send_service_request()
         self.timer.start(2000)
+
+        # self.register_timer.timeout.connect(self.check_registration_timeout)
+        # self.register_timer.start(1000)
+
+    @pyqtSlot(QPixmap)
+    def info_registration(self, saved_face):
+        self.pushNormal.hide()
+        self.mainGroup.hide()
+        self.registerGroup.hide()
+        self.registerGroup2.show()
+        self.cameraGroup.hide()
+        self.timer.stop()
+        scaled_pixmap = saved_face.scaled(self.frame3.size(), QtCore.Qt.KeepAspectRatio)
+        self.frame3.setPixmap(scaled_pixmap)
+
+    def retake(self):
+        self.register()
+
+    def registerinfo(self):
+        name = self.nameEdit.text()
+        birth = self.birthEdit.date().toString("yyyyMMdd")
+        office = self.officeEdit.text()
+        phone_number = self.phoneEdit.text()
+        pixmap = self.frame3.pixmap()
+        user_face = self.image_to_binary(pixmap)
+
+        data = {
+            "name": name,
+            "birth": birth,
+            "office": office,
+            "phone_number": phone_number,
+            "user_face": user_face
+        }
+        self.db_manager.create("UserInfo", data)
+
+    def image_to_binary(self, pixmap):
+        if pixmap:
+            qimage = pixmap.toImage()
+
+            # pil_image = ImageQt.fromqimage(qimage)
+            # pil_image = pil_image.resize((400, 300))
+
+            # buffer = BytesIO()
+            # pil_image.save(buffer, format="JPEG")
+            # img_data = buffer.getvalue()
+            # buffer.close()
+            buffer = QBuffer()
+            buffer.open(QIODevice.ReadWrite)
+            qimage.save(buffer, "JPEG")
+            img_data = buffer.data()
+            buffer.close()
+
+            return img_data
+        else:
+            print("No pixmap found in frame3")
+
 
     def setcamera(self):
         self.current_mode = "commute"
@@ -137,6 +212,15 @@ class WindowClass(QMainWindow, guide_ui):
         for i, name in enumerate(names):
             cv2.putText(cv_img, name, (10, 30 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         return cv_img
+
+    # @pyqtSlot()
+    # def check_registration_timeout(self):
+    #     self.register_timer_count += 1
+    #     if self.register_timer_count >= 5:
+    #         self.label.setText("얼굴의 특징점을 찾을 수 없습니다")
+    #         self.register_timer.stop()
+    #         self.register_timer_count = 0  # 카운트 초기화
+    #     print(self.register_timer_count)
 
 class ImageSubscriber(Node):
     def __init__(self, ui):
@@ -183,8 +267,9 @@ class FacenameSubscriber(Node):
             print(e)   
 
 class FacelandmarkSubscriber(Node):
+
     def __init__(self, ui):
-        super().__init__("face_landmarks_sub")
+        Node.__init__(self, "face_landmarks_sub")
         self.ui = ui
         self.required_landmarks = ["chin", "left_eyebrow", "right_eyebrow", "nose_bridge", "nose_tip", "left_eye", "right_eye", "top_lip", "bottom_lip"]
         self.landmarks_sub = self.create_subscription(
@@ -193,21 +278,21 @@ class FacelandmarkSubscriber(Node):
             self.landmarks_callback,
             10
         )
-        self.timeout_timer = QTimer()
-        self.timeout_timer.setSingleShot(True)
-        self.timeout_timer.timeout.connect(self.handle_timeout)
+        print("FacelandmarkSubscriber initialized")
 
     def landmarks_callback(self, data):
-        try :
+        try:
             face_landmarks = eval(data.data)
             if self.check_required_landmarks(face_landmarks):
                 self.ui.label.setText("얼굴 등록이 완료되었습니다")
                 print("All required landmarks are available!")
-                self.timeout_timer.stop()
+                saved_face = self.ui.frame.pixmap()
+                self.ui.face_registered.emit(saved_face)
             else:
                 self.ui.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
                 print("Not all required landmarks are available!")
-                self.timeout_timer.start(5000)
+            # print("info_registration 함수 호출 전")
+            # self.ui.info_registration(saved_face)
         except Exception as e:
             print(e)
 
@@ -220,9 +305,6 @@ class FacelandmarkSubscriber(Node):
             return True
         else:
             return False
-        
-    def handle_timeout(self):
-        self.ui.label.setText("얼굴의 특징점을 찾을 수 없습니다")
 
 def main():
 

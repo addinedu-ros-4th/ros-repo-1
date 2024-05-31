@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1722</width>
+    <width>2329</width>
     <height>999</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>620</y>
+     <y>640</y>
      <width>1121</width>
      <height>681</height>
     </rect>
@@ -158,7 +158,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>30</y>
+      <y>40</y>
       <width>601</width>
       <height>461</height>
      </rect>
@@ -174,7 +174,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
   <widget class="QGroupBox" name="registerGroup">
    <property name="geometry">
     <rect>
-     <x>930</x>
+     <x>220</x>
      <y>70</y>
      <width>681</width>
      <height>531</height>
@@ -227,13 +227,173 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      </rect>
     </property>
     <property name="text">
-     <string>BACK</string>
+     <string>이전화면</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="registerGroup2">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>70</y>
+     <width>681</width>
+     <height>531</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>80</y>
+      <width>51</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>이름 : </string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="nameEdit">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>80</y>
+      <width>131</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>200</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>회사(부서)명 : </string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="officeEdit">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>202</y>
+      <width>191</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>270</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>전화번호 : </string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="phoneEdit">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>270</y>
+      <width>221</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>140</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>생년월일 : </string>
+    </property>
+   </widget>
+   <widget class="QDateEdit" name="birthEdit">
+    <property name="geometry">
+     <rect>
+      <x>490</x>
+      <y>140</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="displayFormat">
+     <string>yyyy/MM/dd</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="frame3">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>70</y>
+      <width>191</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushRetake">
+    <property name="geometry">
+     <rect>
+      <x>96</x>
+      <y>260</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>재등록</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushRegister2">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>380</y>
+      <width>271</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>등록하기</string>
     </property>
    </widget>
   </widget>
   <zorder>mainGroup</zorder>
   <zorder>cameraGroup</zorder>
   <zorder>registerGroup</zorder>
+  <zorder>registerGroup2</zorder>
   <zorder>pushNormal</zorder>
  </widget>
  <resources>

@@ -1,5 +1,6 @@
 from setuptools import find_packages, setup
 import glob
+import os
 
 package_name = 'rio_ui'
 
@@ -12,6 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/ui/", glob.glob('rio_ui/ui/*.ui')),
+        ('share/' + package_name + "/data/keys/", glob.glob('rio_ui/data/keys/*.pem')),
         
 
     ],
@@ -28,6 +30,8 @@ setup(
             "user_service = rio_ui.user_service:main",
             "delivery_service=rio_ui.delivery_service:main",
             'admin_gui = rio_ui.admin_gui:main',
+            'user_gui = rio_ui.user_gui:main',
+            'key_save_load = rio_ui.key_save_load:main'
 
         ],
     },
