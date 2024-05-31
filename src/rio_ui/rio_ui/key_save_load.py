@@ -10,9 +10,6 @@ class KeySaveLoad():
         # keys_dir = os.path.join(get_package_share_directory("rio_ui"), "data", "keys")
         keys_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../src/rio_ui/rio_ui/data/keys/'))
         os.makedirs(keys_dir, exist_ok=True)
-        # if not os.path.exists(keys_dir):
-        #     os.makedirs(keys_dir)
-        os.makedirs(keys_dir, exist_ok=True)
 
         self.private_key_path = os.path.join(keys_dir, 'private_key.pem')
         self.public_key_path = os.path.join(keys_dir, 'public_key.pem')

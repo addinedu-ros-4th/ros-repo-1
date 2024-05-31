@@ -1,14 +1,10 @@
-# admin_service.py
-
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray
 
 from ament_index_python.packages import get_package_share_directory
-from threading import Thread
 from PyQt5.QtCore import pyqtSignal, QObject
 
 import math
