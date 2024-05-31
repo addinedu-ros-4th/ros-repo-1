@@ -14,6 +14,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/ui/", glob.glob('rio_ui/ui/*.ui')),
         ('share/' + package_name + "/data/keys/", glob.glob('rio_ui/data/keys/*.pem')),
+        ("share/" + package_name + "/data/", glob.glob('rio_ui/data/*.json')),
         
 
     ],
