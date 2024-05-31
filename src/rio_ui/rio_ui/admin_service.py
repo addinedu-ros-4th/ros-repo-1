@@ -7,6 +7,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray
 
+from ament_index_python.packages import get_package_share_directory
 from threading import Thread
 from PyQt5.QtCore import pyqtSignal, QObject
 
@@ -15,7 +16,9 @@ import math
 import os
 import json
 import base64 
+import socket
 import qrcode
+import netifaces
 import threading
 import http.server
 import socketserver
@@ -23,8 +26,6 @@ from datetime import datetime
 from pyzbar.pyzbar import decode
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
-
-
 
 from rio_ui_msgs.srv import VisitInfo
 from rio_ui.key_save_load import KeySaveLoad
@@ -43,7 +44,18 @@ class UserService(Node):
 
         self.db_connector = DBConnector()
         self.server = None
-        self.port = 8000
+
+    def get_ip_address(self):
+        add = netifaces.ifaddresses('wlo1')
+        server_ip = add[netifaces.AF_INET][0]['addr']
+
+        return server_ip
+
+    def find_free_port(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', 0))
+
+            return s.getsockname()[1]
 
     def generate_qr_callback(self, request, response):
         try:
@@ -65,8 +77,6 @@ class UserService(Node):
             qr_img = qr.make_image(fill='black', back_color='white')
 
             name = visit_info['name']
-            phone_number = '+82' + visit_info['phone_number'][1:]
-            print(phone_number)
             qr_code_path = os.path.join(self.qr_code_dir, f"{name}_qr_code.png")
             qr_img.save(qr_code_path)
 
@@ -74,17 +84,23 @@ class UserService(Node):
             visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             self.db_connector.db_manager.create("VisitorInfo", visit_info)
             print(f"QR code saved at: {qr_code_path}")
-            self.send_sms(name, phone_number)
 
-            # Start HTTP server with the generated QR code
-            self.port += 1  # Increase the port number for each server
-            server = ThreadedHTTPServer('192.168.0.24', self.port, qr_code_path)
+            phone_number = '+82' + visit_info['phone_number'][1:]
+            port = self.find_free_port()
+            ip_address = self.get_ip_address()
+            qr_url = f'http://{ip_address}:{port}'
+
+            server = ThreadedHTTPServer(ip_address, port, qr_code_path)
             server.start()
-            self.get_logger().info(f"Server started at http://192.168.0.24:{self.port} with QR {qr_code_path}")
+            self.get_logger().info(f"Server started at {qr_url} with QR {qr_code_path}")
 
             response.success = True
-            response.message = f"QR code generated and server started at port {self.port}"
+            response.message = f"QR code generated and server started at port {port}"
             response.qr_code_path = qr_code_path
+
+            # sms service를 사용하려면 send_sms함수를 주석 해제
+            self.send_sms(name, phone_number, qr_url)
+            print(response)
 
         except json.JSONDecodeError:
             print("Failed to decode JSON from visitor info")
@@ -95,24 +111,33 @@ class UserService(Node):
             response.success = False
             response.message = "An unexpected error occurred"
 
-        response.qr_code_path = qr_code_path
-
         return response
     
+    def load_config(self, config_file):
+        config_path = os.path.join(get_package_share_directory("rio_ui"), "data", config_file)
+        
+        with open(config_path, 'r') as file:
+            config = json.load(file)
+            config = config["sms_tocken"]
+
+        return config
+
     def send_sms(self, client_name, client_number, qr_url):
-        # account_sid = '***'
-        # auth_token = '***'
-        # client = Client(account_sid, auth_token)
+        sms_tocken = self.load_config('sms_config.json')
 
-        # message = client.messages.create(
-        #     messaging_service_sid='****', 
-        #     body=f'http://192.168.0.23:8000/{client_name}_qr_code.png 방문 시 QR을 제시해주세요.', 
-        #     to=client_number
-        # )
+        account_sid = sms_tocken['account_sid']
+        auth_token = sms_tocken['auth_token']
+        client = Client(account_sid, auth_token)
 
-        # return print(message.sid)
-        pass
+        message = client.messages.create(
+            messaging_service_sid=sms_tocken['messaging_service_sid'], 
+            body=f'{client_name}님, 방문 시 QR을 제시해주세요. {qr_url}', 
+            to=client_number
+        )
+
+        return print("Send QR message to visitor")
     
+
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, qr_path, *args, **kwargs):
         self.qr_path = qr_path
@@ -241,10 +266,12 @@ class InfoCryptor():
         with open(output_file, 'w') as file:
             file.write(encrypted_data)
 
+
 class ROSNodeSignals(QObject):
     amcl_pose_received = pyqtSignal(float, float)
     path_distance_received = pyqtSignal(float)
     task_request_received = pyqtSignal(float, float, float)
+
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
@@ -260,6 +287,7 @@ class AmclSubscriber(Node):
         x = data.pose.pose.position.x
         y = data.pose.pose.position.y
         self.signals.amcl_pose_received.emit(x, y)
+
 
 class PathSubscriber(Node):
     def __init__(self, signals):
@@ -280,10 +308,13 @@ class PathSubscriber(Node):
         total_distance = 0.0
         for i in range(len(poses) - 1):
             total_distance += self.euclidean_distance(poses[i].pose.position, poses[i + 1].pose.position)
+        
         return total_distance
     
     def euclidean_distance(self, p1, p2):
+
         return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2 + (p2.z - p1.z)**2)
+
 
 class RequestSubscriber(Node):
     def __init__(self, signals):
@@ -300,6 +331,7 @@ class RequestSubscriber(Node):
         data = msg.data
         if len(data) == 3:
             self.signals.task_request_received.emit(data[0], data[1], data[2])
+
 
 class DBConnector: # 싱글톤 패턴으로 구현
     _instance = None
@@ -333,6 +365,7 @@ class DBConnector: # 싱글톤 패턴으로 구현
 
         return all_table_data
         
+
 def main(args=None):
     rclpy.init(args=args)
     admin_service = UserService()

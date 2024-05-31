@@ -13,10 +13,15 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/ui/", glob.glob('rio_ui/ui/*.ui')),
+        # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.qrc')),
+        # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.png')),
         ('share/' + package_name + "/data/keys/", glob.glob('rio_ui/data/keys/*.pem')),
+
+        ("share/" + package_name + "/data/", glob.glob('rio_ui/data/*.json')),
         
 
     ],
+    # py_modules=['rio_ui.resource_rc'],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='joe',
@@ -31,6 +36,8 @@ setup(
             "delivery_service=rio_ui.delivery_service:main",
             'admin_gui = rio_ui.admin_gui:main',
             'user_gui = rio_ui.user_gui:main',
+            'guide_service = rio_ui.guide_service:main',
+            'guide_gui = rio_ui.guide_gui:main'
             'key_save_load = rio_ui.key_save_load:main'
 
         ],
