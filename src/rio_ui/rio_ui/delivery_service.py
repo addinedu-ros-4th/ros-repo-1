@@ -48,16 +48,19 @@ class RFIDSubscriber(Node):
                     uid_list.append(uid)
 
             if self.user_id in uid_list:
+                current_credit = self.calc_total(self.user_id)
+                self.user_credit = current_credit - self.change_total
                 self.data[0] = 1
                 self.data[1] = self.user_id
                 self.data[2] = self.user_credit
-                self.calc_total(self.user_id)
+                
                 
             else:
                 self.data[0] = 0
                 self.data[1] = self.user_id
-                self.data[2] = self.user_credit
+                self.data[2] = 0
             
+            self.publish_msg()
                 
         except Exception as e:
             self.get_logger().error(f'Error check UID: {e}')
@@ -66,11 +69,12 @@ class RFIDSubscriber(Node):
         try:
             total_list = []
             criteria = {"rfid_uid": id}
-            change_total_log = self.db_manager.read("Payment", criteria)
+            change_total_log = self.db_manager.read("Payment", criteria, "payment_id")
             for data in change_total_log:
                 total = data.get("total_credit")
                 total_list.append(total)
             current_credit = total_list[-1]    
+            return current_credit
         except Exception as e:
             self.get_logger().error(f'Error check UID: {e}')
         

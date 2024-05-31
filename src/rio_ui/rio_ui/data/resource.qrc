@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icon">
+    <file>NFC-Card.png</file>
     <file>smile.png</file>
     <file>normal.png</file>
   </qresource>

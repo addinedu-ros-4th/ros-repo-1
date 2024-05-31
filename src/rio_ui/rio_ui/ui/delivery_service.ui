@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QLineEdit" name="nameLine">
    <property name="geometry">
     <rect>
@@ -103,21 +106,11 @@
    <property name="title">
     <string/>
    </property>
-   <widget class="QListView" name="listView">
-    <property name="geometry">
-     <rect>
-      <x>390</x>
-      <y>100</y>
-      <width>256</width>
-      <height>261</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="totalPrice">
     <property name="geometry">
      <rect>
       <x>483</x>
-      <y>382</y>
+      <y>312</y>
       <width>121</width>
       <height>50</height>
      </rect>
@@ -130,7 +123,7 @@
      </font>
     </property>
     <property name="text">
-     <string>40000</string>
+     <string>0</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -140,7 +133,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>385</y>
+      <y>315</y>
       <width>91</width>
       <height>41</height>
      </rect>
@@ -156,11 +149,11 @@
      <string>Total :</string>
     </property>
    </widget>
-   <widget class="QLabel" name="totalPrice">
+   <widget class="QLabel" name="wonLabel">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>380</y>
+      <x>530</x>
+      <y>310</y>
       <width>121</width>
       <height>50</height>
      </rect>
@@ -182,22 +175,22 @@
    <widget class="QGroupBox" name="menuGroup">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>90</y>
-      <width>331</width>
-      <height>341</height>
+      <x>10</x>
+      <y>20</y>
+      <width>351</width>
+      <height>411</height>
      </rect>
     </property>
     <property name="title">
      <string/>
     </property>
-    <widget class="QPushButton" name="cokeBtn">
+    <widget class="QPushButton" name="addAmericanoBtn">
      <property name="geometry">
       <rect>
-       <x>170</x>
-       <y>10</y>
-       <width>151</width>
-       <height>101</height>
+       <x>100</x>
+       <y>110</y>
+       <width>61</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="font">
@@ -208,22 +201,42 @@
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">image: url(:/Icon/normal.png);</string>
+      <string notr="true"/>
      </property>
      <property name="text">
-      <string>Coke</string>
+      <string>+</string>
      </property>
      <property name="default">
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QPushButton" name="americanoBtn">
+    <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
-       <width>151</width>
-       <height>101</height>
+       <y>40</y>
+       <width>171</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Americano</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="addCokeBtn">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>280</y>
+       <width>61</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="font">
@@ -234,23 +247,241 @@
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">image: url(:/Icon/normal.png);</string>
+      <string notr="true"/>
      </property>
      <property name="text">
-      <string>Ice
- Americano</string>
+      <string>+</string>
      </property>
      <property name="default">
       <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="addSnackBtn">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>280</y>
+       <width>61</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>+</string>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="addLatteBtn">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>110</y>
+       <width>61</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>+</string>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="subAmericanoBtn">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>110</y>
+       <width>61</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+     <property name="autoDefault">
+      <bool>true</bool>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="subCokeBtn">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>280</y>
+       <width>61</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="subSnackBtn">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>280</y>
+       <width>61</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="subLatteBtn">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>110</y>
+       <width>61</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>15</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>200</y>
+       <width>91</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Snack</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>200</y>
+       <width>91</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Coke</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>40</y>
+       <width>91</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Latte</string>
      </property>
     </widget>
     <widget class="QPushButton" name="cancelBtn">
      <property name="geometry">
       <rect>
-       <x>90</x>
-       <y>230</y>
-       <width>151</width>
-       <height>101</height>
+       <x>220</x>
+       <y>340</y>
+       <width>121</width>
+       <height>61</height>
       </rect>
      </property>
      <property name="font">
@@ -261,62 +492,10 @@
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">image: url(:/Icon/normal.png);</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>Cancel</string>
-     </property>
-     <property name="default">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="snackBtn">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>120</y>
-       <width>151</width>
-       <height>101</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>15</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">image: url(:/Icon/normal.png);</string>
-     </property>
-     <property name="text">
-      <string>Snack</string>
-     </property>
-     <property name="default">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="latteBtn">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>120</y>
-       <width>151</width>
-       <height>101</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>15</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">image: url(:/Icon/normal.png);</string>
-     </property>
-     <property name="text">
-      <string>Latte</string>
      </property>
      <property name="default">
       <bool>false</bool>
@@ -326,8 +505,8 @@
    <widget class="QPushButton" name="backBtn">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>20</y>
+      <x>410</x>
+      <y>370</y>
       <width>121</width>
       <height>61</height>
      </rect>
@@ -340,10 +519,61 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">image: url(:/Icon/normal.png);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Back</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="orderTable">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>20</y>
+      <width>301</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>Product</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Price</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Number</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QPushButton" name="payBtn">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>370</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Pay</string>
     </property>
     <property name="default">
      <bool>false</bool>
@@ -363,7 +593,156 @@
     <string>PushButton</string>
    </property>
   </widget>
+  <widget class="QGroupBox" name="rfidGroup">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>60</y>
+     <width>291</width>
+     <height>281</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="tagLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>251</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">image: url(:/Icon/NFC-Card.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>30</y>
+      <width>261</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Tag Your Card!!</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="noticeGroup">
+   <property name="geometry">
+    <rect>
+     <x>1020</x>
+     <y>60</y>
+     <width>351</width>
+     <height>281</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="noticeLabel">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>80</y>
+      <width>251</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">image: url(:/Icon/NFC-Card.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="noticeLine">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>30</y>
+      <width>261</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>payment has been completed</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="noticeGroup_2">
+   <property name="geometry">
+    <rect>
+     <x>1020</x>
+     <y>60</y>
+     <width>351</width>
+     <height>281</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="noticeLabel_2">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>80</y>
+      <width>251</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">image: url(:/Icon/NFC-Card.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="noticeLine_2">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>30</y>
+      <width>261</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>payment has been completed</string>
+    </property>
+   </widget>
+  </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../data/resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
