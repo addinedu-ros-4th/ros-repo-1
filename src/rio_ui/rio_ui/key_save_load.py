@@ -7,11 +7,12 @@ from ament_index_python.packages import get_package_share_directory
 
 class KeySaveLoad():
     def __init__(self):
-        # ui_file = os.path.join(get_package_share_directory("rio_crypto"), "config", "keys" "admin_service.ui")
-
-        keys_dir = os.path.join(get_package_share_directory("rio_crypto"), "config", "keys")
-        if not os.path.exists(keys_dir):
-            os.makedirs(keys_dir)
+        # keys_dir = os.path.join(get_package_share_directory("rio_ui"), "data", "keys")
+        keys_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../src/rio_ui/rio_ui/data/keys/'))
+        os.makedirs(keys_dir, exist_ok=True)
+        # if not os.path.exists(keys_dir):
+        #     os.makedirs(keys_dir)
+        os.makedirs(keys_dir, exist_ok=True)
 
         self.private_key_path = os.path.join(keys_dir, 'private_key.pem')
         self.public_key_path = os.path.join(keys_dir, 'public_key.pem')
@@ -73,6 +74,7 @@ class KeySaveLoad():
 
 def main():
     keysaveload = KeySaveLoad()
+
     if not os.path.exists(keysaveload.private_key_path) or not os.path.exists(keysaveload.public_key_path):
         keysaveload.generate_keys()
         print(f"Keys saved at :{keysaveload.public_key_path}") 
