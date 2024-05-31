@@ -20,7 +20,6 @@ admin_ui = uic.loadUiType(ui_file)[0]
 
 
 class AdminGUI(QMainWindow, admin_ui):
-    # def __init__(self, db_manager=None):
     def __init__(self):    
         super().__init__()
         self.setupUi(self)
@@ -186,9 +185,6 @@ def main():
 
     thread = Thread(target=executor.spin)
     thread.start()
-
-    # ros_thread = start_ros2_nodes(signals)    
-    # ros_thread.start()
     
     sys.exit(app.exec_())
 

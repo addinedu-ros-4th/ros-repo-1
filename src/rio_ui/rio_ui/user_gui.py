@@ -60,8 +60,11 @@ class SubGUI(QDialog, sub_ui):
         
         self.setupUi(self)
 
+        rclpy.node.Node
         self.node = rclpy.create_node('subgui_node')
-        self.cli = self.node.create_client(VisitInfo, 'generate_qr')        
+        self.cli = self.node.create_client(VisitInfo, 'generate_qr')  
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')              
         
         self.submit_bt.setDefault(True)
         self.submit_bt.clicked.connect(self.handle_submit)  
@@ -90,23 +93,29 @@ class SubGUI(QDialog, sub_ui):
         request = VisitInfo.Request()
         request.visitor_info = json.dumps(visit_info)
         future = self.cli.call_async(request)
-        future.add_done_callback(self.handle_response)
+        # rclpy.spin_until_future_complete(self, future)
+        response = future.result()
+        self.node.get_logger().info(response)
+
+        # future.add_done_callback(self.handle_response)
+        # print("1")
 
     def handle_response(self, future):
-        response = future.result()
-        qr_code_path = response.qr_code_path
-        # QR 코드 디스플레이 로직 추가 (예: QLabel에 이미지 표시)
+        try:
+            response = future.result()
+            print("2")
+            print(f"Response: success={response.success}, message={response.message}")
+        except Exception as e:
+            print("fail: {e}")
 
-    def closeEvent(self, event):
-        event.accept()
 
 
 def main():
     app = QApplication(sys.argv)
-    myWindow = UserGUI()
-    myWindow.show()
+    mainwindow = UserGUI()
+    mainwindow.show()
 
     sys.exit(app.exec_())
-        
+
 if __name__ == "__main__":
     main()
