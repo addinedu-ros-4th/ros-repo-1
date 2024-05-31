@@ -1,5 +1,3 @@
-# admin_gui.py
-
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
@@ -11,6 +9,7 @@ import yaml
 from tf_transformations import quaternion_from_euler
 from nav2_simple_commander.robot_navigator import BasicNavigator
 from geometry_msgs.msg import PoseStamped
+from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
@@ -183,7 +182,7 @@ def main():
     executor.add_node(request_subscriber)
     executor.add_node(user_service_server)
 
-    thread = Thread(target=executor.spin)
+    thread = threading.Thread(target=executor.spin)
     thread.start()
     
     sys.exit(app.exec_())
