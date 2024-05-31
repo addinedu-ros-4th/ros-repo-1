@@ -7,9 +7,6 @@ import datetime
 
 from rio_ui.admin_service import *
 
-
-
-
 class RFIDSubscriber(Node):
     def __init__(self, db_manager = None):
         super().__init__("rfid_sub")
@@ -37,7 +34,6 @@ class RFIDSubscriber(Node):
         self.ID_check()
         
         
-
     def ID_check(self):
         uid_list = []
         detail_data = self.db_manager.read("Payment")
@@ -79,14 +75,11 @@ class RFIDSubscriber(Node):
             self.get_logger().error(f'Error check UID: {e}')
         
         
-        
     def publish_msg(self):
         msg = Int64MultiArray(data = self.data)
         self.publisher.publish(msg)
         
- 
-        
-        
+
 def main():
     rclpy.init()
     db_connector = DBConnector()

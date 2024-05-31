@@ -52,16 +52,19 @@ class ImageSubscriber(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = ImageSubscriber()
+    face_recog = ImageSubscriber()
 
-    node.facerecognition.add_known_face("/home/joe/ros-repo-1/src/rio_recognition/face_recog/data/ho_0.jpg", "joe")
+    
+    face_recog.facerecognition.add_known_face("./data/wooks/wook_0.jpg", "wook")
+    face_recog.facerecognition.add_known_face("./data/kyus/kyu_0.jpg", "kyu")
+    face_recog.facerecognition.add_known_face("./data/joes/ho_0.jpg", "joe")
 
     try:
-        rp.spin(node)
+        rp.spin(face_recog)
     except KeyboardInterrupt:
-        node.get_logger().info('KeyboardInterrupt')
+        face_recog.get_logger().info('KeyboardInterrupt')
     finally:
-        node.destroy_node()
+        face_recog.destroy_face_recog_node()
         rp.shutdown()
 
 if __name__ == '__main__':
