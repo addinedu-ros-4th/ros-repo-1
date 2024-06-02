@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>697</width>
-    <height>380</height>
+    <width>449</width>
+    <height>421</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -134,8 +134,31 @@ Robot</string>
      <height>81</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
    <property name="text">
     <string>write Pre-arrangement</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="orderBtn">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>320</y>
+     <width>381</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Order Menu</string>
    </property>
   </widget>
  </widget>

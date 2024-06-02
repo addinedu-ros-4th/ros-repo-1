@@ -2,10 +2,12 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Path
-from example_interfaces.msg import Float64MultiArray
+from example_interfaces.msg import Float64MultiArray, Int64MultiArray
 
 from ament_index_python.packages import get_package_share_directory
 from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtWidgets import QTableWidgetItem
+
 
 import math
 
@@ -311,6 +313,45 @@ class PathSubscriber(Node):
 
         return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2 + (p2.z - p1.z)**2)
 
+class OrderSubscriber(Node):
+    def __init__(self, ui):
+        super().__init__("order_sub")
+        self.ui = ui
+        self.order_subs = self.create_subscription(
+            Int64MultiArray,
+            "/order_request",
+            self.order_callback,
+            10
+        )
+    
+    def order_callback(self, msg):
+        office_num = msg.data[0]
+        request_time = msg.data[1]
+        order_list = msg.data[2:]
+        
+        time_str = str(request_time)
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
+        order_str = ""
+        for i, order in enumerate(order_list):
+            if order <= 0:
+                pass
+            else:
+                if i == 0:
+                    order_str = order_str + f"Americano : {order}, "
+                elif i == 1:
+                    order_str = order_str + f"Latte : {order}, "
+                elif i == 2:
+                    order_str = order_str + f"Coke : {order}, "
+                elif i == 3:
+                    order_str = order_str + f"Snack : {order}, "
+                    
+        row_position = self.ui.requestTable.rowCount()
+        self.ui.requestTable.insertRow(row_position)
+        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
+        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
+        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(order_str))
+        
+        
 
 class RequestSubscriber(Node):
     def __init__(self, signals):

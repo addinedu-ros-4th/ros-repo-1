@@ -31,8 +31,8 @@ class WindowClass(QMainWindow, delivery_ui):
         self.setupUi(self)
         self.setWindowTitle('RiO Deli mk3')
 
-        self.robot_task = "order" # 초기 모드 설정
-        self.name = "UnKnown"
+        self.robot_task = "ready" # 초기 모드 설정
+        self.name = "Unknown"
         self.item = ""
         self.total_price = 0
         self.is_on_rfid = False
@@ -139,7 +139,11 @@ class WindowClass(QMainWindow, delivery_ui):
         self.rfidGroup.hide()
         self.noticeGroup.show()
         self.is_tag = False
-        self.label_11.hide()
+        if self.robot_task == "delivery":
+            self.label_11.hide()
+        elif self.robot_task == "order" or self.robot_task == "sale":
+            self.label_11.hide()
+        
         # self.timer.start(30000)
             
         
@@ -165,10 +169,14 @@ class WindowClass(QMainWindow, delivery_ui):
         if self.is_on_camera:
             qt_img = self.cv_to_pixmap(cv_img, self.label)
             self.label.setPixmap(qt_img)
-            if self.name != "Unknown"and self.name is not None:
-                self.faceLabel.setText(f"{self.name}님 환영합니다")
-                # time.sleep(0.5)
-                # self.is_on_camera = False
+            self.label.setAlignment(Qt.AlignCenter)
+            # print(self.name)
+            # print(len(self.name))
+            # # self.nameLabel.setText(self.name)
+            # if self.name != "Unknown" or self.name != "":
+            #     self.faceLabel.setText(f"{self.name}님 환영합니다")
+            #     time.sleep(0.5)
+            #     self.is_on_camera = False
         
         
     def cv_to_pixmap(self, cv_img, frames):

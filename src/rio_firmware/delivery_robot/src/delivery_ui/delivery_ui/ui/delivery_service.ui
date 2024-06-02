@@ -766,7 +766,7 @@
    <widget class="QLabel" name="noticeLabel_2">
     <property name="geometry">
      <rect>
-      <x>80</x>
+      <x>70</x>
       <y>30</y>
       <width>201</width>
       <height>151</height>

@@ -1,7 +1,7 @@
 <RCC>
   <qresource prefix="Icon">
-    <file>Screenshot from 2024-05-31 11-31-46.png</file>
     <file>NFC-Card.png</file>
+    <file>check.png</file>
     <file>smile.png</file>
     <file>normal.png</file>
   </qresource>

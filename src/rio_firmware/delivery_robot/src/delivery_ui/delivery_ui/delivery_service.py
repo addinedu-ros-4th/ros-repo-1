@@ -53,12 +53,24 @@ class FacenameSubscriber(Node):
             self.names_callback, 
             10
         )
-        
+
         
     def names_callback(self, data):
         try:
             names = data.data.split(',')
             self.ui.name = names[0]
+            if self.ui.is_on_camera:
+                if names[0] == "joe":
+                    self.ui.faceLabel.setText(f"{names[0]}님 환영합니다!!")
+                    time.sleep(1)
+                    if self.ui.robot_task == "order":
+                        self.ui.set_order()
+                    elif self.ui.robot_task == "delivery":
+                        self.ui.notice_success_rfid()
+                        self.ui.servo.set_angle(90)
+                elif names[0] == "Unknown" or names[0] =="":
+                    self.ui.faceLabel.setText("얼굴 정면이 보이게 카메라를 바라봐주세요!!")
+                        
         except CvBridgeError as e:
             print(e)  
             
@@ -68,22 +80,29 @@ class OrderSubscriber(Node):
         self.ui = ui
         self.subscription = self.create_subscription(
             Int64MultiArray,
-            "/order",
+            "/robot_task",
             self.order_callback,
             10)
 
     def order_callback(self, msg):
         try:
+            if msg.data[1] == 1:
+                self.ui.robot_task == "delivery"
+            elif msg.data[1] == 2:
+                self.ui.robot_task == "order"
+            elif msg.data[1] == 3:
+                self.ui.robot_task == "sale"
+            else:
+                self.ui.robot_task == "ready"
             self.order_list = [0, 0, 0, 0]
-            self.order_list[0] = msg.data[0] # americano
-            self.order_list[1] = msg.data[1] # latte
-            self.order_list[2] = msg.data[2] # coke
-            self.order_list[3] = msg.data[3] # snack
+            self.order_list[0] = msg.data[2] # americano
+            self.order_list[1] = msg.data[3] # latte
+            self.order_list[2] = msg.data[4] # coke
+            self.order_list[3] = msg.data[5] # snack
             
 
             if self.ui.robot_task == "delivery":
                 self.ui.notice_success_rfid()
-                self.ui.label_11.show()
             elif self.ui.robot_task == "order":
                 self.make_order_list()
                 self.ui.is_on_camera = False
@@ -97,23 +116,23 @@ class OrderSubscriber(Node):
         for item_num, order in enumerate(self.order_list):
             if item_num == 0:
                 price = self.ui.ame_price
-                item = self.label_4.text()
+                item = self.ui.label_4.text()
             elif item_num == 1:
                 price = self.ui.lat_price
-                item = self.label_7.text()
+                item = self.ui.label_7.text()
             elif item_num == 2:
                 price = self.ui.coke_price
-                item = self.label_6.text()
+                item = self.ui.label_6.text()
             elif item_num == 3:
                 price = self.ui.snack_price
-                item = self.label_5.text()
+                item = self.ui.label_5.text()
                 
             i = 0
             if order != 0:
-                self.orderTable.insertRow(i)
-                self.orderTable.setItem(i, 0, QTableWidgetItem(item))
-                self.orderTable.setItem(i, 1, QTableWidgetItem(str(price)))
-                self.orderTable.setItem(i, 2, QTableWidgetItem(str(order)))
+                self.ui.orderTable.insertRow(i)
+                self.ui.orderTable.setItem(i, 0, QTableWidgetItem(item))
+                self.ui.orderTable.setItem(i, 1, QTableWidgetItem(str(price)))
+                self.ui.orderTable.setItem(i, 2, QTableWidgetItem(str(order)))
                 i += 1
                 total_price += price * order
                 
