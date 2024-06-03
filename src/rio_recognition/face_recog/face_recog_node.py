@@ -15,12 +15,12 @@ class ImageSubscriber(Node):
         self.facerecognition = FaceRecognition()
         self.image_sub = self.create_subscription(
             Image,
-            '/image_raw',
+            '/image_raw_1',
             self.image_callback,
             10
         )
 
-        self.face_names_pub = self.create_publisher(String, '/face_names', 10)
+        self.face_names_pub = self.create_publisher(String, '/face_names_1', 10)
         self.face_landmarks_pub = self.create_publisher(String, '/face_landmarks', 10)
 
         self.srv = self.create_service(SetBool, 'register_service', self.handle_register_service)

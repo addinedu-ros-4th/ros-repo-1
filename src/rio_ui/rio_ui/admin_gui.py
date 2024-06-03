@@ -42,7 +42,7 @@ class AdminGUI(QMainWindow, admin_ui):
         
         self.order = []
         self.node = rclpy.create_node("robot_task_node")
-        self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task", 10)
+        self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
 
         self.db_connector = DBConnector()
         # self.db_manager = db_manager
@@ -198,7 +198,7 @@ class AdminGUI(QMainWindow, admin_ui):
             msg = Int64MultiArray()
             msg.data = order
             self.task_publisher.publish(msg)
-            self.node.get_logger().info('Published message to /robot_task: %s' % order)
+            self.node.get_logger().info('Published message to /robot_task_1: %s' % order)
                 
     def closeEvent(self, event):
         self.timer.stop()

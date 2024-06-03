@@ -13,14 +13,14 @@ class RFIDSubscriber(Node):
         self.data = [0, 0, 0]
         self.subscription = self.create_subscription(
             Int64MultiArray,
-            "/rfid_info",
+            "/rfid_info_1",
             self.info_callback,
             10
         )
         
         self.publisher = self.create_publisher(
             Int64MultiArray,
-            "/rfid_renew",
+            "/rfid_renew_1",
             10
         )
         

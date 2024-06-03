@@ -149,7 +149,7 @@ class RFIDReaderNode(Node):
 
         self.reader = SimpleMFRC522()
         self.get_logger().info('RFID Reader Node has been started.')
-        self.publisher = self.create_publisher(Int64MultiArray, "/rfid_info", 10)
+        self.publisher = self.create_publisher(Int64MultiArray, "/rfid_info_1", 10)
         self.id = None
         self.is_on_rfid = False
         self.total_price = 0

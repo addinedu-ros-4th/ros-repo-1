@@ -277,7 +277,7 @@ class AmclSubscriber(Node):
         self.signals = signals
         self.subscription = self.create_subscription(
             PoseWithCovarianceStamped,
-            "/amcl_pose",
+            "/amcl_pose_1",
             self.map_callback,
             10)
         
@@ -293,7 +293,7 @@ class PathSubscriber(Node):
         self.signals = signals
         self.subscription = self.create_subscription(
             Path,
-            "/plan",
+            "/plan_1",
             self.path_callback,
             10
         )
@@ -319,7 +319,7 @@ class OrderSubscriber(Node):
         self.ui = ui
         self.order_subs = self.create_subscription(
             Int64MultiArray,
-            "/order_request",
+            "/order_request_1",
             self.order_callback,
             10
         )
@@ -359,7 +359,7 @@ class RequestSubscriber(Node):
         self.signals = signals
         self.subscription = self.create_subscription(
             Float64MultiArray,
-            "/task_request",
+            "/task_request_1",
             self.req_callback,
             10
         )
