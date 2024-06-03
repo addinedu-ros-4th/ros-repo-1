@@ -221,14 +221,14 @@ def main():
     amcl_subscriber = AmclSubscriber(signals)
     path_subscriber = PathSubscriber(signals)
     request_subscriber = RequestSubscriber(signals)
-    # user_service_server = UserService()
+    user_service_server = UserService()
     order_subscriber = OrderSubscriber(myWindow)
 
 
     executor.add_node(amcl_subscriber)
     executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
-    # executor.add_node(user_service_server)
+    executor.add_node(user_service_server)
     executor.add_node(order_subscriber)
 
     thread = threading.Thread(target=executor.spin)
