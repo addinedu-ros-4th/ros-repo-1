@@ -168,11 +168,9 @@ class RFIDReaderNode(Node):
             if not self.ui.is_tag:  
                 self.id = None  
                 self.ui.is_tag = True
-                print("333")
         
             if self.is_on_rfid:
                 id, current_credit = self.reader.read()
-                print("11111")
                 self.get_logger().info(f"RFID ID: {id}, Text: {current_credit}")
                 cleaned_string = current_credit.replace('\0', '')
                 
@@ -182,7 +180,6 @@ class RFIDReaderNode(Node):
                     current_credit = int(current_credit)
                 
                 if id != self.id:
-                    print("22222")
                     msg = Int64MultiArray()
                     msg.data = [int(id), self.total_price, current_credit]
                     self.publisher.publish(msg)

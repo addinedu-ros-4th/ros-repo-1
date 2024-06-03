@@ -223,7 +223,6 @@ class OrderGUI(QDialog, order_ui):
         self.accept()
     
     def closeEvent(self, event):
-        rclpy.shutdown()
         event.accept()
 
 
