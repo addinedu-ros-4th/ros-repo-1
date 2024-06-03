@@ -45,14 +45,14 @@ class GuideGUI(QMainWindow, guide_ui):
         self.current_mode = "main"
         self.pixmap = QPixmap()
 
-        # self.pushNormal.show()
+        self.pushNormal.show()
         self.setmain()
         self.pushRegister.setEnabled(True)
         # self.pushVisitor.setEnabled(False)
         self.pushQR.setEnabled(True)
         self.pushCommute.setEnabled(True)
 
-        # self.pushNormal.clicked.connect(self.setmain)
+        self.pushNormal.clicked.connect(self.setmain)
         self.pushRegister.clicked.connect(self.register)
         self.pushRetake.clicked.connect(self.retake)
         self.pushRegister2.clicked.connect(self.registerinfo)
@@ -82,21 +82,23 @@ class GuideGUI(QMainWindow, guide_ui):
     def setmain(self):
         self.current_mode = "main"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        # self.pushNormal.hide()
+        self.pushNormal.hide()
         self.mainGroup.show()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
+        self.QRGroup.hide()
         # self.timer.stop()
 
     def register(self):
         self.current_mode = "register"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        # self.pushNormal.hide()
+        self.pushNormal.hide()
         self.mainGroup.hide()
         self.registerGroup.show()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
+        self.QRGroup.hide()
         self.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
 
         # self.guide_service.send_service_request()
@@ -116,17 +118,18 @@ class GuideGUI(QMainWindow, guide_ui):
     def qrcheck(self):
         self.current_mode = "qrcheck"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        # self.pushNormal.hide()
+        self.pushNormal.hide()
         self.mainGroup.hide()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()    
+        self.QRGroup.show()
         self.qr_label.setText("카메라 중앙에 qr을 위치시켜 주세요.")
         self.cameraStart()
 
     def read_qr(self):
         # last_message_time = time.time()
-        message_interval = 3  # 메시지 출력 간격 (초)
+        message_interval = 5  # 메시지 출력 간격 (초)
 
         ret, frame = self.video.read()
 
@@ -155,7 +158,7 @@ class GuideGUI(QMainWindow, guide_ui):
     def face_registration(self, landmark_checked):
         if landmark_checked:
             self.label.setText("얼굴 등록이 완료되었습니다")
-            print("All required landmarks are available!")
+            print("All required landself.QRGroup.hide()marks are available!")
             saved_face = self.frame.pixmap()
             self.info_registration(saved_face)
         else:
@@ -163,11 +166,12 @@ class GuideGUI(QMainWindow, guide_ui):
             print("Not all required landmarks are available!")
 
     def info_registration(self, saved_face):
-        # self.pushNormal.hide()
+        self.pushNormal.hide()
         self.mainGroup.hide()
         self.registerGroup.hide()
         self.registerGroup2.show()
         self.cameraGroup.hide()
+        self.QRGroup.hide()
         # self.timer.stop()
         scaled_pixmap = saved_face.scaled(self.frame3.size(), QtCore.Qt.KeepAspectRatio)
         self.frame3.setPixmap(scaled_pixmap)
@@ -207,11 +211,12 @@ class GuideGUI(QMainWindow, guide_ui):
     def setcamera(self):
         self.current_mode = "commute"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        # self.pushNormal.hide()
+        self.pushNormal.hide()
         self.mainGroup.hide()
         self.registerGroup.hide()
         self.QRGroup.hide()
         self.cameraGroup.show()
+        self.QRGroup.hide()
         # self.timer.stop()
 
     # @pyqtSlot(np.ndarray, list, bool)
