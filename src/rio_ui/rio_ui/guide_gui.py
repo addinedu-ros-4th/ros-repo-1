@@ -46,12 +46,9 @@ class GuideGUI(QMainWindow, guide_ui):
         self.pixmap = QPixmap()
 
         self.pushNormal.show()
-        self.mainGroup.hide()
-        self.registerGroup.hide()
-        self.registerGroup2.hide()
-        self.cameraGroup.hide()
+        self.setmain()
         self.pushRegister.setEnabled(True)
-        self.pushVisitor.setEnabled(False)
+        # self.pushVisitor.setEnabled(False)
         self.pushQR.setEnabled(True)
         self.pushCommute.setEnabled(True)
 
@@ -90,6 +87,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
+        self.QRGroup.hide()
         # self.timer.stop()
 
     def register(self):
@@ -100,6 +98,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.show()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
+        self.QRGroup.hide()
         self.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
 
         # self.guide_service.send_service_request()
@@ -124,12 +123,13 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()    
+        self.QRGroup.show()
         self.qr_label.setText("카메라 중앙에 qr을 위치시켜 주세요.")
         self.cameraStart()
 
     def read_qr(self):
         # last_message_time = time.time()
-        message_interval = 3  # 메시지 출력 간격 (초)
+        message_interval = 5  # 메시지 출력 간격 (초)
 
         ret, frame = self.video.read()
 
@@ -158,7 +158,7 @@ class GuideGUI(QMainWindow, guide_ui):
     def face_registration(self, landmark_checked):
         if landmark_checked:
             self.label.setText("얼굴 등록이 완료되었습니다")
-            print("All required landmarks are available!")
+            print("All required landself.QRGroup.hide()marks are available!")
             saved_face = self.frame.pixmap()
             self.info_registration(saved_face)
         else:
@@ -171,6 +171,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.hide()
         self.registerGroup2.show()
         self.cameraGroup.hide()
+        self.QRGroup.hide()
         # self.timer.stop()
         scaled_pixmap = saved_face.scaled(self.frame3.size(), QtCore.Qt.KeepAspectRatio)
         self.frame3.setPixmap(scaled_pixmap)
@@ -215,6 +216,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.hide()
         self.QRGroup.hide()
         self.cameraGroup.show()
+        self.QRGroup.hide()
         # self.timer.stop()
 
     # @pyqtSlot(np.ndarray, list, bool)

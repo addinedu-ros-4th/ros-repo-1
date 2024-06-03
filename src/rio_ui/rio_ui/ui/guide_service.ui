@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2329</width>
-    <height>999</height>
+    <width>1023</width>
+    <height>599</height>
    </rect>
   </property>
   <property name="font">
@@ -18,67 +18,25 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QPushButton" name="pushNormal">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>640</y>
-     <width>1121</width>
-     <height>681</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">image: url(:/Icon/normal.png);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="default">
-    <bool>false</bool>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="mainGroup">
    <property name="geometry">
     <rect>
-     <x>220</x>
-     <y>70</y>
-     <width>681</width>
-     <height>531</height>
+     <x>0</x>
+     <y>0</y>
+     <width>1022</width>
+     <height>598</height>
     </rect>
    </property>
    <property name="title">
     <string/>
    </property>
-   <widget class="QPushButton" name="pushVisitor">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>70</y>
-      <width>201</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 100px; background-color : white; border : 2px solid black; color : black;}
-QWidget:hover{background-color : rgb(200, 200, 200);}
-QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
-    </property>
-    <property name="text">
-     <string>방문객 정보 등록</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushRegister">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>70</y>
-      <width>201</width>
-      <height>201</height>
+      <x>30</x>
+      <y>130</y>
+      <width>300</width>
+      <height>300</height>
      </rect>
     </property>
     <property name="font">
@@ -87,7 +45,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 100px; background-color : white; border : 2px solid black; color : black;}
+     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
 QWidget:hover{background-color : rgb(200, 200, 200);}
 QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
@@ -95,36 +53,13 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      <string>사용자 등록</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushQR">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>300</y>
-      <width>201</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 100px; background-color : white; border : 2px solid black; color : black;}
-QWidget:hover{background-color : rgb(200, 200, 200);}
-QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
-    </property>
-    <property name="text">
-     <string>QR 체크인</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushCommute">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>300</y>
-      <width>201</width>
-      <height>201</height>
+      <x>360</x>
+      <y>130</y>
+      <width>300</width>
+      <height>300</height>
      </rect>
     </property>
     <property name="font">
@@ -133,7 +68,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 100px; background-color : white; border : 2px solid black; color : black;}
+     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
 QWidget:hover{background-color : rgb(200, 200, 200);}
 QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
@@ -141,26 +76,68 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      <string>출 / 퇴근 서비스</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushNormal">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>20</y>
+      <width>241</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">image: url(:/Icon/normal.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushQR">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>130</y>
+      <width>300</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
+QWidget:hover{background-color : rgb(200, 200, 200);}
+QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
+    </property>
+    <property name="text">
+     <string>QR 체크인</string>
+    </property>
+   </widget>
   </widget>
-  <widget class="QGroupBox" name="cameraGroup">
+  <widget class="QGroupBox" name="QRGroup">
    <property name="geometry">
     <rect>
-     <x>220</x>
-     <y>70</y>
-     <width>681</width>
-     <height>531</height>
+     <x>0</x>
+     <y>0</y>
+     <width>1022</width>
+     <height>598</height>
     </rect>
    </property>
    <property name="title">
     <string/>
    </property>
-   <widget class="QLabel" name="frame2">
+   <widget class="QLabel" name="QRframe">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>40</y>
-      <width>601</width>
-      <height>461</height>
+      <x>190</x>
+      <y>90</y>
+      <width>640</width>
+      <height>480</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -170,71 +147,47 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      <string/>
     </property>
    </widget>
-  </widget>
-  <widget class="QGroupBox" name="registerGroup">
-   <property name="geometry">
-    <rect>
-     <x>220</x>
-     <y>70</y>
-     <width>681</width>
-     <height>531</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string/>
-   </property>
-   <widget class="QLabel" name="frame">
+   <widget class="QPushButton" name="pushBack_2">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>140</y>
-      <width>491</width>
-      <height>361</height>
+      <x>860</x>
+      <y>450</y>
+      <width>141</width>
+      <height>121</height>
      </rect>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
     <property name="text">
-     <string/>
+     <string>돌아가기</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="qr_label">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>50</y>
-      <width>431</width>
+      <x>250</x>
+      <y>30</y>
+      <width>521</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>14</pointsize>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">
      <string/>
     </property>
-   </widget>
-   <widget class="QPushButton" name="pushBack">
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>50</y>
-      <width>141</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>이전화면</string>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QGroupBox" name="registerGroup2">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
+      <x>-680</x>
+      <y>50</y>
       <width>681</width>
       <height>531</height>
      </rect>
@@ -390,25 +343,25 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </widget>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="QRGroup">
+  <widget class="QGroupBox" name="cameraGroup">
    <property name="geometry">
     <rect>
-     <x>1150</x>
-     <y>70</y>
-     <width>681</width>
-     <height>531</height>
+     <x>0</x>
+     <y>0</y>
+     <width>1022</width>
+     <height>598</height>
     </rect>
    </property>
    <property name="title">
     <string/>
    </property>
-   <widget class="QLabel" name="QRframe">
+   <widget class="QLabel" name="frame2">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>140</y>
-      <width>491</width>
-      <height>361</height>
+      <x>190</x>
+      <y>90</y>
+      <width>640</width>
+      <height>480</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -418,41 +371,69 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      <string/>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushBack_2">
+  </widget>
+  <widget class="QGroupBox" name="registerGroup">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1022</width>
+     <height>598</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="frame">
     <property name="geometry">
      <rect>
-      <x>510</x>
-      <y>50</y>
-      <width>141</width>
-      <height>41</height>
+      <x>190</x>
+      <y>90</y>
+      <width>640</width>
+      <height>480</height>
      </rect>
     </property>
-    <property name="text">
-     <string>이전화면</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="qr_label">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>100</y>
-      <width>371</width>
-      <height>31</height>
-     </rect>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
     </property>
     <property name="text">
      <string/>
     </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>30</y>
+      <width>521</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushBack">
+    <property name="geometry">
+     <rect>
+      <x>860</x>
+      <y>450</y>
+      <width>141</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>돌아가기</string>
     </property>
    </widget>
   </widget>
-  <zorder>mainGroup</zorder>
-  <zorder>cameraGroup</zorder>
-  <zorder>registerGroup</zorder>
-  <zorder>pushNormal</zorder>
-  <zorder>QRGroup</zorder>
  </widget>
  <resources/>
  <connections/>
