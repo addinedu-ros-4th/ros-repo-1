@@ -223,6 +223,7 @@ def main():
     request_subscriber = RequestSubscriber(signals)
     user_service_server = UserService()
     order_subscriber = OrderSubscriber(myWindow)
+    qr_check_server = QRCheckServer()
 
 
     executor.add_node(amcl_subscriber)
@@ -230,6 +231,7 @@ def main():
     executor.add_node(request_subscriber)
     executor.add_node(user_service_server)
     executor.add_node(order_subscriber)
+    executor.add_node(qr_check_server)
 
     thread = threading.Thread(target=executor.spin)
     thread.start()

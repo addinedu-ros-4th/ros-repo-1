@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray, Int64MultiArray
@@ -8,12 +9,10 @@ from ament_index_python.packages import get_package_share_directory
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtWidgets import QTableWidgetItem
 
-
 import math
-
 import os
 import json
-import base64 
+import hashlib
 import socket
 import qrcode
 import netifaces
@@ -21,12 +20,9 @@ import threading
 import http.server
 import socketserver
 from datetime import datetime
-from pyzbar.pyzbar import decode
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
 
 from rio_ui_msgs.srv import VisitInfo
-from rio_ui.key_save_load import KeySaveLoad
+from rio_ui_msgs.srv import QRCheck
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
 
@@ -36,7 +32,6 @@ class UserService(Node):
     def __init__(self):
         super().__init__('admin_service')
         self.srv = self.create_service(VisitInfo, 'generate_qr', self.generate_qr_callback)      
-        self.cryptor = InfoCryptor()
         self.qr_code_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../src/rio_ui/rio_ui/data/'))
         os.makedirs(self.qr_code_dir, exist_ok=True)
 
@@ -61,8 +56,8 @@ class UserService(Node):
             if not visit_info:
                 raise ValueError("Empty visitor_info received")
             print(visit_info)
-
-            encrypted_info = self.cryptor.encrypt_data(visit_info) # visit_info를 암호화
+            data_to_hash = f"{visit_info['name']}{visit_info['phone_number']}{visit_info['visit_datetime']}"
+            hashed_data = self.hash_data(data_to_hash)
 
             qr = qrcode.QRCode(
                 version=1,
@@ -70,18 +65,14 @@ class UserService(Node):
                 box_size=10,
                 border=4,
             )
-            qr.add_data(encrypted_info)
+
+            qr.add_data(hashed_data)
             qr.make(fit=True)
             qr_img = qr.make_image(fill='black', back_color='white')
 
             name = visit_info['name']
             qr_code_path = os.path.join(self.qr_code_dir, f"{name}_qr_code.png")
             qr_img.save(qr_code_path)
-
-            visit_info['status'] = "not visited"
-            visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            self.db_connector.db_manager.create("VisitorInfo", visit_info)
-            print(f"QR code saved at: {qr_code_path}")
 
             phone_number = '+82' + visit_info['phone_number'][1:]
             port = self.find_free_port()
@@ -92,13 +83,18 @@ class UserService(Node):
             server.start()
             self.get_logger().info(f"Server started at {qr_url} with QR {qr_code_path}")
 
-            response.success = True
-            response.message = f"QR code generated and server started at port {port}"
-            response.qr_code_path = qr_code_path
-
             # sms service를 사용하려면 send_sms함수를 주석 해제
             self.send_sms(name, phone_number, qr_url)
             print(response)
+
+            visit_info['status'] = "not visited"
+            visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            visit_info['hashed_data'] = hashed_data
+            self.db_connector.db_manager.create("VisitorInfo", visit_info)
+            
+            response.success = True
+            response.message = f"QR code generated and server started at port {port}"
+            response.qr_code_path = qr_code_path
 
         except json.JSONDecodeError:
             print("Failed to decode JSON from visitor info")
@@ -134,7 +130,13 @@ class UserService(Node):
         )
 
         return print("Send QR message to visitor")
-    
+
+    def hash_data(self, data):
+        sha256 = hashlib.sha256()
+        sha256.update(data.encode('utf-8'))
+        
+        return sha256.hexdigest()
+
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, qr_path, *args, **kwargs):
@@ -212,57 +214,6 @@ class ThreadedHTTPServer(object):
     def shutdown(self):
         self.server.shutdown()
         self.server.server_close()   
-    
-# 데이터 암호화 및 복호화
-class InfoCryptor():
-    def __init__(self):
-        key_save_load = KeySaveLoad()
-        self.public_key = key_save_load.load_public_key() # 암호화 키
-        self.private_key = key_save_load.load_private_key() # 복호화 키
-
-    def encrypt_data(self, data):
-        if isinstance(data, dict):
-            data = json.dumps(data)
-
-        encrypted_data = self.public_key.encrypt(
-            data.encode('utf-8'),
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-        encrypted_data = base64.b64encode(encrypted_data).decode('utf-8')
-
-        return encrypted_data
-    
-    def decrypt_data(self, encrypted_data):
-        encrypted_data = base64.b64decode(encrypted_data.encode('utf-8'))
-        decrypted_data = self.private_key.decrypt(
-            encrypted_data,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-        decrypted_data = json.loads(decrypted_data.decode('utf-8'))
-
-        return decrypted_data
-
-    def decrypt_config(self, encrypted_file):
-        with open(encrypted_file, 'r') as file:
-            encrypted_data = file.read()
-        decrypted_data = self.decrypt_data(encrypted_data)
-        
-        return decrypted_data
-
-    def encrypt_config(self, config_file, output_file):
-        with open(config_file, 'r') as file:
-            config_data = json.load(file)
-        encrypted_data = self.encrypt_data(config_data, self.public_key)
-        with open(output_file, 'w') as file:
-            file.write(encrypted_data)
 
 
 class ROSNodeSignals(QObject):
@@ -351,7 +302,6 @@ class OrderSubscriber(Node):
         self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
         self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(order_str))
         
-        
 
 class RequestSubscriber(Node):
     def __init__(self, signals):
@@ -368,6 +318,21 @@ class RequestSubscriber(Node):
         data = msg.data
         if len(data) == 3:
             self.signals.task_request_received.emit(data[0], data[1], data[2])
+
+
+class QRCheckServer(Node):
+    def __init__(self):
+        super().__init__('qr_check_server')
+        self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
+        # self.signals = signals
+    def qr_code_callback(self, request, response):
+        hashed_data = request.hashed_data
+        # self.get_logger().info(f'Received QR Code: {hashed_data}') 
+        if hashed_data:
+            response.success = True
+            response.message = hashed_data
+            self.get_logger().info(f'Received QR Code: {hashed_data}') 
+            # return response
 
 
 class DBConnector: # 싱글톤 패턴으로 구현
@@ -406,8 +371,20 @@ class DBConnector: # 싱글톤 패턴으로 구현
 def main(args=None):
     rclpy.init(args=args)
     admin_service = UserService()
-    rclpy.spin(admin_service)
-    rclpy.shutdown()
+    qr_service = QRCheckServer()
+    executor = MultiThreadedExecutor()
+    executor.add_node(admin_service)
+    executor.add_node(qr_service)
+
+    try:
+        thread = threading.Thread(target=executor.spin)
+        thread.start()
+        # executor.spin()
+    finally:
+        thread.shutdown()
+        qr_service.destroy_node()
+        admin_service.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

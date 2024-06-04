@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 import os
 import sys
 import time
+import numpy as np
 
 from pyzbar.pyzbar import decode
 from threading import Thread
@@ -36,7 +37,6 @@ guide_ui = uic.loadUiType(ui_file)[0]
 
 
 class GuideGUI(QMainWindow, guide_ui):
-
     def __init__(self):    
         super().__init__()
         self.setupUi(self)
@@ -59,20 +59,22 @@ class GuideGUI(QMainWindow, guide_ui):
         self.pushQR.clicked.connect(self.qrcheck)
         self.pushCommute.clicked.connect(self.setcamera)
         self.pushBack.clicked.connect(self.setmain)
-        self.pushBack_2.clicked.connect(self.setmain)
+        self.pushBack_2.clicked.connect(self.setmain2)
 
         self.birthEdit.setCalendarPopup(True)
         self.birthEdit.setDateTime(QtCore.QDateTime.currentDateTime())
 
-        self.camera = Camera(self)
-        self.camera.daemon = True
-        self.camera.update.connect(self.read_qr)
+        self.decode_thread = QRDecodeThread()
+        self.camera = Camera()
+        self.camera.update_image_signal.connect(self.update_qr_image)
+        self.camera.frame_captured_signal.connect(self.decode_thread.decode)
+        self.decode_thread.decoded_data_signal.connect(self.handle_decoded_data)
 
-        # self.guide_service = GuideService()
+        # self.register_service = RegisterService()
 
         # self.timer = QTimer(self)
-        # self.timer.timeout.connect(self.guide_service.send_service_request)
-
+        # self.timer.timeout.connect(self.register_service.send_service_request)
+        
         self.signals = ROSGuideNodeSignals()
         self.signals.update_image_signal.connect(self.update_image)
         self.signals.face_registration.connect(self.face_registration)
@@ -90,6 +92,19 @@ class GuideGUI(QMainWindow, guide_ui):
         self.QRGroup.hide()
         # self.timer.stop()
 
+    def setmain2(self):
+        self.current_mode = "main"
+        # self.signals.update_mode_signal.emit(self.current_mode)
+        self.pushNormal.hide()
+        self.mainGroup.show()
+        self.registerGroup.hide()
+        self.registerGroup2.hide()
+        self.cameraGroup.hide()
+        self.QRGroup.hide()
+        self.camera.stop()
+        self.decode_thread.stop()
+        # self.timer.stop()        
+
     def register(self):
         self.current_mode = "register"
         # self.signals.update_mode_signal.emit(self.current_mode)
@@ -104,17 +119,6 @@ class GuideGUI(QMainWindow, guide_ui):
         # self.guide_service.send_service_request()
         # self.timer.start(2000)
 
-    def cameraStart(self):
-        self.camera.running = True
-        self.camera.start()
-        self.video = cv2.VideoCapture(0)
-        self.last_message_time = time.time()
-
-    def cameraStop(self):
-        self.camera.running = False
-        self.video.release()
-
-
     def qrcheck(self):
         self.current_mode = "qrcheck"
         # self.signals.update_mode_signal.emit(self.current_mode)
@@ -125,34 +129,9 @@ class GuideGUI(QMainWindow, guide_ui):
         self.cameraGroup.hide()    
         self.QRGroup.show()
         self.qr_label.setText("카메라 중앙에 qr을 위치시켜 주세요.")
-        self.cameraStart()
-
-    def read_qr(self):
-        # last_message_time = time.time()
-        message_interval = 5  # 메시지 출력 간격 (초)
-
-        ret, frame = self.video.read()
-
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            h, w, c = frame.shape
-            qimage = QImage(frame.data, w, h, w*c, QImage.Format_RGB888)
-            pixmap = qimage.scaled(self.QRframe.width(), self.QRframe.height(), Qt.KeepAspectRatio)
-            
-            self.QRframe.setPixmap(QPixmap.fromImage(pixmap))
-            qr_codes = decode(frame)
-            if qr_codes:
-                for qr_code in qr_codes:
-                    qr_data = qr_code.data.decode('utf-8')
-                    print("QR Code detected", qr_data)
-                    self.qr_label.setText("checked!")
-
-            else:
-                if time.time() - self.last_message_time >= message_interval:
-                    self.qr_label.setText("QR 코드를 찾을 수 없습니다. 다시 시도 중...")
-                    self.last_message_time = time.time()  
-
+        self.qr_client = QRCheckClient()
+        self.camera.start()
+        self.decode_thread.start()
 
     # @pyqtSlot(QPixmap)
     def face_registration(self, landmark_checked):
@@ -243,22 +222,84 @@ class GuideGUI(QMainWindow, guide_ui):
             cv2.putText(cv_img, name, (10, 30 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         return cv_img
     
-class Camera(QThread):
-    update = pyqtSignal()
+    @pyqtSlot(QImage)
+    def update_qr_image(self, image):
+        self.QRframe.setPixmap(QPixmap.fromImage(image)) 
 
-    def __init__(self, sec=0):
+    @pyqtSlot(str)
+    def handle_decoded_data(self, decoded_data):
+        print(f"Decoded Data: {decoded_data}")
+        self.qr_client.send_request(decoded_data)
+        self.qr_client.destroy_node()
+        rp.shutdown()
+        self.qr_client = None
+
+    def closeEvent(self, event):
+        self.camera.stop()
+        self.decode_thread.stop()
+        if self.qr_client:
+            self.qr_client.destroy_node()
+            rp.shutdown()
+        self.camera.wait()
+        self.decode_thread.wait()
+        event.accept()        
+    
+class Camera(QThread):
+    frame_captured_signal = pyqtSignal(np.ndarray)
+    update_image_signal = pyqtSignal(QImage)
+
+    def __init__(self):
         super().__init__()
-        self.running = True
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened():
+            print("Error: Could not open camera.")
+            self.running = False
+        else:
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            self.running = True        
     
     def run(self):
-        # self.last_message_time = time.time()
-        # message_interval = 3  # 메시지 출력 간격 (초)
-        while self.running == True:
-            self.update.emit()
-            time.sleep(0.1)
+        while self.running:
+            self.cap.grab()
+            ret, frame = self.cap.read()
+            if ret:
+                self.frame_captured_signal.emit(frame) 
+                rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = rgb_image.shape
+                bytes_per_line = ch * w
+                convert_to_qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                p = convert_to_qt_format.scaled(w, h , aspectRatioMode=1)
+                self.update_image_signal.emit(p)
+            time.sleep(0.05)
+    
+    def stop(self):
+        self.running = False
+        self.cap.release()
+        self.quit()
+
+class QRDecodeThread(QThread):
+    decoded_data_signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.running = False
+        # self.processed_data = set()
+
+    def run(self):
+        self.running = True
+        while self.running:
+            time.sleep(0.01)
+
+    def decode(self, frame):
+        decoded_objects = decode(frame)
+        for obj in decoded_objects:
+            decoded_data = obj.data.decode("utf-8")
+            self.decoded_data_signal.emit(decoded_data)
 
     def stop(self):
         self.running = False
+        self.quit()
+        self.wait()
 
 def main():
     rp.init()
