@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray, Int64MultiArray
@@ -7,7 +8,6 @@ from example_interfaces.msg import Float64MultiArray, Int64MultiArray
 from ament_index_python.packages import get_package_share_directory
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtWidgets import QTableWidgetItem
-
 
 import math
 import os
@@ -22,6 +22,7 @@ import socketserver
 from datetime import datetime
 
 from rio_ui_msgs.srv import VisitInfo
+from rio_ui_msgs.srv import QRCheck
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
 
@@ -301,7 +302,6 @@ class OrderSubscriber(Node):
         self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
         self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(order_str))
         
-        
 
 class RequestSubscriber(Node):
     def __init__(self, signals):
@@ -318,6 +318,21 @@ class RequestSubscriber(Node):
         data = msg.data
         if len(data) == 3:
             self.signals.task_request_received.emit(data[0], data[1], data[2])
+
+
+class QRCheckServer(Node):
+    def __init__(self):
+        super().__init__('qr_check_server')
+        self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
+        # self.signals = signals
+    def qr_code_callback(self, request, response):
+        hashed_data = request.hashed_data
+        # self.get_logger().info(f'Received QR Code: {hashed_data}') 
+        if hashed_data:
+            response.success = True
+            response.message = hashed_data
+            self.get_logger().info(f'Received QR Code: {hashed_data}') 
+            # return response
 
 
 class DBConnector: # 싱글톤 패턴으로 구현
@@ -356,8 +371,20 @@ class DBConnector: # 싱글톤 패턴으로 구현
 def main(args=None):
     rclpy.init(args=args)
     admin_service = UserService()
-    rclpy.spin(admin_service)
-    rclpy.shutdown()
+    qr_service = QRCheckServer()
+    executor = MultiThreadedExecutor()
+    executor.add_node(admin_service)
+    executor.add_node(qr_service)
+
+    try:
+        thread = threading.Thread(target=executor.spin)
+        thread.start()
+        # executor.spin()
+    finally:
+        thread.shutdown()
+        qr_service.destroy_node()
+        admin_service.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
