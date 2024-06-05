@@ -7,7 +7,7 @@ import rclpy
 
 from example_interfaces.msg import Float64MultiArray, Int64MultiArray
 from rio_ui.admin_service import *
-from rio_ui_msgs.srv import VisitInfo
+from rio_ui_msgs.srv import GenerateVisitQR
 
 
 import sys
@@ -30,7 +30,8 @@ class UserGUI(QMainWindow, user_ui):
         self.setupUi(self)
         
         # ROS 2 노드 초기화
-        rclpy.init(args=None)
+        if not rclpy.ok():
+            rclpy.init(args=None)
         self.node = rclpy.create_node("task_node")
         self.publisher = self.node.create_publisher(Float64MultiArray, "task_request", 10)
         
@@ -206,7 +207,7 @@ class OrderGUI(QDialog, order_ui):
         order.extend(order_list)
         msg = Int64MultiArray()
         msg.data = order
-        self. order_publisher.publish(msg)
+        self.order_publisher.publish(msg)
         
         self.remove_list()
         
@@ -228,16 +229,18 @@ class OrderGUI(QDialog, order_ui):
 class SubGUI(QDialog, sub_ui):
     def __init__(self):
         super().__init__()
-        self.setupUi(self)          
+        self.setupUi(self)     
+
         self.node = rclpy.create_node('subgui_node')
-        self.cli = self.node.create_client(VisitInfo, 'generate_qr')  
+        self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr')  
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')              
-        self.request = VisitInfo.Request()
+        self.request = GenerateVisitQR.Request()
         # self.visitor_service = VisitInfoClient()
 
         self.submit_bt.setDefault(True)
-        self.submit_bt.clicked.connect(self.handle_submit) 
+        self.submit_bt.clicked.connect(self.handle_submit)
+        self.cancel_bt.clicked.connect(self.close_dialog)
 
     def handle_submit(self):
         button_click_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -269,13 +272,23 @@ class SubGUI(QDialog, sub_ui):
         try:
             response = future.result()
             self.node.get_logger().info(f"Response: success={response.success}, message={response.message}")
+            self.anounce_sms_success(response.success, response.message)
+
         except Exception as e:
             self.node.get_logger().error(f'Service call failed: {e}')
         return response
     
+    def anounce_sms_success(self, success, message):
+        if success == True:
+            QMessageBox.information(self, "발송 완료",message)
+        else:
+            QMessageBox.warning(self, "발송 오류", message)
+    
+    def close_dialog(self):
+        self.close()
+
     def closeEvent(self, event):
         self.node.destroy_node()
-        rclpy.shutdown()
         event.accept()
 
 def main():

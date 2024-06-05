@@ -14,8 +14,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/VisitInfo.srv"
+  "srv/GenerateVisitQR.srv"
   "srv/QRCheck.srv"
+  "srv/VisitorAlert.srv"
 )
 
 if(BUILD_TESTING)
