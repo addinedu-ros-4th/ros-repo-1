@@ -64,7 +64,6 @@ class UserGUI(QMainWindow, user_ui):
 class OrderGUI(QDialog, order_ui):
     def __init__(self):
         super().__init__()
-        
         self.setupUi(self)
         
         self.office_num = 309
@@ -230,22 +229,20 @@ class OrderGUI(QDialog, order_ui):
 class SubGUI(QDialog, sub_ui):
     def __init__(self):
         super().__init__()
-        
-        self.setupUi(self)
-
-        rclpy.node.Node
+        self.setupUi(self)          
         self.node = rclpy.create_node('subgui_node')
         self.cli = self.node.create_client(VisitInfo, 'generate_qr')  
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')              
-        
+        self.request = VisitInfo.Request()
+        # self.visitor_service = VisitInfoClient()
+
         self.submit_bt.setDefault(True)
-        self.submit_bt.clicked.connect(self.handle_submit)  
+        self.submit_bt.clicked.connect(self.handle_submit) 
 
     def handle_submit(self):
         button_click_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        date = self.info_6.date().toString('yyyy-MM-dd')
-        
+        date = self.info_6.date().toString('yyyy-MM-dd') 
         time = self.info_7.time().toString('hh:mm:ss')
         visit_datetime = date + " " + time
         visit_info = {
@@ -263,25 +260,24 @@ class SubGUI(QDialog, sub_ui):
         self.request_qr(visit_info)
 
     def request_qr(self, visit_info):
-        request = VisitInfo.Request()
-        request.visitor_info = json.dumps(visit_info)
-        future = self.cli.call_async(request)
-        # rclpy.spin_until_future_complete(self, future)
-        response = future.result()
-        self.node.get_logger().info(response)
-
+        self.request.visitor_info = json.dumps(visit_info)
+        future = self.cli.call_async(self.request)   
+        rclpy.spin_once(self.node, timeout_sec=None)
+        self.handle_response(future)
         # future.add_done_callback(self.handle_response)
-        # print("1")
 
     def handle_response(self, future):
         try:
             response = future.result()
-            print("2")
-            print(f"Response: success={response.success}, message={response.message}")
+            self.node.get_logger().info(f"Response: success={response.success}, message={response.message}")
         except Exception as e:
-            print("fail: {e}")
-
-
+            self.node.get_logger().error(f'Service call failed: {e}')
+        return response
+    
+    def closeEvent(self, event):
+        self.node.destroy_node()
+        rclpy.shutdown()
+        event.accept()
 
 def main():
     app = QApplication(sys.argv)

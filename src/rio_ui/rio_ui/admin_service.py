@@ -51,59 +51,65 @@ class UserService(Node):
             return s.getsockname()[1]
 
     def generate_qr_callback(self, request, response):
-        try:
-            visit_info = json.loads(request.visitor_info)
-            if not visit_info:
-                raise ValueError("Empty visitor_info received")
-            print(visit_info)
-            data_to_hash = f"{visit_info['name']}{visit_info['phone_number']}{visit_info['visit_datetime']}"
-            hashed_data = self.hash_data(data_to_hash)
+        visitor_info = request.visitor_info
+        if visitor_info:
+            try:
+                visit_info = json.loads(visitor_info)
+                print(visit_info)
+                data_to_hash = f"{visit_info['name']}{visit_info['phone_number']}{visit_info['visit_datetime']}"
+                hashed_data = self.hash_data(data_to_hash)
 
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_M,
-                box_size=10,
-                border=4,
-            )
+                qr = qrcode.QRCode(
+                    version=1,
+                    error_correction=qrcode.constants.ERROR_CORRECT_M,
+                    box_size=10,
+                    border=4,
+                )
 
-            qr.add_data(hashed_data)
-            qr.make(fit=True)
-            qr_img = qr.make_image(fill='black', back_color='white')
+                qr.add_data(hashed_data)
+                qr.make(fit=True)
+                qr_img = qr.make_image(fill='black', back_color='white')
 
-            name = visit_info['name']
-            qr_code_path = os.path.join(self.qr_code_dir, f"{name}_qr_code.png")
-            qr_img.save(qr_code_path)
+                name = visit_info['name']
+                qr_code_path = os.path.join(self.qr_code_dir, f"{name}_qr_code.png")
+                qr_img.save(qr_code_path)
 
-            phone_number = '+82' + visit_info['phone_number'][1:]
-            port = self.find_free_port()
-            ip_address = self.get_ip_address()
-            qr_url = f'http://{ip_address}:{port}'
+                phone_number = '+82' + visit_info['phone_number'][1:]
+                port = self.find_free_port()
+                ip_address = self.get_ip_address()
+                qr_url = f'http://{ip_address}:{port}'
 
-            server = ThreadedHTTPServer(ip_address, port, qr_code_path)
-            server.start()
-            self.get_logger().info(f"Server started at {qr_url} with QR {qr_code_path}")
+                server = ThreadedHTTPServer(ip_address, port, qr_code_path)
+                server.start()
+                self.get_logger().info(f"Server started at {qr_url} with QR {qr_code_path}")
 
-            # sms service를 사용하려면 send_sms함수를 주석 해제
-            self.send_sms(name, phone_number, qr_url)
-            # print(response)
+                # sms service를 사용하려면 send_sms함수를 주석 해제
+                self.send_sms(name, phone_number, qr_url)
+                # print(response)
 
-            visit_info['status'] = "not visited"
-            visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            visit_info['hashed_data'] = hashed_data
-            self.db_connector.db_manager.create("VisitorInfo", visit_info)
-            
-            response.success = True
-            response.message = f"QR code generated and server started at port {port}"
-            response.qr_code_path = qr_code_path
+                visit_info['status'] = "not visited"
+                visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                visit_info['hashed_data'] = hashed_data
+                self.db_connector.db_manager.create("VisitorInfo", visit_info)
+                
+                response.success = True
+                response.message = f"QR code generated and server started at port {port}"
+                response.qr_code_path = qr_code_path
+                print("1")
 
-        except json.JSONDecodeError:
-            print("Failed to decode JSON from visitor info")
-            response.success = False
-            response.message = "Failed to decode JSON"
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            response.success = False
-            response.message = "An unexpected error occurred"
+            except json.JSONDecodeError:
+                print("Failed to decode JSON from visitor info")
+                response.success = False
+                response.message = "Failed to decode JSON"
+                print("2")
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+                response.success = False
+                response.message = "An unexpected error occurred"
+                print("3")
+        else:
+            print("4")
+            raise ValueError("Empty visitor_info received")
 
         return response
     
