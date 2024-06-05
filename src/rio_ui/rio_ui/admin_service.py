@@ -95,20 +95,15 @@ class UserService(Node):
                 response.success = True
                 response.message = f"QR code generated and server started at port {port}"
                 response.qr_code_path = qr_code_path
-                print("1")
-
             except json.JSONDecodeError:
                 print("Failed to decode JSON from visitor info")
                 response.success = False
                 response.message = "Failed to decode JSON"
-                print("2")
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
                 response.success = False
                 response.message = "An unexpected error occurred"
-                print("3")
         else:
-            print("4")
             raise ValueError("Empty visitor_info received")
 
         return response
