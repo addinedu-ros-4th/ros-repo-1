@@ -15,7 +15,7 @@ from PyQt5.QtCore import *
 
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
-
+from threading import Thread
 
 class RegisterService(Node):
     def __init__(self):
@@ -58,19 +58,16 @@ class QRCheckClient(Node):
     def send_request(self, decoded_data):
         self.request.hashed_data = decoded_data
         self.future = self.cli.call_async(self.request)
-        rp.spin_once(self)
-        self.handle_response()
-        # rp.spin_until_future_complete(self, self.future)
-        # return self.future.result()
+        rp.spin_until_future_complete(self, self.future)
+        self.future.add_done_callback(self.handle_response)
 
-        # self.future.add_done_callback(self.handle_response)
-
-    def handle_response(self):
+    def handle_response(self, future):
         try:
-            response = self.future.result()
+            response = future.result()
             self.get_logger().info(f'Service response: {response.success}, {response.message}')
         except Exception as e:
             self.get_logger().error(f'Service call failed: {e}')
+        return response
 
 
 class ROSGuideNodeSignals(QObject):
@@ -153,19 +150,14 @@ class FacelandmarkSubscriber(Node):
 
     def check_required_landmarks(self, face_landmarks):
         if len(face_landmarks) > 0:
-            landmarks_dict = face_landmarks[0]
-            for landmark in self.required_landmarks:
-                if landmark not in landmarks_dict:
-                    return False
             return True
         else:
             return False
-
+        
 def main(args=None):
     rp.init(args=args)
     guide_service = RegisterService()
     rp.spin(guide_service)
-    guide_service.destroy_node()
     rp.shutdown()
 
 if __name__ == '__main__':
