@@ -228,11 +228,7 @@ class GuideGUI(QMainWindow, guide_ui):
 
     @pyqtSlot(str)
     def handle_decoded_data(self, decoded_data):
-        print(f"Decoded Data: {decoded_data}")
         self.qr_client.send_request(decoded_data)
-        self.qr_client.destroy_node()
-        rp.shutdown()
-        self.qr_client = None
 
     def closeEvent(self, event):
         self.camera.stop()

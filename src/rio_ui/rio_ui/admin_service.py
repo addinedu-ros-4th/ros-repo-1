@@ -85,7 +85,7 @@ class UserService(Node):
 
             # sms service를 사용하려면 send_sms함수를 주석 해제
             self.send_sms(name, phone_number, qr_url)
-            print(response)
+            # print(response)
 
             visit_info['status'] = "not visited"
             visit_info['updated_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -324,16 +324,28 @@ class QRCheckServer(Node):
     def __init__(self):
         super().__init__('qr_check_server')
         self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
-        # self.signals = signals
+        self.db_connector = DBConnector()
+
     def qr_code_callback(self, request, response):
         hashed_data = request.hashed_data
-        # self.get_logger().info(f'Received QR Code: {hashed_data}') 
         if hashed_data:
-            response.success = True
-            response.message = hashed_data
-            self.get_logger().info(f'Received QR Code: {hashed_data}') 
-            # return response
+            try:
+                criteria = {"hashed_data": hashed_data}
+                result = self.db_connector.db_manager.read("VisitorInfo", criteria)
+                if result:
+                    response.success = True
+                    response.message = "QR Code found: " + hashed_data
+                else:
+                    response.success = False
+                    response.message = "QR Code not found"
+                self.get_logger().info(f'Received QR Code: {hashed_data}')
+            except Exception as e:
+                response.success = False
+                response.message = hashed_data
+                response.message = f'Error: {str(e)}'
+                self.get_logger().error(f'Error processing QR Code: {hashed_data}, Error: {str(e)}')
 
+        return response
 
 class DBConnector: # 싱글톤 패턴으로 구현
     _instance = None
