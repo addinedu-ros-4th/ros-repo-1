@@ -57,9 +57,9 @@ class QRCheckClient(Node):
     
     def send_request(self, decoded_data):
         self.request.hashed_data = decoded_data
-        self.future = self.cli.call_async(self.request)
-        rp.spin_until_future_complete(self, self.future)
-        self.future.add_done_callback(self.handle_response)
+        future = self.cli.call_async(self.request)
+        rp.spin_until_future_complete(self, future)
+        future.add_done_callback(self.handle_response)
 
     def handle_response(self, future):
         try:
