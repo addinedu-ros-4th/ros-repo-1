@@ -2,6 +2,7 @@ import rclpy as rp
 from rclpy.node import Node
 
 from std_srvs.srv import SetBool
+from rio_ui_msgs.srv import QRCheck
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 
@@ -13,16 +14,15 @@ from PyQt5.QtCore import *
 
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
+from threading import Thread
 
-from rio_ui.guide_gui import *
-
-class GuideService(Node):
+class RegisterService(Node):
     def __init__(self):
-        super().__init__('guide_service')
+        super().__init__('register_service')
         self.create_service_client()
 
     def create_service_client(self):
-        self.client = self.create_client(SetBool, 'register_service')
+        self.client = self.create_client(SetBool, 'landmark_client')
 
         while not self.client.wait_for_service(timeout_sec=1.0):
             print('Service not available, waiting...')
@@ -46,9 +46,40 @@ class GuideService(Node):
         except Exception as e:
             print(f'Service call failed: {e}')
 
+class QRCheckClient(Node):
+    def __init__(self, signals):
+        super().__init__('qr_check_client')
+        self.cli = self.create_client(QRCheck, 'qr_check')
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.request = QRCheck.Request()
+        self.signals = signals
+    
+    def send_request(self, decoded_data):
+        self.request.hashed_data = decoded_data
+        future = self.cli.call_async(self.request)
+        # rp.spin_until_future_complete(self, future)
+        # future.add_done_callback(self.handle_response)
+        rp.spin_once(self, timeout_sec=None)
+        self.handle_response(future)
+
+    def handle_response(self, future):
+        try:
+            response = future.result()
+            self.get_logger().info(f'Service response {response.success}, {response.message}')
+            if response.success == "True":
+                self.signals.qr_service.emit(response.success)
+            else:
+                self.signals.qr_service.emit(response.success)
+        except Exception as e:
+            self.get_logger().error(f'Service call failed: {e}')
+
+
+
 class ROSGuideNodeSignals(QObject):
-    update_image_signal = pyqtSignal(np.ndarray, list)
+    update_image_signal = pyqtSignal(np.ndarray)
     face_registration = pyqtSignal(bool)
+    qr_service = pyqtSignal(bool)
 
 class ImageSubscriber(Node):
     def __init__(self, signals):
@@ -126,17 +157,13 @@ class FacelandmarkSubscriber(Node):
 
     def check_required_landmarks(self, face_landmarks):
         if len(face_landmarks) > 0:
-            landmarks_dict = face_landmarks[0]
-            for landmark in self.required_landmarks:
-                if landmark not in landmarks_dict:
-                    return False
             return True
         else:
             return False
-
+        
 def main(args=None):
     rp.init(args=args)
-    guide_service = GuideService()
+    guide_service = RegisterService()
     rp.spin(guide_service)
     rp.shutdown()
 

@@ -324,7 +324,11 @@ def main():
     request_subscriber = RequestSubscriber(signals)
     user_service_server = UserService()
     order_subscriber = OrderSubscriber(myWindow)
+<<<<<<< HEAD
     rfid_node = RFIDSubscriber(db_manager) 
+=======
+    qr_check_server = QRCheckServer()
+>>>>>>> dev
 
 
     executor.add_node(amcl_subscriber)
@@ -332,7 +336,11 @@ def main():
     executor.add_node(request_subscriber)
     executor.add_node(user_service_server)
     executor.add_node(order_subscriber)
+<<<<<<< HEAD
     executor.add_node(rfid_node)
+=======
+    executor.add_node(qr_check_server)
+>>>>>>> dev
 
     thread = threading.Thread(target=executor.spin)
     thread.start()

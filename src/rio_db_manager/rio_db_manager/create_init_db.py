@@ -63,7 +63,8 @@ class CreateInitDB():
                 robot_guidance VARCHAR(8) NOT NULL, 
                 status VARCHAR(16) NOT NULL,
                 registered_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
+                updated_at DATETIME NOT NULL,
+                hashed_data VARCHAR(64) NOT NULL
             """
         }
 
