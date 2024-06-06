@@ -7,7 +7,7 @@ package_name = 'rio_ui'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(exclude=['test'], include=['rio_ui','rio_db_manager']),
+    packages=find_packages(exclude=['test'], include=['rio_ui','rio_db_manager', "rio_recognition"]),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),

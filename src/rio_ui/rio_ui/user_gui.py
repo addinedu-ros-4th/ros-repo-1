@@ -192,8 +192,8 @@ class OrderGUI(QDialog, order_ui):
         else:
             confirmation = QMessageBox()
             confirmation.setIcon(QMessageBox.Question)
-            confirmation.setText("결제를 진행하시겠습니까?")
-            confirmation.setWindowTitle("결제 확인")
+            confirmation.setText("상품을 주문하시겠습니까?")
+            confirmation.setWindowTitle("주문 요청")
             confirmation.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
             confirmation.buttonClicked.connect(self.order_confirm)
             confirmation.exec_()

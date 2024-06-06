@@ -12,11 +12,13 @@ class CreateInitDB():
         tables = {
             "UserInfo": """
                 user_id INT AUTO_INCREMENT PRIMARY KEY,
-                office VARCHAR(16) NOT NULL,
                 user_name VARCHAR(16) NOT NULL,
                 birth DATE NOT NULL,
                 phone_number VARCHAR(16) NOT NULL,
-                user_face BLOB NOT NULL
+                user_face BLOB NOT NULL,
+                office VARCHAR(16) NOT NULL,
+                company VARCHAR(16) NOT NULL,
+                rfid_UID BIGINT
             """,
             "Payment": """
                 payment_id INT AUTO_INCREMENT PRIMARY KEY,

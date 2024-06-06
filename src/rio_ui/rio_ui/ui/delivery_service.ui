@@ -16,16 +16,6 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <widget class="QLineEdit" name="nameLine">
-   <property name="geometry">
-    <rect>
-     <x>700</x>
-     <y>30</y>
-     <width>113</width>
-     <height>23</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QPushButton" name="normalBtn">
    <property name="geometry">
     <rect>
@@ -607,19 +597,6 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="testBtn">
-   <property name="geometry">
-    <rect>
-     <x>870</x>
-     <y>20</y>
-     <width>81</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>PushButton</string>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="rfidGroup">
    <property name="geometry">
     <rect>
@@ -666,6 +643,9 @@
     </property>
     <property name="text">
      <string>Tag Your Card!!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

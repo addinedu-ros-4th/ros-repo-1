@@ -6,6 +6,8 @@ import sys
 import os
 import yaml
 import re
+from io import BytesIO
+from PIL import Image
 
 from example_interfaces.msg import Int64MultiArray
 from tf_transformations import quaternion_from_euler
@@ -15,9 +17,12 @@ from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
+from rio_ui.delivery_service import RFIDSubscriber
 
-ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
-admin_ui = uic.loadUiType(ui_file)[0]
+admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
+add_user_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "add_user.ui")
+admin_ui = uic.loadUiType(admin_file)[0]
+add_user_ui = uic.loadUiType(add_user_file)[0]
 
 
 class AdminGUI(QMainWindow, admin_ui):
@@ -26,6 +31,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.setupUi(self)
         self.requestButton1.clicked.connect(self.topic_test)
         self.deliRequestBtn.clicked.connect(self.pub_task)
+        self.addUserBtn.clicekd.connect(self.add_user)
         
         self.nav = BasicNavigator()
         self.goal_pose = PoseStamped()
@@ -199,6 +205,10 @@ class AdminGUI(QMainWindow, admin_ui):
             msg.data = order
             self.task_publisher.publish(msg)
             self.node.get_logger().info('Published message to /robot_task_1: %s' % order)
+            
+    def add_user(self):
+        pre_arrangement_window = AddUserGUI()
+        pre_arrangement_window.exec_()
                 
     def closeEvent(self, event):
         self.timer.stop()
@@ -206,13 +216,104 @@ class AdminGUI(QMainWindow, admin_ui):
             self.db_connector.db_manager.close()
         rclpy.shutdown()
         event.accept()
+        
+class AddUserGUI(QDialog, add_user_ui):
+    def __init__(self):
+        super().__init__()
+        
+        self.setupUi(self)
+        self.db_connector = DBConnector()
+        self.addBtn.clicked.connect(self.read_info)
+        
+    def read_info(self):
+        name = self.nameInfo.text()
+        birth = self.birthInfo.date().toPyDate()
+        birth_str = birth.strftime('%Y-%m-%d')
+        phone = self.phoneInfo.text()
+        face_path = self.faceInfo.currentText()
+        office_num = self.officeInfo.text()
+        company = self.companyInfo.text()
+        card = self.cardInfo.text()
+        
+        self.user_data = {
+                "user_name": name,
+                "birth": birth_str,
+                "phone_number": phone,
+                "user_face": face_path,
+                "office": office_num,
+                "company": company,
+                "rfid_UID": card
+            }
+        self.check_blank()
+    
+    def check_blank(self):
+        is_blank = False
+        for i in self.user_data.values[:-1]:
+            if i == "":
+                is_blank = True
+                
+        if is_blank:
+            self.blank_warning()
+        else:
+            
+            self.add_user()
+            
+    def regist_confirm_notice(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Question)
+        confirmation.setText("이용자를 등록하시겠습니까?")
+        confirmation.setWindowTitle("이용자 등록")
+        confirmation.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        confirmation.buttonClicked.connect(self.regist_confirm)
+        confirmation.exec_()
+
+    def regist_confirm(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("등록이 완료되었습니다.")
+        confirmation.setWindowTitle("등록 완료")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.buttonClicked.connect(self.regist_complete)
+        confirmation.exec_()
+        
+    def regist_complete(self, button):
+        self.accept()
+            
+    def blank_warning(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("필수항목을 모두 입력해주세요")
+        confirmation.setWindowTitle("blank check")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.exec_()    
+            
+    def add_user(self):
+        try:
+            image_path = self.user_data["user_face"]
+            buffer = BytesIO()
+            face_img = Image.open(image_path)
+            face_img.save(buffer, "JPEG")
+            img_data = buffer.getvalue()
+            buffer.close()
+            self.user_data["user_face"] = img_data
+            self.db_connector.db_connect()
+            self.db_connector.insert_value("UserInfo", self.user_data)
+        except Exception as e:
+            print(e)
+        finally:
+            self.regist_confirm_notice()
+        
+    def closeEvent(self, event):
+        event.accept()
+            
 
 def main():
     rclpy.init()
-    # db_manager = DBConnector()
+    db_connector = DBConnector()
+    db_manager = db_connector.db_manager
     app = QApplication(sys.argv)
-    # myWindow = AdminGUI(db_manager)
-    myWindow = AdminGUI()    
+    myWindow = AdminGUI(db_connector)
+    # myWindow = AdminGUI()    
     myWindow.show()
     
     signals = myWindow.signals
@@ -223,6 +324,7 @@ def main():
     request_subscriber = RequestSubscriber(signals)
     user_service_server = UserService()
     order_subscriber = OrderSubscriber(myWindow)
+    rfid_node = RFIDSubscriber(db_manager) 
 
 
     executor.add_node(amcl_subscriber)
@@ -230,6 +332,7 @@ def main():
     executor.add_node(request_subscriber)
     executor.add_node(user_service_server)
     executor.add_node(order_subscriber)
+    executor.add_node(rfid_node)
 
     thread = threading.Thread(target=executor.spin)
     thread.start()

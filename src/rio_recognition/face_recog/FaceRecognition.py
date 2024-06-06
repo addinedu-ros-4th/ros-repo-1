@@ -23,9 +23,8 @@ class FaceRecognition:
 
     def get_landmark(self, input_image):
         face_landmarks = face_recognition.face_landmarks(input_image)
-        
         return face_landmarks
-    
+
     def name_labeling(self, input_image, show_result=True):
         image = input_image.copy()
         face_locations = face_recognition.face_locations(image)
@@ -37,27 +36,24 @@ class FaceRecognition:
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.5)
             name = "Unknown"
 
-            face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
-            best_match_index = np.argmin(face_distances)
-
-            if matches[best_match_index]:
-                name = self.known_face_names[best_match_index]
+            if matches:
+                face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
+                if len(face_distances) > 0:
+                    best_match_index = np.argmin(face_distances)
+                    if matches[best_match_index]:
+                        name = self.known_face_names[best_match_index]
 
             face_names.append(name)
 
         for (top, right, bottom, left), name in zip(face_locations, face_names):
-            if name != "Unknown":
-                color = (0, 255, 0)
-            else:
-                color = (0, 0, 255)
-
+            color = (0, 255, 0) if name != "Unknown" else (0, 0, 255)
             cv2.rectangle(image, (left, top), (right, bottom), color, 1)
             cv2.rectangle(image, (left, bottom - 10), (right, bottom), color, cv2.FILLED)
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(image, name, (left + 3, bottom - 3), font, 0.2, (0, 0, 0), 1)
 
-        if show_result:
-            self.plt_imshow("Output", image, figsize=(24, 15))
+        # if show_result:
+        #     self.plt_imshow("Output", image, figsize=(24, 15))
 
         return image, face_names
 
@@ -66,21 +62,29 @@ class FaceRecognition:
         (top, right, bottom, left) = coordinates
         cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 5)
         cv2.putText(image, label, (left - 10, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 3)
-
         return image
 
     def add_known_face(self, face_image_path, name):
         face_image = cv2.imread(face_image_path)
-        face_location = face_recognition.face_locations(face_image)[0]
-        face_encoding = face_recognition.face_encodings(face_image)[0]
+        if face_image is None:
+            print(f"Error: Unable to load image from {face_image_path}")
+            return
+        face_locations = face_recognition.face_locations(face_image)
+        if not face_locations:
+            print(f"Error: No face detected in image {face_image_path}")
+            return
+        face_encodings = face_recognition.face_encodings(face_image, face_locations)
+        if not face_encodings:
+            print(f"Error: Unable to encode face in image {face_image_path}")
+            return
 
-        detected_face_image = self.draw_label(face_image, face_location, name)
+        detected_face_image = self.draw_label(face_image, face_locations[0], name)
 
-        self.known_face_encodings.append(face_encoding)
+        self.known_face_encodings.append(face_encodings[0])
         self.known_face_names.append(name)
-        self.known_face_locations.append(face_location)
-
-        # self.plt_imshow("Detected Face", detected_face_image)
+        self.known_face_locations.append(face_locations[0])
+        
+        print(f"Added known face: {name}")
 
 if __name__ == "__main__":
     face_recog = FaceRecognition()
