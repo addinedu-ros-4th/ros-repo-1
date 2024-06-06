@@ -18,16 +18,16 @@ from rio_ui.guide_service import *
 
 # print(ui_file)
 
-module_path = '/home/wook/amr_ws/project/final/ros-repo-1/src/rio_ui/rio_ui'
-print(module_path)
-if module_path not in sys.path:
-    sys.path.append(module_path)
+# module_path = '/home/wook/amr_ws/project/final/ros-repo-1/src/rio_ui/rio_ui'
+# print(module_path)
+# if module_path not in sys.path:
+#     sys.path.append(module_path)
 
 # resource_path = os.path.join(get_package_share_directory("rio_ui"), "resource_rc.py")
 # if resource_path not in sys.path:
 #     sys.path.append(resource_path)
 
-import resource_rc
+# import resource_rc
 
 ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "guide_service.ui")
 guide_ui = uic.loadUiType(ui_file)[0]
@@ -63,10 +63,10 @@ class GuideGUI(QMainWindow, guide_ui):
         self.birthEdit.setCalendarPopup(True)
         self.birthEdit.setDateTime(QtCore.QDateTime.currentDateTime())
 
-        self.guide_service = GuideService()
+        # self.guide_service = GuideService()
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.guide_service.send_service_request)
+        # self.timer = QTimer(self)
+        # self.timer.timeout.connect(self.guide_service.send_service_request)
 
         self.signals = ROSGuideNodeSignals()
         self.signals.update_image_signal.connect(self.update_image)
@@ -82,7 +82,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
-        self.timer.stop()
+        # self.timer.stop()
 
     def register(self):
         self.current_mode = "register"
@@ -94,8 +94,8 @@ class GuideGUI(QMainWindow, guide_ui):
         self.cameraGroup.hide()
         self.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
 
-        self.guide_service.send_service_request()
-        self.timer.start(2000)
+        # self.guide_service.send_service_request()
+        # self.timer.start(2000)
 
     # @pyqtSlot(QPixmap)
     def face_registration(self, landmark_checked):
@@ -114,7 +114,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup.hide()
         self.registerGroup2.show()
         self.cameraGroup.hide()
-        self.timer.stop()
+        # self.timer.stop()
         scaled_pixmap = saved_face.scaled(self.frame3.size(), QtCore.Qt.KeepAspectRatio)
         self.frame3.setPixmap(scaled_pixmap)
 
@@ -157,7 +157,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.mainGroup.hide()
         self.registerGroup.hide()
         self.cameraGroup.show()
-        self.timer.stop()
+        # self.timer.stop()
 
     # @pyqtSlot(np.ndarray, list, bool)
     def update_image(self, cv_img, names):
