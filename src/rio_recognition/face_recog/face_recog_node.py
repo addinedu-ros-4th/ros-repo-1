@@ -15,12 +15,12 @@ class ImageSubscriber(Node):
         self.facerecognition = FaceRecognition()
         self.image_sub = self.create_subscription(
             Image,
-            '/image_raw',
+            '/image_raw_1',
             self.image_callback,
             10
         )
 
-        self.face_names_pub = self.create_publisher(String, '/face_names', 10)
+        self.face_names_pub = self.create_publisher(String, '/face_names_1', 10)
         self.face_landmarks_pub = self.create_publisher(String, '/face_landmarks', 10)
 
         self.srv = self.create_service(SetBool, 'register_service', self.handle_register_service)
@@ -52,16 +52,19 @@ class ImageSubscriber(Node):
 
 def main(args=None):
     rp.init(args=args)
-    node = ImageSubscriber()
+    face_recog = ImageSubscriber()
 
-    node.facerecognition.add_known_face("wooks/wook_0.jpg", "wook")
+    
+    face_recog.facerecognition.add_known_face("./data/wooks/wook_0.jpg", "wook")
+    face_recog.facerecognition.add_known_face("./data/kyus/kyu_0.jpg", "kyu")
+    face_recog.facerecognition.add_known_face("./data/joes/ho_0.jpg", "joe")
 
     try:
-        rp.spin(node)
+        rp.spin(face_recog)
     except KeyboardInterrupt:
-        node.get_logger().info('KeyboardInterrupt')
+        face_recog.get_logger().info('KeyboardInterrupt')
     finally:
-        node.destroy_node()
+        face_recog.destroy_face_recog_node()
         rp.shutdown()
 
 if __name__ == '__main__':

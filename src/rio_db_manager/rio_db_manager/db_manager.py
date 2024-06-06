@@ -24,7 +24,8 @@ class DBManager():
             host=self.config['host'],
             user=self.config['user'],
             password=self.config['password'],
-            port=self.config['port']
+            port=self.config['port'],
+            database=self.config["database"]
         )
         except pymysql.MySQLError as e:
             print(f"Error connecting to MySQL: {e}")
@@ -59,13 +60,16 @@ class DBManager():
         values = tuple(data.values())
         self.execute_query(query, values)
 
-    def read(self, table, criteria=None):
+    def read(self, table, criteria=None, option=None):
         query = f"SELECT * FROM {table}"
         values = ()
         if criteria:
             where_clause = ' AND '.join([f"{key}=%s" for key in criteria.keys()])
             query += f" WHERE {where_clause}"
             values = tuple(criteria.values())
+        if option:
+            query += f" ORDER BY {option} ASC"    
+        
         return self.execute_query(query, values)
 
     def update(self, table, data, criteria):

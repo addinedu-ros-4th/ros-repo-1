@@ -32,11 +32,14 @@ setup(
     entry_points={
         'console_scripts': [
             'admin_service = rio_ui.admin_service:main',
+            "user_service = rio_ui.user_service:main",
+            "delivery_service=rio_ui.delivery_service:main",
             'admin_gui = rio_ui.admin_gui:main',
             'user_gui = rio_ui.user_gui:main',
             'guide_service = rio_ui.guide_service:main',
             'guide_gui = rio_ui.guide_gui:main',
-            'key_save_load = rio_ui.key_save_load:main',
+            'key_save_load = rio_ui.key_save_load:main'
+
         ],
     },
 )

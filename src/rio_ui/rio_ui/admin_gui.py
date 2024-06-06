@@ -1,5 +1,3 @@
-# admin_gui.py
-
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
@@ -7,10 +5,13 @@ from PyQt5.QtCore import *
 import sys
 import os
 import yaml
+import re
 
+from example_interfaces.msg import Int64MultiArray
 from tf_transformations import quaternion_from_euler
 from nav2_simple_commander.robot_navigator import BasicNavigator
 from geometry_msgs.msg import PoseStamped
+from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
@@ -24,6 +25,7 @@ class AdminGUI(QMainWindow, admin_ui):
         super().__init__()
         self.setupUi(self)
         self.requestButton1.clicked.connect(self.topic_test)
+        self.deliRequestBtn.clicked.connect(self.pub_task)
         
         self.nav = BasicNavigator()
         self.goal_pose = PoseStamped()
@@ -38,6 +40,10 @@ class AdminGUI(QMainWindow, admin_ui):
         self.timer.timeout.connect(self.update_map)
         self.timer.start(100)
         
+        self.order = []
+        self.node = rclpy.create_node("robot_task_node")
+        self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
+
         self.db_connector = DBConnector()
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
@@ -62,6 +68,9 @@ class AdminGUI(QMainWindow, admin_ui):
         self.pixmap = self.pixmap.transformed(QTransform().scale(-1, -1))
         self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
         self.Map_label.setAlignment(Qt.AlignCenter)
+        
+        header = self.requestTable.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
 
         self.x_location = 0.0
         self.y_location = 0.0
@@ -154,6 +163,43 @@ class AdminGUI(QMainWindow, admin_ui):
         pos_y = (y - self.map_origin[1]) / self.map_resolution
         return pos_x, pos_y
     
+    def pub_task(self):
+        order = [0, 0, 0, 0, 0, 0]
+        table_element = []
+        pattern = r'\d+'
+        column_count = self.requestTable.columnCount()
+        row_count = self.requestTable.rowCount()
+        
+        if row_count > 0:
+            for column in range(column_count):
+                item = self.requestTable.item(0, column)  # 0 is the index of the first row
+                if item is not None:
+                    table_element.append(item.text())
+            
+            self.requestTable.removeRow(0)
+            
+            order_str = table_element[2].split(",")
+            
+            for item in order_str:
+                numbers = [int(num) for num in re.findall(pattern, item)]
+                
+                if "Americano" in item:
+                    order[2] = numbers[0] if numbers else 0
+                elif "Latte" in item:
+                    order[3] = numbers[0] if numbers else 0
+                elif "Coke" in item:
+                    order[4] = numbers[0] if numbers else 0
+                elif "Snack" in item:
+                    order[5] = numbers[0] if numbers else 0
+
+            order[0] = int(table_element[1])
+            order[1] = 2
+            
+            msg = Int64MultiArray()
+            msg.data = order
+            self.task_publisher.publish(msg)
+            self.node.get_logger().info('Published message to /robot_task_1: %s' % order)
+                
     def closeEvent(self, event):
         self.timer.stop()
         if self.db_connector and self.db_connector.db_manager:
@@ -176,14 +222,18 @@ def main():
     path_subscriber = PathSubscriber(signals)
     request_subscriber = RequestSubscriber(signals)
     user_service_server = UserService()
+    order_subscriber = OrderSubscriber(myWindow)
+    qr_check_server = QRCheckServer()
 
 
     executor.add_node(amcl_subscriber)
     executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
     executor.add_node(user_service_server)
+    executor.add_node(order_subscriber)
+    executor.add_node(qr_check_server)
 
-    thread = Thread(target=executor.spin)
+    thread = threading.Thread(target=executor.spin)
     thread.start()
     
     sys.exit(app.exec_())

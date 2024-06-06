@@ -1,29 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rio_ui</name>
+  <name>delivery_ui</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="dlwlgh0106@gmail.com">joe</maintainer>
+  <maintainer email="jiho@todo.todo">jiho</maintainer>
   <license>TODO: License declaration</license>
-
-  <depend>rclpy</depend>
-  <depend>rio_ui_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
-
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  
-  <build_depend>rosidl_default_generators</build_depend>
-  <build_depend>rio_db_manager</build_depend>
-  <build_depend>rio_crypto</build_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-  <exec_depend>rio_db_manager</exec_depend>
-  <exec_depend>rio_crypto</exec_depend>
-  
 
   <export>
     <build_type>ament_python</build_type>
