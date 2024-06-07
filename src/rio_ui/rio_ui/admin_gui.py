@@ -61,6 +61,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.signals.amcl_pose_received.connect(self.update_amcl_pose)
         self.signals.path_distance_received.connect(self.update_path_distance)
         self.signals.task_request_received.connect(self.update_task_request)
+        self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
 
         with open(os.path.join(get_package_share_directory("rio_main"), "maps", "map_name.yaml")) as f:
             map_data = yaml.full_load(f)
@@ -81,6 +82,22 @@ class AdminGUI(QMainWindow, admin_ui):
 
         self.x_location = 0.0
         self.y_location = 0.0
+
+    def visitor_alert_to_user(self, message):
+        visitor_alert = VisitorService()
+        visitor_alert.send_visit_alert_req(message)
+        name = message[0]['name']
+        affiliation = message[0]['affiliation']
+        # visit_place = message[0]['visit_place']
+        self.visited_label.setText(f'{affiliation}소속의 {name}님이 방문하였습니다.')
+
+        self.visit_timer = QTimer(self)
+        self.visit_timer.setSingleShot(True)
+        self.visit_timer.timeout.connect(self.clear_visited_label)
+        self.visit_timer.start(3000)
+
+    def clear_visited_label(self):
+        self.visited_label.clear()
 
     def update_amcl_pose(self, x, y):
         self.x_location = x
@@ -310,7 +327,6 @@ class AddUserGUI(QDialog, add_user_ui):
         confirmation.buttonClicked.connect(self.regist_complete)
         confirmation.exec_()
         
-        
     def regist_complete(self, button):
         self.accept()
             
@@ -350,16 +366,16 @@ def main():
     amcl_subscriber = AmclSubscriber(signals)
     path_subscriber = PathSubscriber(signals)
     request_subscriber = RequestSubscriber(signals)
-    user_service_server = UserService()
+    generate_qr_server = GenerateQRServer()
     order_subscriber = OrderSubscriber(myWindow)
     rfid_node = RFIDSubscriber(db_manager) 
-    qr_check_server = QRCheckServer()
+    qr_check_server = QRCheckServer(signals)
 
 
     executor.add_node(amcl_subscriber)
     executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
-    executor.add_node(user_service_server)
+    executor.add_node(generate_qr_server)
     executor.add_node(order_subscriber)
     executor.add_node(rfid_node)
     executor.add_node(qr_check_server)

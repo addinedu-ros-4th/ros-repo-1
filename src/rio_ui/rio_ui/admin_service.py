@@ -27,9 +27,9 @@ from rio_db_manager.create_init_db import CreateInitDB
 
 from twilio.rest import Client
 
-class UserService(Node):
+class GenerateQRServer(Node):
     def __init__(self):
-        super().__init__('admin_service')
+        super().__init__('generate_qr_server')
         self.srv = self.create_service(GenerateVisitQR, 'generate_qr', self.generate_qr_callback)      
         self.qr_code_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../src/rio_ui/rio_ui/data/'))
         os.makedirs(self.qr_code_dir, exist_ok=True)
@@ -94,10 +94,6 @@ class UserService(Node):
                 response.success = True
                 response.message = f"등록하신 {name}님의 방문 예약 문자를 전송하였습니다."
                 response.qr_code_path = qr_code_path
-            # except json.JSONDecodeError:
-            #     print("Failed to decode JSON from visitor info")
-            #     response.success = False
-            #     response.message = "Failed to decode JSON"
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
                 response.success = False
@@ -220,6 +216,8 @@ class ROSNodeSignals(QObject):
     amcl_pose_received = pyqtSignal(float, float)
     path_distance_received = pyqtSignal(float)
     task_request_received = pyqtSignal(float, float, float)
+    visitor_alert_received = pyqtSignal(list)
+    
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
@@ -321,9 +319,9 @@ class RequestSubscriber(Node):
 
 class QRCheckServer(Node):
     # has_visited = pyqtSignal(dict)
-    def __init__(self):
+    def __init__(self, signals):
         super().__init__('qr_check_server')
-        # self.signals = signals
+        self.signals = signals
         self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
         self.db_connector = DBConnector()
 
@@ -337,8 +335,10 @@ class QRCheckServer(Node):
                 if result:
                     data = {"updated_at": datetime.now()}
                     self.db_connector.db_manager.update("VisitorInfo", data, criteria)
-                    # filtered_data = [{'name': item['name'], 'affiliation': item['affiliation'], 'visit_place': item['visit_place']} for item in result]
-                    # self.signals.has_visited.emit(filtered_data)
+                    visited_msg = [{'name': item['name'], 'affiliation': item['affiliation'], 'visit_place': item['visit_place']} for item in result]
+                    print(visited_msg)
+                    # self.visitalert.send_visit_alert_req(visited_msg)
+                    self.signals.visitor_alert_received.emit(visited_msg)
                     response.success = True
                     response.message = "QR Code found: " + hashed_data
                 else:
@@ -353,13 +353,28 @@ class QRCheckServer(Node):
 
         return response
 
-# class VisitorService(Node):
-#     def __init__(self):
-#         super().__init__('visitor_alert')
-#         self.cli = self.create_client(VisitorAlert, 'visitor_alert')
-#         while not self.cli.wait_for_service(timeout_sec=1.0):
-#             self.get_logger().info('service not available, waiting again...') 
-#         self.request = VisitorAlert.Request()
+class VisitorService(Node):
+    def __init__(self):
+        super().__init__('visitor_alert_client')
+        self.cli = self.create_client(VisitorAlert, 'get_visitor_info')
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...') 
+        self.request = VisitorAlert.Request()
+
+    def send_visit_alert_req(self, visitor_info):
+        self.request.name = visitor_info[0]['name']
+        self.request.affiliation = visitor_info[0]['affiliation']
+        self.request.visit_place = visitor_info[0]['visit_place']
+        future = self.cli.call_async(self.request)
+        rclpy.spin_until_future_complete(self, future)
+        self.handle_response(future)
+
+    def handle_response(self, future):
+        try:
+            response = future.result()
+            self.get_logger().info(f"sent message to {self.request.visit_place} to {response.success}")
+        except Exception as e:
+            self.get_logger().error(f'Service call failed: {e}')
 
 class DBConnector: # 싱글톤 패턴으로 구현
     _instance = None
@@ -469,20 +484,24 @@ class RFIDSubscriber(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    admin_service = UserService()
+    admin_service = GenerateQRServer()
     qr_service = QRCheckServer()
     executor = MultiThreadedExecutor()
     executor.add_node(admin_service)
     executor.add_node(qr_service)
+    visitor_alert_thread = threading.Thread(target=rclpy.spin, args=(qr_service.visitalert,), daemon=True)
+    visitor_alert_thread.start()
 
     try:
         thread = threading.Thread(target=executor.spin)
         thread.start()
         # executor.spin()
     finally:
-        thread.shutdown()
+        thread.join()
+        visitor_alert_thread.join()
         qr_service.destroy_node()
         admin_service.destroy_node()
+        qr_service.visitalert.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':

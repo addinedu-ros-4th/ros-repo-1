@@ -841,6 +841,19 @@
     </property>
    </column>
   </widget>
+  <widget class="QLabel" name="visited_label">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>470</y>
+     <width>441</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
