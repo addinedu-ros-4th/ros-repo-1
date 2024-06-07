@@ -216,6 +216,7 @@ class ROSNodeSignals(QObject):
     amcl_pose_received = pyqtSignal(float, float)
     path_distance_received = pyqtSignal(float)
     task_request_received = pyqtSignal(float, float, float)
+    visitor_alert_received = pyqtSignal(list)
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
@@ -310,19 +311,19 @@ class RequestSubscriber(Node):
         )
         
     def req_callback(self, msg):
-        data = msg.data
+        data = msg.dataQRCheckServer
         if len(data) == 3:
             self.signals.task_request_received.emit(data[0], data[1], data[2])
 
 
 class QRCheckServer(Node):
     # has_visited = pyqtSignal(dict)
-    def __init__(self):
+    def __init__(self, signals):
         super().__init__('qr_check_server')
-        # self.signals = signals
+        self.signals = signals
         self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
         self.db_connector = DBConnector()
-        self.visitalert= VisitorService()
+        # self.visitalert= VisitorService()
 
     def qr_code_callback(self, request, response):
         hashed_data = request.hashed_data
@@ -334,9 +335,10 @@ class QRCheckServer(Node):
                 if result:
                     data = {"updated_at": datetime.now()}
                     self.db_connector.db_manager.update("VisitorInfo", data, criteria)
-                    filtered_data = [{'name': item['name'], 'affiliation': item['affiliation'], 'visit_place': item['visit_place']} for item in result]
-                    # self.signals.has_visited.emit(filtered_data)
-                    self.visitalert.send_visit_alert_req(filtered_data)
+                    visited_msg = [{'name': item['name'], 'affiliation': item['affiliation'], 'visit_place': item['visit_place']} for item in result]
+                    print(visited_msg)
+                    # self.visitalert.send_visit_alert_req(visited_msg)
+                    self.signals.visitor_alert_received.emit(visited_msg)
                     response.success = True
                     response.message = "QR Code found: " + hashed_data
                 else:
