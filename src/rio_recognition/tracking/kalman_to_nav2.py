@@ -263,7 +263,7 @@ if __name__ == "__main__":
     # executor = rclpy.executors.MultiThreadedExecutor()  
     # executor.add_node(tracking_controller)
 
-    model_path = '../ultralytics/human_detection/best.pt'
+    model_path = 'ultralytics/human_detection/best.pt'
     object_name = 'wook'
     object_tracker = ObjectTracker(model_path, object_name) # , tracking_controller
     object_tracker.start()

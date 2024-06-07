@@ -101,7 +101,7 @@ class TrackingController(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    model_path = '../ultralytics/human_detection/best.pt'
+    model_path = 'ultralytics/human_detection/best.pt'
     object_name = 'wook'
 
     object_tracker = ObjectTracker(model_path, object_name) # , tracking_controller
