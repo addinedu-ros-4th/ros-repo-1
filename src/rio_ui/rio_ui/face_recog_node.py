@@ -12,7 +12,10 @@ import numpy as np
 import time
 from cv_bridge import CvBridge
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
+from admin_service import DBConnector
 import queue
+from io import BytesIO
+from PIL import Image
 
 bridge = CvBridge()
 
@@ -97,7 +100,7 @@ class IPSubscriber(Node):
             'ip_address',
             self.listener_callback,
             10)
-        self.subscription  # prevent unused variable warning
+        self.subscription  
         self.ip_address = None
 
     def listener_callback(self, msg):
@@ -109,16 +112,32 @@ class TCPIPClientNode(Node):
         super().__init__('tcpip_client_node')
         self.client_socket = None
         self.connection = None
+        self.ip_address = ip_address
         self.connect_to_server(ip_address)
         self.receive_thread = threading.Thread(target=self.receive_video)
         self.receive_thread.start()
         self.facerecognition = FaceRecognition()
-        self.ip_address = ip_address
-
+        self.db_connector = DBConnector()
+        self.get_user_face()
+        
+        
         self.face_names_pub = self.create_publisher(String, '/face_names_1', 10)
         
         self.face_recognition_thread = FaceRecognitionThread(self.facerecognition, self.face_names_pub)
         self.face_recognition_thread.start()
+        
+    def get_user_face(self):
+        users_info = self.db_connector.select_all("UserInfo")
+        for info in users_info:  
+            user_name = info["user_name"]  
+            blob_data = info["user_face"]
+            img_data = Image.open(BytesIO(blob_data))
+            img_np = np.array(img_data)
+            self.facerecognition.add_known_face(img_np, user_name)
+            
+            
+            
+        
 
     def connect_to_server(self, ip_address):
         while True:
@@ -137,38 +156,26 @@ class TCPIPClientNode(Node):
             try:
                 while True:
                     packed_msg_size = self.connection.read(struct.calcsize('<L'))
+                    
                     if not packed_msg_size:
                         break
                     msg_size = struct.unpack('<L', packed_msg_size)[0]
                     frame_data = self.connection.read(msg_size)
                     frame = np.frombuffer(frame_data, dtype=np.uint8)
                     frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                    
                     if frame is not None and frame.size != 0:
-                        # cv2.imshow('face_recognition', frame)
-                        # cv2.waitKey(33)
-                        
-                        # 얼굴 인식 스레드에 프레임 추가
                         self.face_recognition_thread.add_frame(frame)
                         
-                        # 얼굴 인식 결과 가져오기
-                        # result = self.face_recognition_thread.get_result()
-                        # if result is not None:
-                        #     cv2.imshow('labeled_face_recognition', result)
-                        #     cv2.waitKey(33)
+
                     else:
                         self.get_logger().error("Invalid frame received")
             except Exception as e:
                 self.get_logger().error(f"Error: {e}")
-                self.reconnect_to_server() # 재연결 시도
-            # finally:
-            #     if self.connection:
-            #         self.connection.close()
-            #     if self.client_socket:
-            #         self.client_socket.close()
-            #     cv2.destroyAllWindows()
+                self.reconnect_to_server()
+
             
     def reconnect_to_server(self):
-        # 서버와 연결이 끊긴 경우 재연결 시도
         self.get_logger().warning("Lost connection to server. Reconnecting...")
         self.client_socket.close()
         self.connection.close()
@@ -181,13 +188,9 @@ class TCPIPClientNode(Node):
 def main(args=None):
     rp.init(args=args)
 
-    ip_address = "192.168.123.106"
+    ip_address = "192.168.0.46"
 
     tcpip_client_node = TCPIPClientNode(ip_address)
-    
-    tcpip_client_node.facerecognition.add_known_face("./data/wooks/wook_0.jpg", "wook")
-    tcpip_client_node.facerecognition.add_known_face("./data/kyus/kyu_0.jpg", "kyu")
-    tcpip_client_node.facerecognition.add_known_face("./data/joes/ho_0.jpg", "joe")
 
     try:
         rp.spin(tcpip_client_node)

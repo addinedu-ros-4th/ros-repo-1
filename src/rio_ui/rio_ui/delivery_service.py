@@ -56,7 +56,8 @@ class RFIDSubscriber(Node):
                 self.data[1] = self.user_id
                 self.data[2] = 0
             
-            self.publish_msg()
+            msg = Int64MultiArray(data = self.data)
+            self.publisher.publish(msg)
                 
         except Exception as e:
             self.get_logger().error(f'Error check UID: {e}')
@@ -73,12 +74,7 @@ class RFIDSubscriber(Node):
             return current_credit
         except Exception as e:
             self.get_logger().error(f'Error check UID: {e}')
-        
-        
-    def publish_msg(self):
-        msg = Int64MultiArray(data = self.data)
-        self.publisher.publish(msg)
-        
+            
 
 def main():
     rclpy.init()

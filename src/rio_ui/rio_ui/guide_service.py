@@ -60,7 +60,7 @@ class QRCheckClient(Node):
         future = self.cli.call_async(self.request)
         # rp.spin_until_future_complete(self, future)
         # future.add_done_callback(self.handle_response)
-        rp.spin_once(self, timeout_sec=None)
+        rp.spin_until_future_complete(self, future)
         self.handle_response(future)
 
     def handle_response(self, future):

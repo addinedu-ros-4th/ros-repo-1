@@ -24,14 +24,14 @@ ui_file = os.path.join(get_package_share_directory("delivery_ui"), "ui", "delive
 delivery_ui = uic.loadUiType(ui_file)[0]
 
 class WindowClass(QMainWindow, delivery_ui):
-    update_image_signal = pyqtSignal(np.ndarray)
 
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('RiO Deli mk3')
 
-        self.robot_task = "ready" # 초기 모드 설정
+        self.robot_task = "delivery" # 초기 모드 설정
+        self.robot_status = "ready"
         self.name = "Unknown"
         self.item = ""
         self.total_price = 0
@@ -43,22 +43,25 @@ class WindowClass(QMainWindow, delivery_ui):
         self.lat_price = 1500
         self.coke_price = 2000
         self.snack_price = 2000
-    
+        self.cap = None
+        self.tcpip_server = None
     
         self.servo = ServoController()
+        self.camera = Camera()
+        self.camera.daemon = True
+        self.image_updater = ImageUpdater()
         
-        # self.timer = QTimer()
-        # self.timer.timeout.connect(self.set_normal_display)
-        
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timer_out)
+ 
         self.pixmap = QPixmap()
         self.pixmap = self.pixmap.scaled(self.label.width(), self.label.height())
         self.orderTable.verticalHeader().setVisible(False)
 
-        self.update_image_signal.connect(self.update_image)
+        self.camera.update.connect(self.update_camera)
         self.set_normal_display()
         
         self.normalBtn.clicked.connect(self.set_display)
-        self.testBtn.clicked.connect(self.change_task)
         self.payBtn.clicked.connect(self.show_confirmation_dialog)
         self.backBtn.clicked.connect(self.set_normal_display)
         self.addCokeBtn.clicked.connect(self.add_coke)
@@ -73,23 +76,26 @@ class WindowClass(QMainWindow, delivery_ui):
         self.closeBtn.clicked.connect(self.close_case)
         
     def set_normal_display(self):
-        # self.timer.stop()
         self.normalBtn.show()
         self.cameraGroup.hide()
         self.orderGroup.hide()
         self.menuGroup.hide()
         self.rfidGroup.hide()
         self.noticeGroup.hide()
-        self.remove_list()
         self.totalPrice.setText("0")
         self.faceLabel.setText("얼굴 정면이 보이게 카메라를 바라봐주세요!!")
         self.label_8.setText("Tag your Card!!")
+        self.name = "Unknown"
         self.total_price = 0
         self.is_on_rfid = False
         self.is_on_camera = False
         self.is_got_order = False
         self.servo.set_angle(0)
-
+        try:
+            self.camera_stop()
+        except AttributeError as e:
+            pass
+       
     def set_camera(self):
         self.normalBtn.hide()
         self.cameraGroup.show()
@@ -98,7 +104,9 @@ class WindowClass(QMainWindow, delivery_ui):
         self.rfidGroup.hide()
         self.noticeGroup.hide()
         self.is_on_camera = True
-        # self.timer.start(30000)
+        self.camera_start()
+        self.timer.setInterval(20000)
+
 
     def set_order(self):
         self.normalBtn.hide()
@@ -109,7 +117,11 @@ class WindowClass(QMainWindow, delivery_ui):
         self.noticeGroup.hide()
         self.is_on_camera = False
         self.is_got_order = True
-        # self.timer.start(30000)
+        try:
+            self.camera_stop()
+        except AttributeError as e:
+            pass
+        self.timer.setInterval(20000)
 
     def set_sale(self):
         self.normalBtn.hide()
@@ -119,7 +131,7 @@ class WindowClass(QMainWindow, delivery_ui):
         self.rfidGroup.hide()
         self.noticeGroup.hide()
         self.is_on_camera = False
-        # self.timer.start(30000)
+        self.timer.setInterval(20000)
         
     def set_rfid(self):
         self.normalBtn.hide()
@@ -129,7 +141,7 @@ class WindowClass(QMainWindow, delivery_ui):
         self.rfidGroup.show()
         self.noticeGroup.hide()
         self.is_on_rfid = True
-        # self.timer.start(30000)
+        self.timer.setInterval(20000)
         
     def notice_success_rfid(self):
         self.normalBtn.hide()
@@ -138,53 +150,68 @@ class WindowClass(QMainWindow, delivery_ui):
         self.menuGroup.hide()
         self.rfidGroup.hide()
         self.noticeGroup.show()
+        self.is_on_camera = False
         self.is_tag = False
         if self.robot_task == "delivery":
             self.label_11.hide()
         elif self.robot_task == "order" or self.robot_task == "sale":
-            self.label_11.hide()
-        
-        # self.timer.start(30000)
+            self.label_11.show()
             
+        try:
+            self.camera_stop()
+        except AttributeError as e:
+            pass
         
-        
+        self.timer.setInterval(20000)
+             
     def set_display(self):
+        self.timer.start(20000)
+        if self.robot_status == "ready":
+            if self.robot_task == "sale":
+                self.set_sale()
+                
+            elif self.robot_task == "delivery" or self.robot_task == "order":
+                self.set_camera()
+            else:
+                self.set_normal_display()
+                
+    def timer_out(self):
+        self.servo.set_angle(0)
+        self.set_normal_display()
+        self.timer.stop()
         if self.robot_task == "sale":
-            self.set_sale()
-            
-        elif self.robot_task == "delivery" or self.robot_task == "order":
-            self.set_camera()
-        else:
-            self.set_normal_display()
-            
-    def change_task(self):
-        task = self.nameLine.text()
-        if task == "":
-            self.set_normal_display()
-        else:
-            self.robot_task = task
+            self.remove_list()
+        elif self.robot_task == "order":
+            pass
 
-    @pyqtSlot(np.ndarray)
-    def update_image(self, cv_img):
-        if self.is_on_camera:
-            qt_img = self.cv_to_pixmap(cv_img, self.label)
-            self.label.setPixmap(qt_img)
-            self.label.setAlignment(Qt.AlignCenter)
-            # print(self.name)
-            # print(len(self.name))
-            # # self.nameLabel.setText(self.name)
-            # if self.name != "Unknown" or self.name != "":
-            #     self.faceLabel.setText(f"{self.name}님 환영합니다")
-            #     time.sleep(0.5)
-            #     self.is_on_camera = False
+    
+    def camera_start(self):
+        self.camera.running = True
+        self.camera.start()
+        self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+        if not self.cap.isOpened():
+            print("cannot open camera")
+            return
+        if self.tcpip_server is None:
+            self.tcpip_server = TCPIPServer(self.image_updater)
         
         
-    def cv_to_pixmap(self, cv_img, frames):
-        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        h, w, c = rgb_image.shape
-        qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
-        qt_img_scaled = qimage.scaled(frames.width(), frames.height(), Qt.KeepAspectRatio)
-        return QPixmap.fromImage(qt_img_scaled)
+    def update_camera(self):
+        ret, image = self.cap.read()
+        if ret:
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            h, w, c = rgb_image.shape
+            qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
+            qt_img_scaled = qimage.scaled(self.label.width(), self.label.height(), Qt.KeepAspectRatio)
+            self.pixmap = self.pixmap.fromImage(qt_img_scaled)
+            self.label.setPixmap(self.pixmap)
+            
+            self.image_updater.update_image(image)
+            
+    def camera_stop(self):
+        self.camera.running = False
+        self.cap.release()
+        # self.tcpip_server.stop_server()
     
     
     def add_coke(self):
@@ -206,7 +233,6 @@ class WindowClass(QMainWindow, delivery_ui):
     def sub_americano(self):
         item = "americano"
         row, number = self.find_item(item)
-        print(row, number)
         self.sub_item(row, number, self.ame_price)
     
     def add_latte(self):
@@ -308,25 +334,34 @@ def main():
     myWindows = WindowClass()
     myWindows.show()
     
+
+    # tcpip_server = TCPIPServer()
+    # executors.add_node(tcpip_server)
+    
     rfid_reader = RFIDReaderNode(myWindows)     
     executors.add_node(rfid_reader)
     
     rfid_subs = RFIDSubscriber(rfid_reader, myWindows)
     executors.add_node(rfid_subs)
 
-    image_subscriber = ImageSubscriber(myWindows)
-    executors.add_node(image_subscriber)
+    # image_subscriber = ImageSubscriber(myWindows)
+    # executors.add_node(image_subscriber)
     
     name_subscriber = FacenameSubscriber(myWindows)
     executors.add_node(name_subscriber)
     
-    order_subscriber = OrderSubscriber(myWindows)
-    executors.add_node(order_subscriber)
+    task_subscriber = TaskSubscriber(myWindows)
+    executors.add_node(task_subscriber)
     
     thread = Thread(target=executors.spin)
-    
     thread.start()
-    sys.exit(app.exec_())
+    
+    try:
+        sys.exit(app.exec_())
+    finally:
+        rclpy.shutdown()
+        
+    
 
 if __name__ == "__main__":
     main()

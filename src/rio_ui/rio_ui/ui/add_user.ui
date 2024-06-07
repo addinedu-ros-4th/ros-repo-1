@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>481</width>
+    <height>538</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>11</pointsize>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>441</width>
+     <height>501</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton { color: red;    font-weight: bold;}</string>
+   </property>
+   <property name="title">
+    <string>이용자 등록</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <widget class="QPushButton" name="cancel_bt">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>430</y>
+      <width>181</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+      <underline>true</underline>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    color: red;
+    font-weight: bold;
+}</string>
+    </property>
+    <property name="text">
+     <string>Cancel</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addBtn">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>430</y>
+      <width>181</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+      <underline>true</underline>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    color: green;
+    font-weight: bold;
+}</string>
+    </property>
+    <property name="text">
+     <string>Add</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+    <property name="autoRepeat">
+     <bool>false</bool>
+    </property>
+    <property name="autoExclusive">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="nameInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>50</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="officeInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>248</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="phoneInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>147</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>114</width>
+      <height>341</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>성함*               :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>생년월일*       :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>휴대전화*       : </string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>얼굴 사진*       :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>사무실 번호*    :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>회사명*             :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>포인트 카드    :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLineEdit" name="cardInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>347</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="companyInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>296</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>400</y>
+      <width>241</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>* 항목은 필수 기입 정보입니다</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QDateEdit" name="birthInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>98</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="faceInfo">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>198</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="findImageBtn">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>190</y>
+      <width>80</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Find
+Image</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

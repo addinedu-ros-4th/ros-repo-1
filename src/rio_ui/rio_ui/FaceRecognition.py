@@ -64,22 +64,20 @@ class FaceRecognition:
         cv2.putText(image, label, (left - 10, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 3)
         return image
 
-    def add_known_face(self, face_image_path, name):
-        face_image = cv2.imread(face_image_path)
+    def add_known_face(self, face_image, name):
         if face_image is None:
-            print(f"Error: Unable to load image from {face_image_path}")
+            print(f"Error: Unable to load image from {name}")
             return
         face_locations = face_recognition.face_locations(face_image)
         if not face_locations:
-            print(f"Error: No face detected in image {face_image_path}")
+            print(f"Error: No face detected in image {name}")
             return
         face_encodings = face_recognition.face_encodings(face_image, face_locations)
         if not face_encodings:
-            print(f"Error: Unable to encode face in image {face_image_path}")
+            print(f"Error: Unable to encode face in image {name}")
             return
 
         detected_face_image = self.draw_label(face_image, face_locations[0], name)
-
         self.known_face_encodings.append(face_encodings[0])
         self.known_face_names.append(name)
         self.known_face_locations.append(face_locations[0])
