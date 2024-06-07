@@ -18,7 +18,6 @@ from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
-from rio_ui.delivery_service import RFIDSubscriber
 
 admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
 add_user_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "add_user.ui")
