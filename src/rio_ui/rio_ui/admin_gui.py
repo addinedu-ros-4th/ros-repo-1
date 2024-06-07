@@ -225,6 +225,12 @@ class AddUserGUI(QDialog, add_user_ui):
         self.setupUi(self)
         self.db_connector = DBConnector()
         
+        self.img_data = ""
+        
+        reg_ex = QRegExp("[0-9]+")
+        input_validator = QRegExpValidator(reg_ex, self.phoneInfo)
+        
+        self.phoneInfo.setValidator(input_validator)
         
         self.birthInfo.setDate(QDate.currentDate())
         self.birthInfo.setCalendarPopup(True)
@@ -272,7 +278,6 @@ class AddUserGUI(QDialog, add_user_ui):
         for key, value in self.user_data.items():
             if key != exception_key and value == "":
                 is_blank = True
-                
         if is_blank:
             self.blank_warning()
         else:
@@ -292,6 +297,8 @@ class AddUserGUI(QDialog, add_user_ui):
         try:
             self.db_connector.db_connect()
             self.db_connector.insert_value("UserInfo", self.user_data)
+            self.img_data = ""
+            
         except Exception as e:
             print(e)
         

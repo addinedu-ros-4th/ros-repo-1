@@ -77,7 +77,6 @@ class FaceRecognitionThread(threading.Thread):
                 labeled_image, face_names = self.face_recognition.name_labeling(frame, show_result=False)
                 face_names_str = ','.join(face_names)
                 self.face_names_pub.publish(String(data=face_names_str))
-                print(face_names_str)
                 self.result_queue.put(labeled_image)
 
     def add_frame(self, frame):

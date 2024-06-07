@@ -419,7 +419,7 @@ class RFIDSubscriber(Node):
         
         
     def info_callback(self, msg):
-        self.user_id = msg.data[0]
+        self.rfid_uid = msg.data[0]
         self.change_total = msg.data[1]
         self.user_credit = msg.data[2]
         self.ID_check()
@@ -427,24 +427,24 @@ class RFIDSubscriber(Node):
         
     def ID_check(self):
         uid_list = []
-        detail_data = self.db_manager.read("Payment")
+        detail_data = self.db_manager.read("UserInfo")
         try:
             for data in detail_data:  
-                uid = data.get('rfid_uid')  
-                if uid is not None:  
+                uid = data.get('rfid_UID')  
+                if uid != 0:  
                     uid_list.append(uid)
 
-            if self.user_id in uid_list:
-                current_credit = self.calc_total(self.user_id)
-                self.user_credit = current_credit - self.change_total
+            if self.rfid_uid in uid_list:
+                current_credit = self.calc_total(self.rfid_uid)
+                self.user_credit = current_credit + self.change_total
                 self.data[0] = 1
-                self.data[1] = self.user_id
+                self.data[1] = self.rfid_uid
                 self.data[2] = self.user_credit
                 
                 
             else:
                 self.data[0] = 0
-                self.data[1] = self.user_id
+                self.data[1] = self.rfid_uid
                 self.data[2] = 0
             
             msg = Int64MultiArray(data = self.data)
