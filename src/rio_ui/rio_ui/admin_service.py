@@ -432,7 +432,6 @@ class RFIDSubscriber(Node):
         
         self.db_manager = db_manager
         
-        
     def info_callback(self, msg):
         self.rfid_uid = msg.data[0]
         self.change_total = msg.data[1]
