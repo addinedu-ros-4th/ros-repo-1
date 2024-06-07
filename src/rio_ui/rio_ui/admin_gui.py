@@ -6,6 +6,7 @@ import sys
 import os
 import yaml
 import re
+import glob
 from io import BytesIO
 from PIL import Image
 
@@ -60,7 +61,6 @@ class AdminGUI(QMainWindow, admin_ui):
         self.signals.amcl_pose_received.connect(self.update_amcl_pose)
         self.signals.path_distance_received.connect(self.update_path_distance)
         self.signals.task_request_received.connect(self.update_task_request)
-        self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
 
         with open(os.path.join(get_package_share_directory("rio_main"), "maps", "map_name.yaml")) as f:
             map_data = yaml.full_load(f)
@@ -81,23 +81,6 @@ class AdminGUI(QMainWindow, admin_ui):
 
         self.x_location = 0.0
         self.y_location = 0.0
-
-
-    def visitor_alert_to_user(self, message):
-        visitor_alert = VisitorService()
-        visitor_alert.send_visit_alert_req(message)
-        name = message[0]['name']
-        affiliation = message[0]['affiliation']
-        # visit_place = message[0]['visit_place']
-        self.visited_label.setText(f'{affiliation}소속의 {name}님이 방문하였습니다.')
-
-        self.visit_timer = QTimer(self)
-        self.visit_timer.setSingleShot(True)
-        self.visit_timer.timeout.connect(self.clear_visited_label)
-        self.visit_timer.start(3000)
-    
-    def clear_visited_label(self):
-        self.visited_label.clear()
 
     def update_amcl_pose(self, x, y):
         self.x_location = x
@@ -241,23 +224,42 @@ class AddUserGUI(QDialog, add_user_ui):
         
         self.setupUi(self)
         self.db_connector = DBConnector()
+        
+        
+        self.birthInfo.setDate(QDate.currentDate())
+        self.birthInfo.setCalendarPopup(True)
+        self.birthInfo.setDisplayFormat("yyyy-MM-dd")
+        
         self.addBtn.clicked.connect(self.read_info)
+        self.cancel_bt.clicked.connect(self.close)
+        self.findImageBtn.clicked.connect(self.find_image)
+        
+    def find_image(self):
+        self.file, _ = QFileDialog.getOpenFileName(self,"파일 선택", "", "Images (*.png *.jpg *.bmp)")
+        self.faceInfo.setText(self.file)
+        buffer = BytesIO()
+        face_img = Image.open(self.file)
+        face_img.save(buffer, "JPEG")
+        self.img_data = buffer.getvalue()
+        buffer.close()
         
     def read_info(self):
         name = self.nameInfo.text()
         birth = self.birthInfo.date().toPyDate()
         birth_str = birth.strftime('%Y-%m-%d')
         phone = self.phoneInfo.text()
-        face_path = self.faceInfo.currentText()
+        face_image = self.img_data
         office_num = self.officeInfo.text()
         company = self.companyInfo.text()
         card = self.cardInfo.text()
+        if card == "":
+            card = "0"
         
         self.user_data = {
                 "user_name": name,
                 "birth": birth_str,
                 "phone_number": phone,
-                "user_face": face_path,
+                "user_face": face_image,
                 "office": office_num,
                 "company": company,
                 "rfid_UID": card
@@ -266,15 +268,16 @@ class AddUserGUI(QDialog, add_user_ui):
     
     def check_blank(self):
         is_blank = False
-        for i in self.user_data.values[:-1]:
-            if i == "":
+        exception_key = "rfid_UID"
+        for key, value in self.user_data.items():
+            if key != exception_key and value == "":
                 is_blank = True
                 
         if is_blank:
             self.blank_warning()
         else:
             
-            self.add_user()
+            self.regist_confirm_notice()
             
     def regist_confirm_notice(self):
         confirmation = QMessageBox()
@@ -286,6 +289,12 @@ class AddUserGUI(QDialog, add_user_ui):
         confirmation.exec_()
 
     def regist_confirm(self):
+        try:
+            self.db_connector.db_connect()
+            self.db_connector.insert_value("UserInfo", self.user_data)
+        except Exception as e:
+            print(e)
+        
         confirmation = QMessageBox()
         confirmation.setIcon(QMessageBox.Information)
         confirmation.setText("등록이 완료되었습니다.")
@@ -293,6 +302,7 @@ class AddUserGUI(QDialog, add_user_ui):
         confirmation.setStandardButtons(QMessageBox.Ok)
         confirmation.buttonClicked.connect(self.regist_complete)
         confirmation.exec_()
+        
         
     def regist_complete(self, button):
         self.accept()
@@ -307,13 +317,6 @@ class AddUserGUI(QDialog, add_user_ui):
             
     def add_user(self):
         try:
-            image_path = self.user_data["user_face"]
-            buffer = BytesIO()
-            face_img = Image.open(image_path)
-            face_img.save(buffer, "JPEG")
-            img_data = buffer.getvalue()
-            buffer.close()
-            self.user_data["user_face"] = img_data
             self.db_connector.db_connect()
             self.db_connector.insert_value("UserInfo", self.user_data)
         except Exception as e:
@@ -343,7 +346,7 @@ def main():
     user_service_server = UserService()
     order_subscriber = OrderSubscriber(myWindow)
     rfid_node = RFIDSubscriber(db_manager) 
-    qr_check_server = QRCheckServer(signals)
+    qr_check_server = QRCheckServer()
 
 
     executor.add_node(amcl_subscriber)

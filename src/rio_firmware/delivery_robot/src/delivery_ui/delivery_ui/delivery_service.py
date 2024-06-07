@@ -2,6 +2,8 @@ import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtCore import pyqtSignal, QThread, Qt, QObject
+from PyQt5.QtGui import QImage
 
 from std_msgs.msg import String
 from example_interfaces.msg import Int64MultiArray
@@ -15,6 +17,72 @@ import threading
 
 import time
 from cv_bridge import CvBridge, CvBridgeError
+
+import socket
+import cv2
+import numpy as np
+import struct
+# import queue
+
+class ImageUpdater(QObject):
+    image_updated = pyqtSignal(np.ndarray)
+
+    def __init__(self):
+        super().__init__()
+
+    def update_image(self, image):
+        # 이미지 업데이트 로직
+        self.image_updated.emit(image)
+
+
+class TCPIPServer(QObject):
+    def __init__(self, image_updater):
+        super().__init__()
+        self.image_updater = image_updater
+        self.image_updater.image_updated.connect(self.publish_frames)
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(('0.0.0.0', 5607))
+        self.server_socket.listen(1)
+        print("waiting connection")
+        
+        self.client_socket = None
+        self.connection = None
+        self.accept_thread = threading.Thread(target=self.accept_connections)
+        self.accept_thread.start()
+
+    def accept_connections(self):
+        try:
+            while True:
+                self.client_socket, self.client_address = self.server_socket.accept()
+                self.connection = self.client_socket.makefile('wb')
+                
+        except Exception as e:
+            print(f"accept_connection :{e}")
+    def publish_frames(self, frame):
+        if self.connection:
+            try:
+                encoded, buffer = cv2.imencode('.jpg', frame)
+                data = np.array(buffer)
+                string_data = data.tobytes()
+                self.connection.write(struct.pack('<L', len(string_data)))
+                self.connection.write(string_data)
+                self.connection.flush()
+                    
+            except Exception as e:
+                self.connection.close()
+                self.client_socket = None
+                self.connection = None
+                print(f"publish_frames{e}")
+                
+    def stop_server(self):
+        if self.connection:
+            self.connection.close()
+        if self.client_socket:
+            self.client_socket.close()
+        self.server_socket.close()
+        print("Server is closed")
+
 
 class ImageSubscriber(Node):
     def __init__(self, ui):
@@ -37,10 +105,27 @@ class ImageSubscriber(Node):
             if self.ui.is_on_camera:
                 self.ui.update_image_signal.emit(cv_image)
         except CvBridgeError as e:
-            print(e)
+            print(f"image_callback : {e}")
 
     def update_names(self, names):
         self.names = names
+        
+class Camera(QThread):
+    #시그널 종류 생성
+    update = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        
+    def run(self):
+        while self.running == True:
+
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
 
 
 class FacenameSubscriber(Node):
@@ -49,7 +134,7 @@ class FacenameSubscriber(Node):
         self.ui = ui
         self.names_sub = self.create_subscription(
             String,
-            '/face_names', 
+            '/face_names_1', 
             self.names_callback, 
             10
         )
@@ -60,7 +145,8 @@ class FacenameSubscriber(Node):
             names = data.data.split(',')
             self.ui.name = names[0]
             if self.ui.is_on_camera:
-                if names[0] == "joe":
+                if names[0] == "이지호" or names[0] == "이정욱" or names[0] == "유동규":
+                    self.ui.camera_stop()
                     self.ui.faceLabel.setText(f"{names[0]}님 환영합니다!!")
                     time.sleep(1)
                     if self.ui.robot_task == "order":
@@ -72,34 +158,33 @@ class FacenameSubscriber(Node):
                     self.ui.faceLabel.setText("얼굴 정면이 보이게 카메라를 바라봐주세요!!")
                         
         except CvBridgeError as e:
-            print(e)  
+            print(f"names_callback : {e}")  
             
-class OrderSubscriber(Node):
+class TaskSubscriber(Node):
     def __init__(self, ui):
-        super().__init__("order_sub")
+        super().__init__("task_sub")
         self.ui = ui
         self.subscription = self.create_subscription(
             Int64MultiArray,
-            "/robot_task",
+            "/robot_task_1",
             self.order_callback,
             10)
 
     def order_callback(self, msg):
         try:
             if msg.data[1] == 1:
-                self.ui.robot_task == "delivery"
+                self.ui.robot_task = "delivery"
             elif msg.data[1] == 2:
-                self.ui.robot_task == "order"
+                self.ui.robot_task = "order"
             elif msg.data[1] == 3:
-                self.ui.robot_task == "sale"
+                self.ui.robot_task = "sale"
             else:
-                self.ui.robot_task == "ready"
+                self.ui.robot_task = "ready"
             self.order_list = [0, 0, 0, 0]
             self.order_list[0] = msg.data[2] # americano
             self.order_list[1] = msg.data[3] # latte
             self.order_list[2] = msg.data[4] # coke
             self.order_list[3] = msg.data[5] # snack
-            
 
             if self.ui.robot_task == "delivery":
                 self.ui.notice_success_rfid()
@@ -149,7 +234,7 @@ class RFIDReaderNode(Node):
 
         self.reader = SimpleMFRC522()
         self.get_logger().info('RFID Reader Node has been started.')
-        self.publisher = self.create_publisher(Int64MultiArray, "/rfid_info_1", 10)
+        self.publisher = self.create_publisher(Int64MultiArray, "/rfid_info", 10)
         self.id = None
         self.is_on_rfid = False
         self.total_price = 0
@@ -161,7 +246,6 @@ class RFIDReaderNode(Node):
 
     def read_rfid(self):
         try:
-            print(self.id)
             self.is_on_rfid = self.ui.is_on_rfid
             id = self.reader.read_id()
             
@@ -203,7 +287,7 @@ class RFIDSubscriber(Node):
         
         self.subscription = self.create_subscription(
             Int64MultiArray,
-            "/rfid_renew",
+            "/rfid_renew_1",
             self.rfid_callback,
             10)
         self.check_id = False
@@ -222,6 +306,8 @@ class RFIDSubscriber(Node):
                 time.sleep(1)
                 self.servo_controller.set_angle(90)
                 self.ui.notice_success_rfid()
+            elif not self.check_id:
+                self.ui.label_8.setText("Unregistered Card")
             else:
                 self.ui.label_8.setText("Try Again!!")
                 self.ui.is_tag = False
@@ -260,7 +346,7 @@ class ServoController:
             time.sleep(1)  # 서보가 목표 각도로 이동할 시간을 줍니다.
             self.pwm.ChangeDutyCycle(0)  # 서보를 비활성화하여 과열을 방지합니다.
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"set_angle : {e}")
 
 
     def cleanup(self):
