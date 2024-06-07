@@ -27,9 +27,9 @@ from rio_db_manager.create_init_db import CreateInitDB
 
 from twilio.rest import Client
 
-class UserService(Node):
+class GenerateQRServer(Node):
     def __init__(self):
-        super().__init__('admin_service')
+        super().__init__('generate_qr_server')
         self.srv = self.create_service(GenerateVisitQR, 'generate_qr', self.generate_qr_callback)      
         self.qr_code_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../../src/rio_ui/rio_ui/data/'))
         os.makedirs(self.qr_code_dir, exist_ok=True)
@@ -484,7 +484,7 @@ class RFIDSubscriber(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    admin_service = UserService()
+    admin_service = GenerateQRServer()
     qr_service = QRCheckServer()
     executor = MultiThreadedExecutor()
     executor.add_node(admin_service)
