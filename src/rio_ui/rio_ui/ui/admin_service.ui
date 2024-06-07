@@ -844,14 +844,14 @@
   <widget class="QLabel" name="visited_label">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>99</x>
      <y>470</y>
      <width>441</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string/>
    </property>
   </widget>
  </widget>
