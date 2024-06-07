@@ -31,7 +31,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.setupUi(self)
         self.requestButton1.clicked.connect(self.topic_test)
         self.deliRequestBtn.clicked.connect(self.pub_task)
-        self.addUserBtn.clicekd.connect(self.add_user)
+        self.addUserBtn.clicked.connect(self.add_user)
         
         self.nav = BasicNavigator()
         self.goal_pose = PoseStamped()
@@ -312,7 +312,7 @@ def main():
     db_connector = DBConnector()
     db_manager = db_connector.db_manager
     app = QApplication(sys.argv)
-    myWindow = AdminGUI(db_connector)
+    myWindow = AdminGUI()
     # myWindow = AdminGUI()    
     myWindow.show()
     
@@ -324,11 +324,8 @@ def main():
     request_subscriber = RequestSubscriber(signals)
     user_service_server = UserService()
     order_subscriber = OrderSubscriber(myWindow)
-<<<<<<< HEAD
     rfid_node = RFIDSubscriber(db_manager) 
-=======
     qr_check_server = QRCheckServer()
->>>>>>> dev
 
 
     executor.add_node(amcl_subscriber)
@@ -336,11 +333,8 @@ def main():
     executor.add_node(request_subscriber)
     executor.add_node(user_service_server)
     executor.add_node(order_subscriber)
-<<<<<<< HEAD
     executor.add_node(rfid_node)
-=======
     executor.add_node(qr_check_server)
->>>>>>> dev
 
     thread = threading.Thread(target=executor.spin)
     thread.start()
