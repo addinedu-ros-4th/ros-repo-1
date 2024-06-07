@@ -7,12 +7,12 @@ import rclpy
 
 from example_interfaces.msg import Float64MultiArray, Int64MultiArray
 from rio_ui.admin_service import *
-from rio_ui_msgs.srv import GenerateVisitQR
-
+from rio_ui_msgs.srv import GenerateVisitQR, VisitorAlert
 
 import sys
 import os
 import json
+import threading
 from datetime import datetime
 
 main_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "user_service.ui")
@@ -26,15 +26,15 @@ order_ui = uic.loadUiType(order_ui_file)[0]
 class UserGUI(QMainWindow, user_ui):
     def __init__(self):
         super().__init__()
-        
         self.setupUi(self)
-        
-        # ROS 2 노드 초기화
         if not rclpy.ok():
             rclpy.init(args=None)
-        self.node = rclpy.create_node("task_node")
-        self.publisher = self.node.create_publisher(Float64MultiArray, "task_request", 10)
-        
+
+        self.node = rclpy.create_node('task_node')
+        self.publisher = self.node.create_publisher(Float64MultiArray, 'task_request', 10)
+        self.service_node = rclpy.create_node('visitor_alert_server')
+        self.service = self.service_node.create_service(VisitorAlert, 'get_visitor_info', self.alert_callback)
+        self.start_node_spin()
         # 버튼 클릭 시 publish_task 함수 호출
         self.callRobotButton.clicked.connect(self.publish_task)
         self.pre_arrangement_bt.clicked.connect(self.write_pre_arrangement)
@@ -57,6 +57,33 @@ class UserGUI(QMainWindow, user_ui):
     def order_menu(self):
         order_window = OrderGUI()
         order_window.exec_()
+
+    def start_node_spin(self):
+        self.alert_thread = threading.Thread(target=rclpy.spin, args=(self.service_node,), daemon=True)
+        self.alert_thread.start()
+
+    def alert_callback(self, request, response):
+        name = request.name
+        affiliation = request.affiliation
+        # 나중에 domain bridge 한다면 아래 변수로
+        # visit_place = request.visit_place 
+        robot_guidance = request.robot_guidance
+
+        QMetaObject.invokeMethod(self, "visitor_alert_wrapper", Qt.QueuedConnection, Q_ARG(str, name), Q_ARG(str, affiliation), Q_ARG(bool, robot_guidance))
+        
+        response.success = True
+        return response
+
+    @pyqtSlot(str, str, bool)
+    def visitor_alert_wrapper(self, name, affiliation, robot_guidance):
+        self.visitor_alert(name, affiliation, robot_guidance)
+
+    def visitor_alert(self, name, affiliation, robot_guidance):
+        if robot_guidance == True:
+            QMessageBox.information(self, "손님 도착 알림", f"{affiliation}의 {name}님이 도착하였습니다.\n로봇 길 안내를 시작합니다.")
+        else:
+            QMessageBox.information(self, "손님 도착 알림", f"{affiliation}의 {name}님이 도착하였습니다.")
+
     
     def closeEvent(self, event):
         rclpy.shutdown()
@@ -236,7 +263,6 @@ class SubGUI(QDialog, sub_ui):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')              
         self.request = GenerateVisitQR.Request()
-        # self.visitor_service = VisitInfoClient()
 
         self.submit_bt.setDefault(True)
         self.submit_bt.clicked.connect(self.handle_submit)
@@ -264,20 +290,23 @@ class SubGUI(QDialog, sub_ui):
     def request_qr(self, visit_info):
         self.request.visitor_info = json.dumps(visit_info)
         future = self.cli.call_async(self.request)   
-        rclpy.spin_once(self.node, timeout_sec=None)
+        future.add_done_callback(self.handle_response)
+        while not future.done():
+            rclpy.spin_once(self.node, timeout_sec=0.1)
         self.handle_response(future)
-        # future.add_done_callback(self.handle_response)
+        # rclpy.spin_until_future_complete(self.node, future)
+        # self.handle_response(future)
 
     def handle_response(self, future):
         try:
             response = future.result()
             self.node.get_logger().info(f"Response: success={response.success}, message={response.message}")
-            self.anounce_sms_success(response.success, response.message)
-
+            # self.anounce_sms_success(response.success, response.message)
+            QMetaObject.invokeMethod(self, "anounce_sms_success", Qt.QueuedConnection, Q_ARG(bool, response.success), Q_ARG(str, response.message))
         except Exception as e:
             self.node.get_logger().error(f'Service call failed: {e}')
-        return response
     
+    @pyqtSlot(bool, str)
     def anounce_sms_success(self, success, message):
         if success == True:
             QMessageBox.information(self, "발송 완료",message)
