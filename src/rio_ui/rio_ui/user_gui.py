@@ -87,6 +87,7 @@ class UserGUI(QMainWindow, user_ui):
     
     def closeEvent(self, event):
         rclpy.shutdown()
+        self.alert_thread.join()
         event.accept()
         
 class OrderGUI(QDialog, order_ui):
@@ -250,6 +251,7 @@ class OrderGUI(QDialog, order_ui):
         self.accept()
     
     def closeEvent(self, event):
+        self.node.destroy_node()
         event.accept()
 
 
@@ -258,7 +260,7 @@ class SubGUI(QDialog, sub_ui):
         super().__init__()
         self.setupUi(self)     
 
-        self.node = rclpy.create_node('subgui_node')
+        self.node = rclpy.create_node('generate_qr_client')
         self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr')  
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')              
@@ -290,10 +292,10 @@ class SubGUI(QDialog, sub_ui):
     def request_qr(self, visit_info):
         self.request.visitor_info = json.dumps(visit_info)
         future = self.cli.call_async(self.request)   
-        future.add_done_callback(self.handle_response)
         while not future.done():
             rclpy.spin_once(self.node, timeout_sec=0.1)
         self.handle_response(future)
+        # future.add_done_callback(self.handle_response)
         # rclpy.spin_until_future_complete(self.node, future)
         # self.handle_response(future)
 
@@ -302,13 +304,13 @@ class SubGUI(QDialog, sub_ui):
             response = future.result()
             self.node.get_logger().info(f"Response: success={response.success}, message={response.message}")
             # self.anounce_sms_success(response.success, response.message)
-            QMetaObject.invokeMethod(self, "anounce_sms_success", Qt.QueuedConnection, Q_ARG(bool, response.success), Q_ARG(str, response.message))
+            QMetaObject.invokeMethod(self, "announce_sms_success", Qt.QueuedConnection, Q_ARG(bool, response.success), Q_ARG(str, response.message))
         except Exception as e:
             self.node.get_logger().error(f'Service call failed: {e}')
     
     @pyqtSlot(bool, str)
-    def anounce_sms_success(self, success, message):
-        if success == True:
+    def announce_sms_success(self, success, message):
+        if success:
             QMessageBox.information(self, "발송 완료",message)
         else:
             QMessageBox.warning(self, "발송 오류", message)
