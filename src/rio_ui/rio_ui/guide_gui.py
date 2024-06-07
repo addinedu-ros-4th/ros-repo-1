@@ -135,11 +135,11 @@ class GuideGUI(QMainWindow, guide_ui):
         self.qr_client = QRCheckClient(self.signals)
         self.decode_thread = QRDecodeThread()
         self.camera = Camera()
+        self.camera.start()
+        self.decode_thread.start()
         self.camera.update_image_signal.connect(self.update_qr_image)
         self.camera.frame_captured_signal.connect(self.decode_thread.decode)
         self.decode_thread.decoded_data_signal.connect(self.handle_decoded_data)
-        self.camera.start()
-        self.decode_thread.start()
     
     def qrcheck_success(self, success):
         if success:
