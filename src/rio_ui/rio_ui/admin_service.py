@@ -442,19 +442,27 @@ class RFIDSubscriber(Node):
         
     def ID_check(self):
         uid_list = []
+        id_list = []
         detail_data = self.db_manager.read("UserInfo")
         try:
-            for data in detail_data:  
-                uid = data.get('rfid_UID')  
-                if uid != 0:  
+            for data in detail_data:
+                uid = data.get('rfid_UID')
+                name = data.get('user_id')  # assuming 'user_name' is the key for names in the data
+                if uid != 0:
                     uid_list.append(uid)
-
+                    id_list.append(name)
+                    
+            uid_list = list(dict.fromkeys(uid_list))      
+            id_list = list(dict.fromkeys(id_list))   
             if self.rfid_uid in uid_list:
+                index = uid_list.index(self.rfid_uid)
+                self.id = id_list[index]
+                
                 current_credit = self.calc_total(self.rfid_uid)
-                self.user_credit = current_credit + self.change_total
+                self.total_credit = current_credit + self.change_total
                 self.data[0] = 1
                 self.data[1] = self.rfid_uid
-                self.data[2] = self.user_credit
+                self.data[2] = current_credit
                 
                 
             else:
@@ -464,6 +472,8 @@ class RFIDSubscriber(Node):
             
             msg = Int64MultiArray(data = self.data)
             self.publisher.publish(msg)
+            
+            self.insert_into_DB()
                 
         except Exception as e:
             self.get_logger().error(f'Error check UID: {e}')
@@ -473,13 +483,32 @@ class RFIDSubscriber(Node):
             total_list = []
             criteria = {"rfid_uid": id}
             change_total_log = self.db_manager.read("Payment", criteria, "payment_id")
-            for data in change_total_log:
-                total = data.get("total_credit")
-                total_list.append(total)
-            current_credit = total_list[-1]    
+            
+            if change_total_log:  # change_total_log가 비어 있지 않을 때
+                for data in change_total_log:
+                    total = data.get("total_credit")
+                    total_list.append(total)
+                current_credit = total_list[-1] if total_list else 0  # total_list가 비어 있지 않을 때
+            else:  # change_total_log가 비어 있을 때
+                current_credit = 0
+                
             return current_credit
         except Exception as e:
-            self.get_logger().error(f'Error check UID: {e}')
+            self.get_logger().error(f'Error calc_total: {e}')
+            
+    def insert_into_DB(self):
+        current_datetime = datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        self.user_data = {
+            "date": formatted_datetime,
+            "user_id": self.id,
+            "rfid_UID": self.rfid_uid,
+            "change_info": "buy",
+            "change_credit": self.change_total,
+            "total_credit": self.user_credit + self.change_total
+        }
+    
+        self.db_manager.create("Payment", self.user_data)
         
 
 def main(args=None):
