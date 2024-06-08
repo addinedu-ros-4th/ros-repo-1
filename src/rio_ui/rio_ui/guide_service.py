@@ -14,7 +14,6 @@ from PyQt5.QtCore import *
 
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
-from threading import Thread
 
 class RegisterService(Node):
     def __init__(self):
@@ -50,6 +49,7 @@ class QRCheckClient(Node):
     def __init__(self, signals):
         super().__init__('qr_check_client')
         self.cli = self.create_client(QRCheck, 'qr_check_1')
+        # self.cli = self.create_client(QRCheck, 'qr_check')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.request = QRCheck.Request()
@@ -68,9 +68,9 @@ class QRCheckClient(Node):
             response = future.result()
             self.get_logger().info(f'Service response {response.success}, {response.message}')
             if response.success == "True":
-                self.signals.qr_service.emit(response.success)
+                self.signals.qr_service_signal.emit(response.success)
             else:
-                self.signals.qr_service.emit(response.success)
+                self.signals.qr_service_signal.emit(response.success)
         except Exception as e:
             self.get_logger().error(f'Service call failed: {e}')
 
@@ -79,7 +79,7 @@ class QRCheckClient(Node):
 class ROSGuideNodeSignals(QObject):
     update_image_signal = pyqtSignal(np.ndarray)
     face_registration = pyqtSignal(bool)
-    qr_service = pyqtSignal(bool)
+    qr_service_signal = pyqtSignal(bool)
 
 class ImageSubscriber(Node):
     def __init__(self, signals):

@@ -8,6 +8,7 @@ import rclpy
 from example_interfaces.msg import Float64MultiArray, Int64MultiArray
 from rio_ui.admin_service import *
 from rio_ui_msgs.srv import GenerateVisitQR, VisitorAlert
+from rclpy.executors import MultiThreadedExecutor
 
 import sys
 import os
@@ -34,7 +35,7 @@ class UserGUI(QMainWindow, user_ui):
         self.publisher = self.node.create_publisher(Float64MultiArray, 'task_request', 10)
         self.service_node = rclpy.create_node('visitor_alert_server')
         self.service = self.service_node.create_service(VisitorAlert, 'get_visitor_info', self.alert_callback)
-        self.start_node_spin()
+        self.start_executor_spin()
         # 버튼 클릭 시 publish_task 함수 호출
         self.callRobotButton.clicked.connect(self.publish_task)
         self.pre_arrangement_bt.clicked.connect(self.write_pre_arrangement)
@@ -58,9 +59,14 @@ class UserGUI(QMainWindow, user_ui):
         order_window = OrderGUI()
         order_window.exec_()
 
-    def start_node_spin(self):
-        self.alert_thread = threading.Thread(target=rclpy.spin, args=(self.service_node,), daemon=True)
-        self.alert_thread.start()
+    def start_executor_spin(self):
+        # self.alert_thread = threading.Thread(target=rclpy.spin, args=(self.service_node,), daemon=True)
+        # self.alert_thread.start()
+        self.executor = MultiThreadedExecutor()
+        self.executor.add_node(self.node)
+        self.executor.add_node(self.service_node)
+        self.executor_thread = threading.Thread(target=self.executor.spin, daemon=True)
+        self.executor_thread.start()
 
     def alert_callback(self, request, response):
         name = request.name
@@ -79,14 +85,17 @@ class UserGUI(QMainWindow, user_ui):
 
     def visitor_alert(self, name, affiliation, robot_guidance):
         if robot_guidance == True:
-            QMessageBox.information(self, "손님 도착 알림", f"{affiliation}의 {name}님이 도착하였습니다.\n로봇 길 안내를 시작합니다.")
+            self.node.get_logger().info(f"손님 도착 알림, {affiliation}의 {name}님이 도착하였습니다.\n로봇 길 안내를 시작합니다.")
+            QMessageBox.information(self, f"손님 도착 알림 : {affiliation}의 {name}님이 도착하였습니다.\n로봇 길 안내를 시작합니다.")
         else:
-            QMessageBox.information(self, "손님 도착 알림", f"{affiliation}의 {name}님이 도착하였습니다.")
+            self.node.get_logger().info(f"손님 도착 알림, {affiliation}의 {name}님이 도착하였습니다.")
+            QMessageBox.information(self, f"손님 도착 알림, {affiliation}의 {name}님이 도착하였습니다.")
 
     
     def closeEvent(self, event):
+        self.executor.shutdown()
+        self.executor_thread.join()
         rclpy.shutdown()
-        self.alert_thread.join()
         event.accept()
         
 class OrderGUI(QDialog, order_ui):
@@ -261,6 +270,7 @@ class SubGUI(QDialog, sub_ui):
 
         self.node = rclpy.create_node('generate_qr_client')
         self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr_1')  
+        # self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr') 
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().info('service not available, waiting again...')              
         self.request = GenerateVisitQR.Request()
