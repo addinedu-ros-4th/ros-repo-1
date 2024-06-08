@@ -14,7 +14,6 @@ from PyQt5.QtCore import *
 
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
-from threading import Thread
 
 class RegisterService(Node):
     def __init__(self):
@@ -49,7 +48,8 @@ class RegisterService(Node):
 class QRCheckClient(Node):
     def __init__(self, signals):
         super().__init__('qr_check_client')
-        self.cli = self.create_client(QRCheck, 'qr_check')
+        self.cli = self.create_client(QRCheck, 'qr_check_1')
+        # self.cli = self.create_client(QRCheck, 'qr_check')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.request = QRCheck.Request()
