@@ -1,9 +1,9 @@
 {
     "rio_database": {
-        "host": "",
-        "port": ,
-        "user": "",
-        "password": "",
-        "database": ""
+        "host": "localhost",
+        "port": 3306,
+        "user": "joe",
+        "password": "0000",
+        "database": "RiO_DB"
     }
 }

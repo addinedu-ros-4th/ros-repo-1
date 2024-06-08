@@ -781,7 +781,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../data/resource.qrc"/>
+  <include location="data/resource.qrc"/>
  </resources>
  <connections/>
 </ui>

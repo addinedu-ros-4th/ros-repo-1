@@ -187,7 +187,7 @@ class TCPIPClientNode(Node):
 def main(args=None):
     rp.init(args=args)
 
-    ip_address = "192.168.0.46"
+    ip_address = "192.168.123.106"
 
     tcpip_client_node = TCPIPClientNode(ip_address)
 

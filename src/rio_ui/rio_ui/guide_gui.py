@@ -75,7 +75,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.signals = ROSGuideNodeSignals()
         self.signals.update_image_signal.connect(self.update_image)
         self.signals.face_registration.connect(self.face_registration)
-        self.signals.qr_service.connect(self.qrcheck_success)
+        self.signals.qr_service_signal.connect(self.qrcheck_success)
 
         # self.signals.update_mode_signal = pyqtSignal(str)
 
