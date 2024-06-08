@@ -68,9 +68,9 @@ class QRCheckClient(Node):
             response = future.result()
             self.get_logger().info(f'Service response {response.success}, {response.message}')
             if response.success == "True":
-                self.signals.qr_service.emit(response.success)
+                self.signals.qr_service_signal.emit(response.success)
             else:
-                self.signals.qr_service.emit(response.success)
+                self.signals.qr_service_signal.emit(response.success)
         except Exception as e:
             self.get_logger().error(f'Service call failed: {e}')
 
@@ -79,7 +79,7 @@ class QRCheckClient(Node):
 class ROSGuideNodeSignals(QObject):
     update_image_signal = pyqtSignal(np.ndarray)
     face_registration = pyqtSignal(bool)
-    qr_service = pyqtSignal(bool)
+    qr_service_signal = pyqtSignal(bool)
 
 class ImageSubscriber(Node):
     def __init__(self, signals):
