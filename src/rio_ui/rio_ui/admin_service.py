@@ -21,11 +21,109 @@ import http.server
 import socketserver
 from datetime import datetime
 
+import sys
+import uuid
+import argparse
+import asyncio
+from rclpy.parameter import Parameter
+from rclpy.qos import qos_profile_system_default
+from rclpy.qos import QoSProfile
+from rclpy.qos import QoSHistoryPolicy as History
+from rclpy.qos import QoSDurabilityPolicy as Durability
+from rclpy.qos import QoSReliabilityPolicy as Reliability
+
 from rio_ui_msgs.srv import GenerateVisitQR, QRCheck, VisitorAlert
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
 
 from twilio.rest import Client
+
+from rmf_task_msgs.msg import ApiRequest, ApiResponse
+from rmf_fleet_msgs.msg import FleetState
+
+class TaskRequester(Node):
+    def __init__(self):
+        super().__init__('task_requester')
+
+        self.response = asyncio.Future()
+
+        self.transient_qos = QoSProfile(
+            history=History.KEEP_LAST,
+            depth=1,
+            reliability=Reliability.RELIABLE,
+            durability=Durability.TRANSIENT_LOCAL)
+
+        
+
+    def task_msg_pub(self, params):
+        self.args = params
+
+        # Construct task
+        msg = ApiRequest()
+        msg.request_id = "direct_" + str(uuid.uuid4())
+        payload = {}
+
+        if self.args['robot'] and self.args['fleet']:
+            self.get_logger().info("Using 'robot_task_request'")
+            payload["type"] = "robot_task_request"
+            payload["fleet"] = self.args['fleet']
+            payload["robot"] = self.args['robot']
+        else:
+            self.get_logger().info("Using 'dispatch_task_request'")
+            payload["type"] = "dispatch_task_request"
+
+        # Set task request start time
+        now = self.get_clock().now().to_msg()
+        now.sec = now.sec + self.args['start_time']
+        start_time = now.sec * 1000 + round(now.nanosec/10**6)
+        # todo(YV): Fill priority after schema is added
+
+        # Define task request description
+        go_to_description = {'waypoint': self.args['place']}
+        if self.args['orientation'] is not None:
+            go_to_description['orientation'] = (
+                self.args['orientation']*math.pi/180.0
+            )
+
+        go_to_activity = {
+            'category': 'go_to_place',
+            'description': go_to_description
+        }
+
+        rmf_task_request = {
+            'category': 'compose',
+            'description': {
+                'category': 'go_to_place',
+                'phases': [{'activity': go_to_activity}]
+            },
+            'unix_millis_earliest_start_time': start_time
+        }
+
+        payload["request"] = rmf_task_request
+
+        msg.json_msg = json.dumps(payload)
+
+        def receive_response(response_msg: ApiResponse):
+            if response_msg.request_id == msg.request_id:
+                self.response.set_result(json.loads(response_msg.json_msg))
+
+        self.sub = self.create_subscription(
+            ApiResponse, 'task_api_responses', receive_response, 10
+        )
+
+        self.pub = self.create_publisher(
+          ApiRequest, 'task_api_requests', self.transient_qos
+        )
+
+        print(f"Json msg payload: \n{json.dumps(payload, indent=2)}")
+        self.pub.publish(msg)
+
+        rclpy.spin_until_future_complete(self, self.response, timeout_sec=5.0)
+        if self.response.done():
+            print(f'Got response:\n{self.response.result()}')
+        else:
+            print('Did not get a response')
+
 
 class GenerateQRServer(Node):
     def __init__(self):
@@ -224,14 +322,19 @@ class AmclSubscriber(Node):
         super().__init__("amcl_sub")
         self.signals = signals
         self.subscription = self.create_subscription(
-            PoseWithCovarianceStamped,
-            "/amcl_pose_1",
+            # PoseWithCovarianceStamped,
+            FleetState,
+            # "/amcl_pose",
+            "/fleet_states",
             self.map_callback,
             10)
         
     def map_callback(self, data):
-        x = data.pose.pose.position.x
-        y = data.pose.pose.position.y
+        # x = data.pose.pose.position.x
+        # y = data.pose.pose.position.y
+
+        x = data.robots[0].location.x
+        y = data.robots[0].location.y
         self.signals.amcl_pose_received.emit(x, y)
 
 
