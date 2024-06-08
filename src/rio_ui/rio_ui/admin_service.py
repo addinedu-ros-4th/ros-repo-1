@@ -356,7 +356,7 @@ class QRCheckServer(Node):
 class VisitorService(Node):
     def __init__(self):
         super().__init__('visitor_alert_client')
-        self.cli = self.create_client(VisitorAlert, 'get_visitor_info')
+        self.cli = self.create_client(VisitorAlert, 'get_visitor_info_1')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...') 
         self.request = VisitorAlert.Request()

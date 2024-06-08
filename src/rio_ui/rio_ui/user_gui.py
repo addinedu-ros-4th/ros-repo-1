@@ -65,10 +65,9 @@ class UserGUI(QMainWindow, user_ui):
     def alert_callback(self, request, response):
         name = request.name
         affiliation = request.affiliation
-        # 나중에 domain bridge 한다면 아래 변수로
-        # visit_place = request.visit_place 
-        robot_guidance = request.robot_guidance
 
+        robot_guidance = request.robot_guidance
+        print("*****************************")
         QMetaObject.invokeMethod(self, "visitor_alert_wrapper", Qt.QueuedConnection, Q_ARG(str, name), Q_ARG(str, affiliation), Q_ARG(bool, robot_guidance))
         
         response.success = True
@@ -261,9 +260,9 @@ class SubGUI(QDialog, sub_ui):
         self.setupUi(self)     
 
         self.node = rclpy.create_node('generate_qr_client')
-        self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr')  
+        self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr_1')  
         while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')              
+            self.node.get_logger().info('service not available, waiting again...')              
         self.request = GenerateVisitQR.Request()
 
         self.submit_bt.setDefault(True)

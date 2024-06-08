@@ -49,7 +49,7 @@ class RegisterService(Node):
 class QRCheckClient(Node):
     def __init__(self, signals):
         super().__init__('qr_check_client')
-        self.cli = self.create_client(QRCheck, 'qr_check')
+        self.cli = self.create_client(QRCheck, 'qr_check_1')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.request = QRCheck.Request()
