@@ -53,8 +53,6 @@ class TaskRequester(Node):
             reliability=Reliability.RELIABLE,
             durability=Durability.TRANSIENT_LOCAL)
 
-        
-
     def task_msg_pub(self, params):
         self.args = params
 

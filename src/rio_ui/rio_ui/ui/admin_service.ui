@@ -602,7 +602,7 @@
    <widget class="QPushButton" name="pushButton_6">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>430</x>
       <y>450</y>
       <width>121</width>
       <height>51</height>
@@ -623,7 +623,7 @@
    <widget class="QPushButton" name="deliRequestBtn">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>220</x>
       <y>450</y>
       <width>121</width>
       <height>51</height>
