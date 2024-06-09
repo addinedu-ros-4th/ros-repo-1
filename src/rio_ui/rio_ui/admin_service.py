@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QTableWidgetItem
 import math
 import os
 import json
+import time
 import hashlib
 import socket
 import qrcode
@@ -642,8 +643,6 @@ class TTSAlertService():
 
     def stop_tts(self):
         if self.tts_thread and self.tts_thread.is_alive():
-            # 여기서는 스레드를 강제로 종료할 방법이 없으므로, 스레드 작업이 완료될 때까지 기다리는 방법을 사용
-            # 안전하게 종료하는 것이 좋습니다.
             self.tts_thread.join()
         self.tts_thread = None
 

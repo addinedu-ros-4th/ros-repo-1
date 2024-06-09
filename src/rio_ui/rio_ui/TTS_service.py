@@ -11,6 +11,3 @@ class TTSService():
     def speak(self, filename):
         playsound.playsound(filename)
 
-    # 음성 실행만 할 시 save 함수는 주석 처리하기
-    # save('see_you_next_time.mp3', '이용해 주셔서 감사합니다. 다음에 다시 방문해 주시기를 바랍니다!')
-    # speak('../../data/tts_files/see_you_next_time.mp3')
