@@ -39,7 +39,6 @@ setup(
             'guide_gui = rio_ui.guide_gui:main',
             'key_save_load = rio_ui.key_save_load:main',
             'face_recog_node = rio_ui.face_recog_node:main',
-
         ],
     },
 )

@@ -21,8 +21,10 @@ from rio_ui.admin_service import *
 
 admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
 add_user_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "add_user.ui")
+office_manage_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "office_manage.ui")
 admin_ui = uic.loadUiType(admin_file)[0]
 add_user_ui = uic.loadUiType(add_user_file)[0]
+office_manage_ui = uic.loadUiType(office_manage_file)[0]
 
 
 class AdminGUI(QMainWindow, admin_ui):
@@ -32,6 +34,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.requestButton1.clicked.connect(self.topic_test)
         self.deliRequestBtn.clicked.connect(self.pub_task)
         self.addUserBtn.clicked.connect(self.add_user)
+        self.officeManageBtn.clicked.connect(self.office_manage)
         
         self.nav = BasicNavigator()
         self.goal_pose = PoseStamped()
@@ -50,8 +53,8 @@ class AdminGUI(QMainWindow, admin_ui):
         self.node = rclpy.create_node("robot_task_node")
         self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
 
-        self.tts = TTSAlertService()
-        self.tts.run_tts("admin_greeting")
+        # self.tts = TTSAlertService()
+        # self.tts.run_tts("admin_greeting")
 
         self.db_connector = DBConnector()
         # self.db_manager = db_manager
@@ -62,7 +65,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.signals = ROSNodeSignals()
         self.signals.amcl_pose_received.connect(self.update_amcl_pose)
         self.signals.path_distance_received.connect(self.update_path_distance)
-        self.signals.task_request_received.connect(self.update_task_request)
+        # self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
 
         with open(os.path.join(get_package_share_directory("rio_main"), "maps", "map_name.yaml")) as f:
@@ -227,16 +230,170 @@ class AdminGUI(QMainWindow, admin_ui):
             self.node.get_logger().info('Published message to /robot_task_1: %s' % order)
             
     def add_user(self):
-        pre_arrangement_window = AddUserGUI()
-        pre_arrangement_window.exec_()
+        add_user_window = AddUserGUI()
+        add_user_window.exec_()
+        
+    def office_manage(self):
+        office_manage_window = OfficeManagerGUI()
+        office_manage_window.exec_()
                 
     def closeEvent(self, event):
         self.timer.stop()
         if self.db_connector and self.db_connector.db_manager:
             self.db_connector.db_manager.close()
         rclpy.shutdown()
-        self.tts.stop_tts()
+        # self.tts.stop_tts()
         event.accept()
+        
+        
+class OfficeManagerGUI(QDialog, office_manage_ui):
+    def __init__(self):
+        super().__init__()
+        
+        self.setupUi(self)
+        self.db_connector = DBConnector()
+        self.password.setEchoMode(QLineEdit.Password) 
+        self.passwordCheck.setEchoMode(QLineEdit.Password)
+        self.openDate.setCalendarPopup(True)
+        self.openDate.setDisplayFormat("yyyy-MM-dd")
+        self.openDate.setDate(QDate.currentDate())
+        self.closeDate.setCalendarPopup(True)
+        self.closeDate.setDisplayFormat("yyyy-MM-dd")
+        self.closeDate.setDate(QDate.currentDate())
+        
+        table = "OfficeInfo"
+        column = "office_number"
+        criteria = "close_date"
+        
+        result = self.db_connector.select_specific_null(table, column, criteria)
+        for value in result:
+            self.officeNumCBX.addItem(str(value['office_number'])) 
+        self.change_company_label()
+
+        
+        
+        self.officeNumCBX.currentIndexChanged.connect(self.change_company_labe)
+        self.addBtn.clicked.connect(self.read_info)
+        self.applyBtn.clicked.connect(self.close_office_confirm)
+        self.cancel_bt.clicked.connect(self.close)
+        self.cancel_bt_3.clicked.connect(self.close)
+        
+    def change_company_label(self):
+        table = "OfficeInfo"
+        column = "company_name"
+        current_office = {"office_number": self.officeNumCBX.currentText()}
+        company = self.db_connector.select_specific(table, column, current_office)[0]
+        self.current_company = str(company["company_name"])
+        self.companyLabel.setText(self.current_company)
+        
+    def read_info(self):
+        office_num = self.officeNum.text()
+        company = self.companyName.text()
+        password = self.password.text()
+        password_check = self.passwordCheck.text()
+        open_date = self.openDate.date().toPyDate()
+        open_date_str = open_date.strftime('%Y-%m-%d')
+        
+        if password == password_check:
+            self.office_data = {
+                    "office_number": office_num,
+                    "company_name": company,
+                    "password": password,
+                    "open_date": open_date_str
+                }
+            self.check_blank()
+            
+        else:
+            self.password_match_warning()
+            
+    def password_match_warning(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("비밀번호가 일치하지 않습니다")
+        confirmation.setWindowTitle("password check")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.exec_()  
+        
+    def check_blank(self):
+        is_blank = False
+        exception_key = "close_date"
+        for key, value in self.office_data.items():
+            if key != exception_key and value == "":
+                is_blank = True
+                
+        if is_blank:
+            self.blank_warning()
+        else:
+            
+            self.regist_confirm_notice()  
+            
+    def regist_confirm_notice(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Question)
+        confirmation.setText("사무실 이용현황을 등록하시겠습니까?")
+        confirmation.setWindowTitle("사무실 등록")
+        confirmation.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        confirmation.buttonClicked.connect(self.regist_confirm)
+        confirmation.exec_()
+        
+    def regist_confirm(self):
+        try:
+            self.db_connector.db_connect()
+            self.db_connector.insert_value("OfficeInfo", self.office_data)
+            
+        except Exception as e:
+            print(e)
+        
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("등록이 완료되었습니다.")
+        confirmation.setWindowTitle("등록 완료")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.buttonClicked.connect(self.regist_complete)
+        confirmation.exec_()
+        
+    def regist_complete(self, button):
+        self.accept()
+        
+    def blank_warning(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("필수항목을 모두 입력해주세요")
+        confirmation.setWindowTitle("blank check")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.exec_()  
+        
+    def close_office_confirm(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Question)
+        confirmation.setText("해당 회사를 퇴점처리 하시겠습니까?")
+        confirmation.setWindowTitle("사무실 퇴점")
+        confirmation.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        confirmation.buttonClicked.connect(self.close_office)
+        confirmation.exec_()
+        
+    def close_office(self):
+        office_num = self.officeNumCBX.currentText()
+        close_date = self.openDate.date().toPyDate()
+        close_date_str = close_date.strftime('%Y-%m-%d')
+        
+        table = "OfficeInfo"
+        data = {"close_date": close_date_str}
+        criteria ={"office_number": office_num, "company_name": self.current_company}
+        self.db_connector.update_value(table, data, criteria)  
+        
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("퇴점이 완료되었습니다.")
+        confirmation.setWindowTitle("퇴점 완료")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.buttonClicked.connect(self.close_complete)
+        confirmation.exec_()     
+        
+    def close_complete(self, button):
+        self.accept() 
+        
+        
         
 class AddUserGUI(QDialog, add_user_ui):
     def __init__(self):
@@ -360,7 +517,6 @@ def main():
     db_manager = db_connector.db_manager
     app = QApplication(sys.argv)
     myWindow = AdminGUI()
-    # myWindow = AdminGUI()    
     myWindow.show()
     
     signals = myWindow.signals
@@ -368,7 +524,7 @@ def main():
 
     amcl_subscriber = AmclSubscriber(signals)
     path_subscriber = PathSubscriber(signals)
-    request_subscriber = RequestSubscriber(signals)
+    request_subscriber = RobotCallSubscriber(myWindow)
     generate_qr_server = GenerateQRServer()
     order_subscriber = OrderSubscriber(myWindow)
     rfid_node = RFIDSubscriber(db_manager) 

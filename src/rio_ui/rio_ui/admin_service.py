@@ -36,9 +36,9 @@ from rclpy.qos import QoSReliabilityPolicy as Reliability
 from rio_ui_msgs.srv import GenerateVisitQR, QRCheck, VisitorAlert
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
-from rio_ui.TTS_service import TTSService
+# from rio_ui.TTS_service import TTSService
 
-from twilio.rest import Client
+# from twilio.rest import Client
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 from rmf_fleet_msgs.msg import FleetState
@@ -313,7 +313,7 @@ class ThreadedHTTPServer(object):
 class ROSNodeSignals(QObject):
     amcl_pose_received = pyqtSignal(float, float)
     path_distance_received = pyqtSignal(float)
-    task_request_received = pyqtSignal(float, float, float)
+    # task_request_received = pyqtSignal(float, float, float)
     visitor_alert_received = pyqtSignal(list)
     
 
@@ -400,24 +400,61 @@ class OrderSubscriber(Node):
         self.ui.requestTable.insertRow(row_position)
         self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
         self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
-        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(order_str))
+        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem("Delivery RiO"))
+        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(order_str))
         
-
-class RequestSubscriber(Node):
-    def __init__(self, signals):
-        super().__init__("req_sub")
-        self.signals = signals
-        self.subscription = self.create_subscription(
-            Float64MultiArray,
-            "/task_request_1",
-            self.req_callback,
+class RobotCallSubscriber(Node):
+    def __init__(self, ui):
+        super().__init__("robot_call_sub")
+        self.ui = ui
+        self.order_subs = self.create_subscription(
+            Int64MultiArray,
+            "/robot_call_user_1",
+            self.robot_call_callback,
             10
         )
+    
+    def robot_call_callback(self, msg):
+        office_num = msg.data[0]
+        request_time = msg.data[1]
+        robot_type = msg.data[2]
         
-    def req_callback(self, msg):
-        data = msg.data
-        if len(data) == 3:
-            self.signals.task_request_received.emit(data[0], data[1], data[2])
+        time_str = str(request_time)
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
+        
+        if robot_type == 0:
+            request_robot_type = "Guide RiO"
+        elif robot_type == 1:    
+            request_robot_type = "Delivery RiO"
+        elif robot_type == 2:
+            request_robot_type = "Patrol RiO"
+        elif robot_type == 3:
+            request_robot_type = "Clean RiO"
+        
+                    
+        row_position = self.ui.requestTable.rowCount()
+        self.ui.requestTable.insertRow(row_position)
+        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
+        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
+        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(request_robot_type))
+        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(""))
+        
+
+# class RobotCallSubscriber(Node):
+#     def __init__(self, signals):
+#         super().__init__("req_sub")
+#         self.signals = signals
+#         self.subscription = self.create_subscription(
+#             Int64MultiArray,
+#             "/robot_call_user_1",
+#             self.req_callback,
+#             10
+#         )
+        
+#     def req_callback(self, msg):
+#         data = msg.data
+#         if len(data) == 2:
+#             self.signals.task_request_received.emit(data[0], data[1])
 
 
 class QRCheckServer(Node):
@@ -512,10 +549,25 @@ class DBConnector(): # 싱글톤 패턴으로 구현
 
         return all_table_data
     
+    def select_specific(self, table, column, criteria=None):
+        specific_data = self.db_manager.select(column, table, criteria)
+        
+        return specific_data
+    
+    def select_specific_null(self, table, column, criteria=None):
+        specific_data = self.db_manager.select_null(column, table, criteria)
+        
+        return specific_data
+    
     def insert_value(self, table, value):
         insert_into_table = self.db_manager.create(table, value)
         
         return insert_into_table
+    
+    def update_value(self, table, data, criteria=None):
+        update_data = self.db_manager.update(table, data, criteria)
+        
+        return update_data
     
 class RFIDSubscriber(Node):
     def __init__(self, db_manager = None):
@@ -613,36 +665,36 @@ class RFIDSubscriber(Node):
     
         self.db_manager.create("Payment", self.user_data)
 
-class TTSAlertService():     
-    def __init__(self):
-        self.ttsservice = TTSService()
-        self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
-        self.tts_thread = None
+# class TTSAlertService():     
+#     def __init__(self):
+#         self.ttsservice = TTSService()
+#         self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
+#         self.tts_thread = None
         
-    def create_tts_speak(self, file_name, text):
-        file_path = os.path.join(self.base_path, f"{file_name}.mp3")
-        self.ttsservice.create_tts_file(file_path, text)
-        self.ttsservice.speak(file_path)
+#     def create_tts_speak(self, file_name, text):
+#         file_path = os.path.join(self.base_path, f"{file_name}.mp3")
+#         self.ttsservice.create_tts_file(file_path, text)
+#         self.ttsservice.speak(file_path)
     
-    def tts_speak(self, text):
-        file_name = f"{text}.mp3"
-        file_path = os.path.join(self.base_path, file_name)
-        self.ttsservice.speak(file_path)
+#     def tts_speak(self, text):
+#         file_name = f"{text}.mp3"
+#         file_path = os.path.join(self.base_path, file_name)
+#         self.ttsservice.speak(file_path)
 
-    def run_create_tts(self, file_name, text):
-        self.stop_tts()
-        self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(file_name, text,))
-        self.tts_thread.start()
+#     def run_create_tts(self, file_name, text):
+#         self.stop_tts()
+#         self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(file_name, text,))
+#         self.tts_thread.start()
 
-    def run_tts(self, text):
-        self.stop_tts()
-        self.tts_thread = threading.Thread(target=self.tts_speak, args=(text,))
-        self.tts_thread.start()
+#     def run_tts(self, text):
+#         self.stop_tts()
+#         self.tts_thread = threading.Thread(target=self.tts_speak, args=(text,))
+#         self.tts_thread.start()
 
-    def stop_tts(self):
-        if self.tts_thread and self.tts_thread.is_alive():
-            self.tts_thread.join()
-        self.tts_thread = None
+#     def stop_tts(self):
+#         if self.tts_thread and self.tts_thread.is_alive():
+#             self.tts_thread.join()
+#         self.tts_thread = None
 
 def main(args=None):
     rclpy.init(args=args)

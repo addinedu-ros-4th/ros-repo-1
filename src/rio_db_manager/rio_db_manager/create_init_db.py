@@ -18,7 +18,7 @@ class CreateInitDB():
                 user_face BLOB NOT NULL,
                 office VARCHAR(16) NOT NULL,
                 company VARCHAR(16) NOT NULL,
-                rfid_UID BIGINT
+                rfid_UID BIGINT NOT NULL
             """,
             "Payment": """
                 payment_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -65,6 +65,14 @@ class CreateInitDB():
                 registered_at DATETIME NOT NULL,
                 updated_at DATETIME NOT NULL,
                 hashed_data VARCHAR(64) NOT NULL
+            """,
+            "OfficeInfo": """
+                office_id INT AUTO_INCREMENT PRIMARY KEY,
+                office_number INT NOT NULL,
+                company_name VARCHAR(64) NOT NULL,
+                password VARCHAR(16) NOT NULL,
+                open_date DATETIME NOT NULL,
+                close_date DATETIME 
             """
         }
 

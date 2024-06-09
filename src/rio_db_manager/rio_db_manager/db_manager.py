@@ -71,6 +71,24 @@ class DBManager():
             query += f" ORDER BY {option} ASC"    
         
         return self.execute_query(query, values)
+    
+    def select_null(self, column, table, criteria=None):
+        query = f"SELECT {column} FROM {table}"
+        values = ()
+        if criteria:
+            where_clause = f"{criteria} is NULL"
+            query += f" WHERE {where_clause}"
+            
+        return self.execute_query(query)
+    
+    def select(self, column, table, criteria=None):
+        query = f"SELECT {column} FROM {table}"
+        values = ()
+        if criteria:
+            where_clause = ' AND '.join([f"{key}=%s" for key in criteria.keys()])
+            query += f" WHERE {where_clause}"
+            values = tuple(criteria.values())
+        return self.execute_query(query, values)
 
     def update(self, table, data, criteria):
         set_clause = ', '.join([f"{key}=%s" for key in data.keys()])
@@ -84,6 +102,7 @@ class DBManager():
         query = f"DELETE FROM {table} WHERE {where_clause}"
         values = tuple(criteria.values())
         self.execute_query(query, values)
+    
 
     def close(self):
         if self.connection:
