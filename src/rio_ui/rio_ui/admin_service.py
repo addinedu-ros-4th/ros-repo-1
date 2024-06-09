@@ -620,9 +620,8 @@ class TTSAlertService():
         self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
         self.tts_thread = None
         
-    def create_tts_speak(self, text):
-        file_name = f"{text}.mp3"
-        file_path = os.path.join(self.base_path, file_name)
+    def create_tts_speak(self, file_name, text):
+        file_path = os.path.join(self.base_path, f"{file_name}.mp3")
         self.ttsservice.create_tts_file(file_path, text)
         self.ttsservice.speak(file_path)
     
@@ -631,9 +630,9 @@ class TTSAlertService():
         file_path = os.path.join(self.base_path, file_name)
         self.ttsservice.speak(file_path)
 
-    def run_create_tts(self, text):
+    def run_create_tts(self, file_name, text):
         self.stop_tts()
-        self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(text,))
+        self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(file_name, text,))
         self.tts_thread.start()
 
     def run_tts(self, text):

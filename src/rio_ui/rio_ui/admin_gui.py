@@ -51,7 +51,8 @@ class AdminGUI(QMainWindow, admin_ui):
         self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
 
         self.tts = TTSAlertService()
-        self.tts.run_tts("관리자님, 안녕하세요!")
+        self.tts.run_tts("admin_greeting")
+
         self.db_connector = DBConnector()
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
