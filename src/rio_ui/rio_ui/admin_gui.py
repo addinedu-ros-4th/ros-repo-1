@@ -50,6 +50,8 @@ class AdminGUI(QMainWindow, admin_ui):
         self.node = rclpy.create_node("robot_task_node")
         self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
 
+        self.tts = TTSAlertService()
+        self.tts.run_tts("관리자님, 안녕하세요!")
         self.db_connector = DBConnector()
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
@@ -232,6 +234,7 @@ class AdminGUI(QMainWindow, admin_ui):
         if self.db_connector and self.db_connector.db_manager:
             self.db_connector.db_manager.close()
         rclpy.shutdown()
+        self.tts.stop_tts()
         event.accept()
         
 class AddUserGUI(QDialog, add_user_ui):

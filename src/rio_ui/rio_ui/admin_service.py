@@ -35,6 +35,7 @@ from rclpy.qos import QoSReliabilityPolicy as Reliability
 from rio_ui_msgs.srv import GenerateVisitQR, QRCheck, VisitorAlert
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
+from rio_ui.TTS_service import TTSService
 
 from twilio.rest import Client
 
@@ -459,8 +460,8 @@ class QRCheckServer(Node):
 class VisitorService(Node):
     def __init__(self):
         super().__init__('visitor_alert_client')
-        self.cli = self.create_client(VisitorAlert, 'get_visitor_info_1')
-        # self.cli = self.create_client(VisitorAlert, 'get_visitor_info')
+        # self.cli = self.create_client(VisitorAlert, 'get_visitor_info_1')
+        self.cli = self.create_client(VisitorAlert, 'get_visitor_info')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...') 
         self.request = VisitorAlert.Request()
@@ -480,7 +481,7 @@ class VisitorService(Node):
         except Exception as e:
             self.get_logger().error(f'Service call failed: {e}')
 
-class DBConnector: # 싱글톤 패턴으로 구현
+class DBConnector(): # 싱글톤 패턴으로 구현
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -612,7 +613,40 @@ class RFIDSubscriber(Node):
         }
     
         self.db_manager.create("Payment", self.user_data)
+
+class TTSAlertService():     
+    def __init__(self):
+        self.ttsservice = TTSService()
+        self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
+        self.tts_thread = None
         
+    def create_tts_speak(self, text):
+        file_name = f"{text}.mp3"
+        file_path = os.path.join(self.base_path, file_name)
+        self.ttsservice.create_tts_file(file_path, text)
+        self.ttsservice.speak(file_path)
+    
+    def tts_speak(self, text):
+        file_name = f"{text}.mp3"
+        file_path = os.path.join(self.base_path, file_name)
+        self.ttsservice.speak(file_path)
+
+    def run_create_tts(self, text):
+        self.stop_tts()
+        self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(text,))
+        self.tts_thread.start()
+
+    def run_tts(self, text):
+        self.stop_tts()
+        self.tts_thread = threading.Thread(target=self.tts_speak, args=(text,))
+        self.tts_thread.start()
+
+    def stop_tts(self):
+        if self.tts_thread and self.tts_thread.is_alive():
+            # 여기서는 스레드를 강제로 종료할 방법이 없으므로, 스레드 작업이 완료될 때까지 기다리는 방법을 사용
+            # 안전하게 종료하는 것이 좋습니다.
+            self.tts_thread.join()
+        self.tts_thread = None
 
 def main(args=None):
     rclpy.init(args=args)

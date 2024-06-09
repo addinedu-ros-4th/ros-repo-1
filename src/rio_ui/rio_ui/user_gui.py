@@ -269,8 +269,8 @@ class SubGUI(QDialog, sub_ui):
         self.setupUi(self)     
 
         self.node = rclpy.create_node('generate_qr_client')
-        self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr_1')  
-        # self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr') 
+        # self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr_1')  
+        self.cli = self.node.create_client(GenerateVisitQR, 'generate_qr') 
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().info('service not available, waiting again...')              
         self.request = GenerateVisitQR.Request()
