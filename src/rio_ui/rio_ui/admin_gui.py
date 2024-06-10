@@ -50,14 +50,13 @@ class AdminGUI(QMainWindow, admin_ui):
         self.addUserBtn.clicked.connect(self.add_user)
         self.officeManageBtn.clicked.connect(self.office_manage)
         
-        self.nav = BasicNavigator()
-        self.goal_pose = PoseStamped()
-        self.goal_pose.header.frame_id = "map"
-        self.update_goal_pose()
-
-        self.xLine.setText("0")
-        self.yLine.setText("0")
-        self.yawLine.setText("0")
+        # self.nav = BasicNavigator()
+        # self.goal_pose = PoseStamped()
+        # self.goal_pose.header.frame_id = "map"
+        # self.update_goal_pose()
+        # self.xLine.setText("0")
+        # self.yLine.setText("0")
+        # self.yawLine.setText("0")
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_robot_status)
@@ -79,7 +78,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.signals = ROSNodeSignals()
         self.robot_states = {}
         self.signals.amcl_pose_received.connect(self.update_amcl_pose)
-        self.signals.path_distance_received.connect(self.update_path_distance)
+        # self.signals.path_distance_received.connect(self.update_path_distance)
         # self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
 
@@ -117,6 +116,14 @@ class AdminGUI(QMainWindow, admin_ui):
         self.btn_stop_delivery.clicked.connect(lambda: self.click_robot_task_stop("deliverybot"))
         self.btn_stop_patrol.clicked.connect(lambda: self.click_robot_task_stop("patrolbot"))
         self.btn_stop_clean.clicked.connect(lambda: self.click_robot_task_stop("cleanerbot"))
+        
+        self.robot_task_stack = {
+            'guidebot': [],
+            'deliverybot': [],
+            'patrolbot': [],
+            'cleanerbot': [],
+            'minibot': []
+        }
 
         self.robot_last_task = {
             'guidebot': "",
@@ -173,16 +180,16 @@ class AdminGUI(QMainWindow, admin_ui):
     def update_amcl_pose(self, robot_states):
         self.robot_states = robot_states
 
-    def update_path_distance(self, distance):
-        if distance < 0.4:
-            distance = 0
-        self.remainLine.setText(str("{:.2f}".format(distance)))
+    # def update_path_distance(self, distance):
+    #     if distance < 0.4:
+    #         distance = 0
+    #     self.remainLine.setText(str("{:.2f}".format(distance)))
 
-    def update_task_request(self, x, y, yaw):
-        self.xLine.setText(str(x))
-        self.yLine.setText(str(y))
-        self.yawLine.setText(str(yaw))
-        self.robot_ctl_task()
+    # def update_task_request(self, x, y, yaw):
+    #     self.xLine.setText(str(x))
+    #     self.yLine.setText(str(y))
+    #     self.yawLine.setText(str(yaw))
+    #     self.robot_ctl_task()
 
     def select_table_update(self, tables):
         self.select_table_cbx.clear()
@@ -215,25 +222,25 @@ class AdminGUI(QMainWindow, admin_ui):
                 item = QTableWidgetItem(str(row_data[column_name])) 
                 detail_table.setItem(i, j, item)
         
-    def update_goal_pose(self, x=None, y=None, yaw=None):
-        if x is None:
-            x = float(self.xLine.text())
-        if y is None:
-            y = float(self.yLine.text())
-        if yaw is None:
-            yaw = float(self.yawLine.text())
+    # def update_goal_pose(self, x=None, y=None, yaw=None):
+    #     if x is None:
+    #         x = float(self.xLine.text())
+    #     if y is None:
+    #         y = float(self.yLine.text())
+    #     if yaw is None:
+    #         yaw = float(self.yawLine.text())
 
-        roll, pitch, yaw = 0.0, 0.0, yaw
-        quaternion = quaternion_from_euler(roll, pitch, yaw)
+    #     roll, pitch, yaw = 0.0, 0.0, yaw
+    #     quaternion = quaternion_from_euler(roll, pitch, yaw)
 
-        self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
-        self.goal_pose.pose.position.x = x
-        self.goal_pose.pose.position.y = y
-        self.goal_pose.pose.position.z = 0.0
-        self.goal_pose.pose.orientation.x = quaternion[0]
-        self.goal_pose.pose.orientation.y = quaternion[1]
-        self.goal_pose.pose.orientation.z = quaternion[2]
-        self.goal_pose.pose.orientation.w = quaternion[3]
+    #     self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
+    #     self.goal_pose.pose.position.x = x
+    #     self.goal_pose.pose.position.y = y
+    #     self.goal_pose.pose.position.z = 0.0
+    #     self.goal_pose.pose.orientation.x = quaternion[0]
+    #     self.goal_pose.pose.orientation.y = quaternion[1]
+    #     self.goal_pose.pose.orientation.z = quaternion[2]
+    #     self.goal_pose.pose.orientation.w = quaternion[3]
         
     def click_robot_task_stop(self, robot):
         flag = self.robot_states_uiEdit[robot][-1]
@@ -290,6 +297,11 @@ class AdminGUI(QMainWindow, admin_ui):
             'place': goal,
         }
         self.task_requester.task_msg_pub(params)
+
+        task = [params, False]
+        self.robot_task_stack[robot].append(task)
+
+        # print(self.robot_task_stack[robot])
 
     def update_robot_status(self):
         self.Map_label.setPixmap(self.pixmap)
@@ -685,7 +697,7 @@ def main():
     executor = MultiThreadedExecutor()
 
     amcl_subscriber = AmclSubscriber(signals)
-    path_subscriber = PathSubscriber(signals)
+    # path_subscriber = PathSubscriber(signals)
     request_subscriber = RobotCallSubscriber(myWindow)
     generate_qr_server = GenerateQRServer()
     order_subscriber = OrderSubscriber(myWindow)
@@ -694,7 +706,7 @@ def main():
 
 
     executor.add_node(amcl_subscriber)
-    executor.add_node(path_subscriber)
+    # executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
     executor.add_node(generate_qr_server)
     executor.add_node(order_subscriber)
