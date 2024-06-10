@@ -44,10 +44,9 @@ class AdminGUI(QMainWindow, admin_ui):
     def __init__(self):    
         super().__init__()
         self.setupUi(self)
-        self.btn_req_guide.clicked.connect(lambda: self.robot_ctl_task("guidebot"))
-        self.btn_req_delivery.clicked.connect(lambda: self.robot_ctl_task("deliverybot"))
-        self.btn_req_patrol.clicked.connect(lambda: self.robot_ctl_task("patrolbot"))
-        self.btn_req_clean.clicked.connect(lambda: self.robot_ctl_task("cleanerbot"))
+        self.init_robot_info()
+
+       
         self.addUserBtn.clicked.connect(self.add_user)
         self.officeManageBtn.clicked.connect(self.office_manage)
         
@@ -108,9 +107,17 @@ class AdminGUI(QMainWindow, admin_ui):
         header.setSectionResizeMode(QHeaderView.Stretch)
 
         self.task_requester = TaskRequester()
-        self.init_robot_info()
 
     def init_robot_info(self):
+        self.btn_req_guide.clicked.connect(lambda: self.robot_ctl_task("guidebot"))
+        self.btn_req_delivery.clicked.connect(lambda: self.robot_ctl_task("deliverybot"))
+        self.btn_req_patrol.clicked.connect(lambda: self.robot_ctl_task("patrolbot"))
+        self.btn_req_clean.clicked.connect(lambda: self.robot_ctl_task("cleanerbot"))
+        self.btn_stop_guide.clicked.connect(lambda: self.robot_task_stop("guidebot"))
+        self.btn_stop_delivery.clicked.connect(lambda: self.robot_task_stop("deliverybot"))
+        self.btn_stop_patrol.clicked.connect(lambda: self.robot_task_stop("patrolbot"))
+        self.btn_stop_clean.clicked.connect(lambda: self.robot_task_stop("cleanerbot"))
+
         self.robot_locations = {
             'guidebot': {
                 'prev': [0.0, 0.0],
@@ -134,13 +141,42 @@ class AdminGUI(QMainWindow, admin_ui):
             }
         }
 
-        self.robot_states_uiEdit = {
-            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.lineEdit],
-            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.lineEdit_2],
-            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.lineEdit_3],
-            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.lineEdit_4],
-            'minibot': [self.yLine, self.yawLine, self.xLine]
+
+        self.robot_last_task = {
+            'guidebot': "",
+            'deliverybot': "",
+            'patrolbot': "",
+            'cleanerbot': "",
+            'minibot': ""
         }
+
+        last_task = self.load_last_task()
+        for robot, task in last_task.items():
+            self.robot_last_task[robot] = task
+
+        self.guidebot_paused = False
+        self.deliverybot_paused = False
+        self.patrolbot_paused = False
+        self.cleanerbot_paused = False
+        self.minibot_paused = False
+
+        self.robot_states_uiEdit = {
+            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.lineEdit, self.btn_stop_guide, self.guidebot_paused],
+            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.lineEdit_2, self.btn_stop_delivery, self.deliverybot_paused],
+            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.lineEdit_3, self.btn_stop_patrol, self.patrolbot_paused],
+            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.lineEdit_4, self.btn_stop_clean, self.cleanerbot_paused],
+            'minibot': [self.yLine, self.yawLine, self.xLine, self.btn_stop_guide, self.minibot_paused]
+        }
+
+    def load_last_task(self):
+        with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'r') as f:
+            last_task = yaml.full_load(f)
+        return last_task
+    
+    def save_last_task(self, data):
+        with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'w') as f:
+            yaml.dump(data, f)
+
 
     def visitor_alert_to_user(self, message):
         visitor_alert = VisitorService()
@@ -223,6 +259,45 @@ class AdminGUI(QMainWindow, admin_ui):
         self.goal_pose.pose.orientation.z = quaternion[2]
         self.goal_pose.pose.orientation.w = quaternion[3]
         
+    def robot_task_stop(self, robot):
+        flag = self.robot_states_uiEdit[robot][-1]
+        btn = self.robot_states_uiEdit[robot][3]
+        btn.setStyleSheet("font-weight: bold;")
+        if not flag:
+            flag = True
+            btn.setText("RESUME\nROBOT")
+            mode = "pause"
+        else:
+            flag = False
+            btn.setText("STOP\nROBOT")
+            mode = "moving"
+        self.robot_states_uiEdit[robot][-1] = flag
+
+        if robot == "guidebot":
+            robot = "minibot"
+
+        last_task = self.load_last_task()
+        for r, t in last_task.items():
+            self.robot_last_task[r] = t
+
+        if self.robot_states[robot]['task_id'] != '':
+            task_id = self.robot_states[robot]['task_id']
+        else:
+            task_id = self.robot_last_task[robot]
+
+        self.robot_last_task[robot] = task_id
+
+        print(task_id)
+        self.task_stop(robot, mode, task_id)
+
+    def task_stop(self, robot, mode, task_id):
+        self.task_requester.mode_change(robot, mode, task_id)
+
+        data = self.load_last_task()
+        data[robot] = task_id
+        print(data)
+        self.save_last_task(data)
+
     def robot_ctl_task(self, robot):
         if robot == "guidebot":
             goal = self.end_location_4.currentText()
@@ -276,7 +351,7 @@ class AdminGUI(QMainWindow, admin_ui):
         painter.drawText(int(posx-2), int(posy-11), str(robot))
 
     def update_robot_health(self, robot, states):
-        if states['connection'] >= 10:
+        if states['connection'] >= 20:
             self.robot_states_uiEdit[robot][0].setStyleSheet("color: green;")
             self.robot_states_uiEdit[robot][1].setStyleSheet("color: green;")
 
@@ -285,7 +360,7 @@ class AdminGUI(QMainWindow, admin_ui):
             status = self.update_robot_state(robot, states)
             self.robot_states_uiEdit[robot][1].setText(status)
 
-        elif 0 < states['connection'] < 10:
+        elif 0 < states['connection'] < 20:
             self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
             self.robot_states_uiEdit[robot][0].setText("Connecting...")
         else:
@@ -299,11 +374,6 @@ class AdminGUI(QMainWindow, admin_ui):
         painter = QPainter(self.Map_label.pixmap())
 
         for robot, states in self.robot_states.items():
-            # test -> need to delete about minibot
-            if robot == "minibot":
-                states['x'] += 19
-                states['y'] -= 4
-
             self.update_robot_health(robot, states)
             self.update_map(robot, states, painter)
 
@@ -365,6 +435,13 @@ class AdminGUI(QMainWindow, admin_ui):
         self.timer.stop()
         if self.db_connector and self.db_connector.db_manager:
             self.db_connector.db_manager.close()
+
+        for robot in robot_types:
+            self.robot_states[robot] = self.robot_states[robot]['task_id']
+
+        # print(self.robot_states)
+        self.save_last_task(self.robot_states)
+
         rclpy.shutdown()
         # self.tts.stop_tts()
         event.accept()
