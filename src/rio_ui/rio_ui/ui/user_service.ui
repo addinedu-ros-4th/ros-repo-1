@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>861</width>
-    <height>663</height>
+    <height>737</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -185,7 +185,7 @@
      <x>500</x>
      <y>60</y>
      <width>341</width>
-     <height>581</height>
+     <height>661</height>
     </rect>
    </property>
    <property name="font">
@@ -242,7 +242,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>243</y>
+      <y>240</y>
       <width>301</width>
       <height>81</height>
      </rect>
@@ -264,7 +264,7 @@
       <x>20</x>
       <y>340</y>
       <width>301</width>
-      <height>231</height>
+      <height>311</height>
      </rect>
     </property>
     <property name="font">
@@ -345,7 +345,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>144</y>
+       <y>222</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -354,31 +354,11 @@ Robot</string>
       <string>배송 물품       :</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="destination">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>94</y>
-       <width>141</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
     <widget class="QLineEdit" name="items">
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>140</y>
-       <width>141</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="receiver">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>185</y>
+       <y>218</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -388,7 +368,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>189</y>
+       <y>179</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -397,6 +377,85 @@ Robot</string>
       <string>수취인            :</string>
      </property>
     </widget>
+    <widget class="QComboBox" name="destination">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>95</y>
+       <width>141</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="company">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>136</y>
+       <width>141</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_9">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>140</y>
+       <width>101</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>회사명            :</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="receiver">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>176</y>
+       <width>141</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="backBtn">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>260</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Back</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="selectRobotBtn">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>340</y>
+      <width>301</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Select Robot</string>
+    </property>
    </widget>
   </widget>
   <widget class="QLabel" name="label_3">
@@ -464,7 +523,7 @@ Robot</string>
      <x>20</x>
      <y>60</y>
      <width>461</width>
-     <height>581</height>
+     <height>661</height>
     </rect>
    </property>
    <property name="font">
@@ -498,9 +557,9 @@ Robot</string>
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>370</y>
+      <y>390</y>
       <width>421</width>
-      <height>201</height>
+      <height>211</height>
      </rect>
     </property>
     <property name="font">
@@ -530,7 +589,7 @@ Robot</string>
     <property name="geometry">
      <rect>
       <x>300</x>
-      <y>316</y>
+      <y>330</y>
       <width>141</width>
       <height>51</height>
      </rect>

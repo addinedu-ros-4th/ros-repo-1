@@ -1589,6 +1589,11 @@
    </column>
    <column>
     <property name="text">
+     <string>Destination</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
      <string>Detail</string>
     </property>
    </column>

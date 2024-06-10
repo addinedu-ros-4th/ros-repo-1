@@ -473,7 +473,7 @@ class OfficeManagerGUI(QDialog, office_manage_ui):
 
         
         
-        self.officeNumCBX.currentIndexChanged.connect(self.change_company_labe)
+        self.officeNumCBX.currentIndexChanged.connect(self.change_company_label)
         self.addBtn.clicked.connect(self.read_info)
         self.applyBtn.clicked.connect(self.close_office_confirm)
         self.cancel_bt.clicked.connect(self.close)

@@ -1,0 +1,21 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from rio_ui_msgs/srv/VisitorAlert.srv
+// generated code does not contain a copyright notice
+
+
+module rio_ui_msgs {
+  module srv {
+    struct VisitorAlert_Request {
+      string name;
+
+      string affiliation;
+
+      string visit_place;
+
+      boolean robot_guidance;
+    };
+    struct VisitorAlert_Response {
+      boolean success;
+    };
+  };
+};
