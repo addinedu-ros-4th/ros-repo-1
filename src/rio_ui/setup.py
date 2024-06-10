@@ -15,9 +15,8 @@ setup(
         ('share/' + package_name + "/ui/", glob.glob('rio_ui/ui/*.ui')),
         # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.qrc')),
         # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.png')),
-        ('share/' + package_name + "/data/keys/", glob.glob('rio_ui/data/keys/*.pem')),
-
-        ("share/" + package_name + "/data/", glob.glob('rio_ui/data/*.json')),
+        ('share/' + package_name + '/data/keys/', glob.glob('rio_ui/data/keys/*.pem')),
+        ('share/' + package_name + '/data/', glob.glob('rio_ui/data/*.json')),
         
 
     ],
@@ -32,15 +31,14 @@ setup(
     entry_points={
         'console_scripts': [
             'admin_service = rio_ui.admin_service:main',
-            "user_service = rio_ui.user_service:main",
-            "delivery_service=rio_ui.delivery_service:main",
+            'user_service = rio_ui.user_service:main',
+            'delivery_service=rio_ui.delivery_service:main',
             'admin_gui = rio_ui.admin_gui:main',
             'user_gui = rio_ui.user_gui:main',
             'guide_service = rio_ui.guide_service:main',
             'guide_gui = rio_ui.guide_gui:main',
             'key_save_load = rio_ui.key_save_load:main',
-            "face_recog_node = rio_ui.face_recog_node:main",
-
+            'face_recog_node = rio_ui.face_recog_node:main',
         ],
     },
 )

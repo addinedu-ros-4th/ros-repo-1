@@ -1493,9 +1493,9 @@
    <widget class="QComboBox" name="select_table_cbx">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>100</x>
       <y>35</y>
-      <width>141</width>
+      <width>131</width>
       <height>25</height>
      </rect>
     </property>
@@ -1516,9 +1516,9 @@
    <widget class="QPushButton" name="detail_bt">
     <property name="geometry">
      <rect>
-      <x>410</x>
+      <x>430</x>
       <y>32</y>
-      <width>91</width>
+      <width>71</width>
       <height>31</height>
      </rect>
     </property>
@@ -1539,14 +1539,27 @@
    <widget class="QPushButton" name="addUserBtn">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>350</x>
+      <y>32</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add User</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="officeManageBtn">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
       <y>32</y>
       <width>91</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Add User</string>
+     <string>Office Manage</string>
     </property>
    </widget>
   </widget>
@@ -1571,7 +1584,12 @@
    </column>
    <column>
     <property name="text">
-     <string>Menu</string>
+     <string>Robot Type</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Detail</string>
     </property>
    </column>
   </widget>

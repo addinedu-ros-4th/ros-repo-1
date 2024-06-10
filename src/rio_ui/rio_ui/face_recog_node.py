@@ -134,10 +134,6 @@ class TCPIPClientNode(Node):
             img_np = np.array(img_data)
             self.facerecognition.add_known_face(img_np, user_name)
             
-            
-            
-        
-
     def connect_to_server(self, ip_address):
         while True:
             try:
