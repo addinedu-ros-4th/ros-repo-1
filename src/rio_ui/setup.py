@@ -17,6 +17,7 @@ setup(
         # ('share/' + package_name + '/data', glob.glob('rio_ui/data/*.png')),
         ('share/' + package_name + '/data/keys/', glob.glob('rio_ui/data/keys/*.pem')),
         ('share/' + package_name + '/data/', glob.glob('rio_ui/data/*.json')),
+        ('share/' + package_name + '/data/', glob.glob('rio_ui/data/*.yaml')),
         
 
     ],
