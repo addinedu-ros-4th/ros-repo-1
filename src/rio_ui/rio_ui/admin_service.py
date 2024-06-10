@@ -42,89 +42,8 @@ from rio_ui.TTS_service import TTSService
 from twilio.rest import Client
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
-from rmf_fleet_msgs.msg import FleetState
-
-class TaskRequester(Node):
-    def __init__(self):
-        super().__init__('task_requester')
-
-        self.response = asyncio.Future()
-
-        self.transient_qos = QoSProfile(
-            history=History.KEEP_LAST,
-            depth=1,
-            reliability=Reliability.RELIABLE,
-            durability=Durability.TRANSIENT_LOCAL)
-
-    def task_msg_pub(self, params):
-        self.args = params
-
-        # Construct task
-        msg = ApiRequest()
-        msg.request_id = "direct_" + str(uuid.uuid4())
-        payload = {}
-
-        if self.args['robot'] and self.args['fleet']:
-            self.get_logger().info("Using 'robot_task_request'")
-            payload["type"] = "robot_task_request"
-            payload["fleet"] = self.args['fleet']
-            payload["robot"] = self.args['robot']
-        else:
-            self.get_logger().info("Using 'dispatch_task_request'")
-            payload["type"] = "dispatch_task_request"
-
-        # Set task request start time
-        now = self.get_clock().now().to_msg()
-        now.sec = now.sec + self.args['start_time']
-        start_time = now.sec * 1000 + round(now.nanosec/10**6)
-        # todo(YV): Fill priority after schema is added
-
-        # Define task request description
-        go_to_description = {'waypoint': self.args['place']}
-        if self.args['orientation'] is not None:
-            go_to_description['orientation'] = (
-                self.args['orientation']*math.pi/180.0
-            )
-
-        go_to_activity = {
-            'category': 'go_to_place',
-            'description': go_to_description
-        }
-
-        rmf_task_request = {
-            'category': 'compose',
-            'description': {
-                'category': 'go_to_place',
-                'phases': [{'activity': go_to_activity}]
-            },
-            'unix_millis_earliest_start_time': start_time
-        }
-
-        payload["request"] = rmf_task_request
-
-        msg.json_msg = json.dumps(payload)
-
-        def receive_response(response_msg: ApiResponse):
-            if response_msg.request_id == msg.request_id:
-                self.response.set_result(json.loads(response_msg.json_msg))
-
-        self.sub = self.create_subscription(
-            ApiResponse, 'task_api_responses', receive_response, 10
-        )
-
-        self.pub = self.create_publisher(
-          ApiRequest, 'task_api_requests', self.transient_qos
-        )
-
-        print(f"Json msg payload: \n{json.dumps(payload, indent=2)}")
-        self.pub.publish(msg)
-
-        rclpy.spin_until_future_complete(self, self.response, timeout_sec=5.0)
-        if self.response.done():
-            print(f'Got response:\n{self.response.result()}')
-        else:
-            print('Did not get a response')
-
+from rmf_fleet_msgs.msg import FleetState, DestinationRequest
+from visualization_msgs.msg import MarkerArray
 
 class GenerateQRServer(Node):
     def __init__(self):
@@ -312,31 +231,149 @@ class ThreadedHTTPServer(object):
 
 
 class ROSNodeSignals(QObject):
-    amcl_pose_received = pyqtSignal(float, float)
+    amcl_pose_received = pyqtSignal(dict)
     path_distance_received = pyqtSignal(float)
     # task_request_received = pyqtSignal(float, float, float)
     visitor_alert_received = pyqtSignal(list)
     
+class TaskRequester(Node):
+    def __init__(self):
+        super().__init__('task_requester')
+        self.response = asyncio.Future()
+        transient_qos = QoSProfile(
+            history=History.KEEP_LAST,
+            depth=1,
+            reliability=Reliability.RELIABLE,
+            durability=Durability.TRANSIENT_LOCAL)
+        self.pub = self.create_publisher(ApiRequest, 'task_api_requests', transient_qos)
+
+    def task_msg_pub(self, params):
+        self.params = params
+        # print(self.params)
+        msg = ApiRequest()
+        msg.request_id = "direct_" + str(uuid.uuid4())
+        payload = {}
+        try:
+            payload["type"] = "robot_task_request"
+            if self.params['robot'] is not None and self.params['fleet'] is not None:
+                self.get_logger().info("Using 'robot_task_request'")
+                payload["fleet"] = self.params['fleet']
+                payload["robot"] = self.params['robot']
+            elif self.params['fleet']:
+                payload["fleet"] = self.params['fleet']
+                payload["robot"] = self.params['fleet'] + "_1"
+        except Exception as e:
+                self.get_logger().info("Using 'dispatch_task_request'")
+                payload["type"] = "dispatch_task_request"
+
+        now = self.get_clock().now().to_msg()
+        start_time = now.sec * 1000 + round(now.nanosec/10**6)
+
+        go_to_description = {'waypoint': self.params['place']}
+
+        go_to_activity = {
+            'category': 'go_to_place',
+            'description': go_to_description
+        }
+
+        rmf_task_request = {
+            'category': 'compose',
+            'description': {
+                'category': 'go_to_place',
+                'phases': [{'activity': go_to_activity}]
+            },
+            'unix_millis_earliest_start_time': start_time
+        }
+
+        payload["request"] = rmf_task_request
+
+        msg.json_msg = json.dumps(payload)
+
+        def receive_response(response_msg: ApiResponse):
+            if response_msg.request_id == msg.request_id:
+                self.response.set_result(json.loads(response_msg.json_msg))
+
+        self.sub = self.create_subscription(ApiResponse, 'task_api_responses', receive_response, 10)
+
+        self.pub.publish(msg)
+        rclpy.spin_until_future_complete(self, self.response, timeout_sec=1.0)
+        if self.response.done():
+            self.get_logger().info(f'Got response:\n{self.response.result()}')
+        else:
+            self.get_logger().info('Did not get a response')
+
+        # print(msg.request_id)
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
         super().__init__("amcl_sub")
         self.signals = signals
-        self.subscription = self.create_subscription(
-            # PoseWithCovarianceStamped,
-            FleetState,
-            # "/amcl_pose",
-            "/fleet_states",
-            self.map_callback,
-            10)
-        
-    def map_callback(self, data):
-        # x = data.pose.pose.position.x
-        # y = data.pose.pose.position.y
 
-        x = data.robots[0].location.x
-        y = data.robots[0].location.y
-        self.signals.amcl_pose_received.emit(x, y)
+        self.robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
+        self.robot_states = {}
+
+        for robot in self.robot_types:
+            print(robot)
+            self.subscription_states = self.create_subscription(
+                FleetState,
+                f"/{robot}/fleet_states",
+                self.robot_states_callback,
+                10)
+            
+            self.subscription_task = self.create_subscription(
+                DestinationRequest,
+                f"/{robot}/robot_destination_requests",
+                self.destination_info_callback,
+                10)
+
+            self.robot_states[robot] = {
+                'x' : 0.0,
+                'y' : 0.0,
+                'connection' : 0,
+                'task_id': "0",
+                'check' : False,
+                'dest': [0.0, 0.0],
+            }
+        # print(self.robot_states)
+
+    def robot_states_callback(self, data):
+        name = data.name
+        robot = self.robot_states[name]
+
+        try:
+            x = data.robots[0].location.x
+            y = data.robots[0].location.y
+            task_id = data.robots[0].task_id
+            # print(name, x)
+            
+        except Exception as e:
+            x = 0.0
+            y = 0.0
+            task_id = 0
+            robot['connection'] = 0
+            robot['check'] = False
+            # print(e)
+
+        if not robot['check'] :
+            robot['dest'] = [x, y]
+
+        if x != 0.0 and y != 0.0 and robot['connection'] < 10 :
+            robot['connection'] += 1
+
+        robot['x'] = x
+        robot['y'] = y
+        robot['task_id'] = task_id
+
+        self.signals.amcl_pose_received.emit(self.robot_states)
+        # print(self.robot_states)
+
+    def destination_info_callback(self, data):
+        name = data.fleet_name
+        dest_x = data.destination.x
+        dest_y = data.destination.y
+        robot = self.robot_states[name]
+        robot['check'] = True
+        robot['dest'] = [dest_x, dest_y]
 
 
 class PathSubscriber(Node):
