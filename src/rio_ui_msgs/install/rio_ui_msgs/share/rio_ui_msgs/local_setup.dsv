@@ -1,4 +1,0 @@
-source;share/rio_ui_msgs/environment/ament_prefix_path.sh
-source;share/rio_ui_msgs/environment/library_path.sh
-source;share/rio_ui_msgs/environment/path.sh
-source;share/rio_ui_msgs/environment/pythonpath.sh
