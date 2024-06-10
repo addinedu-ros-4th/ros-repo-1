@@ -9,6 +9,7 @@ import re
 import glob
 from io import BytesIO
 from PIL import Image
+import numpy as np
 
 from example_interfaces.msg import Int64MultiArray
 from tf_transformations import quaternion_from_euler
@@ -24,13 +25,27 @@ add_user_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "add_u
 admin_ui = uic.loadUiType(admin_file)[0]
 add_user_ui = uic.loadUiType(add_user_file)[0]
 
+robot_colors = {
+        'deliverybot': Qt.blue,
+        'guidebot': Qt.darkGreen,
+        'cleanerbot': Qt.gray,
+        'patrolbot': Qt.red,
+        'minibot': Qt.magenta
+    }
+
+space_loc_info = {
+        'minibot_charger_1' : [-25.42, -0.82],
+        'test_1' : [-25.29, -1.28]
+    }
 
 class AdminGUI(QMainWindow, admin_ui):
     def __init__(self):    
         super().__init__()
         self.setupUi(self)
-        self.requestButton1.clicked.connect(self.topic_test)
-        self.deliRequestBtn.clicked.connect(self.pub_task)
+        self.btn_req_guide.clicked.connect(lambda: self.robot_ctl_task("guidebot"))
+        self.btn_req_delivery.clicked.connect(lambda: self.robot_ctl_task("deliverybot"))
+        self.btn_req_patrol.clicked.connect(lambda: self.robot_ctl_task("patrolbot"))
+        self.btn_req_clean.clicked.connect(lambda: self.robot_ctl_task("cleanerbot"))
         self.addUserBtn.clicked.connect(self.add_user)
         
         self.nav = BasicNavigator()
@@ -43,7 +58,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.yawLine.setText("0")
         
         self.timer = QTimer()
-        self.timer.timeout.connect(self.update_map)
+        self.timer.timeout.connect(self.update_robot_status)
         self.timer.start(100)
         
         self.order = []
@@ -57,30 +72,69 @@ class AdminGUI(QMainWindow, admin_ui):
         self.detail_bt.clicked.connect(self.table_detail)
         
         self.signals = ROSNodeSignals()
+        self.robot_states = {}
         self.signals.amcl_pose_received.connect(self.update_amcl_pose)
         self.signals.path_distance_received.connect(self.update_path_distance)
         self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
 
-        with open(os.path.join(get_package_share_directory("rio_main"), "maps", "map_name.yaml")) as f:
+        with open(os.path.join(get_package_share_directory("rio_main"), "maps", "office.yaml")) as f:
             map_data = yaml.full_load(f)
+
+        with Image.open(os.path.join(get_package_share_directory("rio_main"), "maps", "office.pgm")) as f:
+            map_pgm = np.array(f)
+
+        self.h, self.w = map_pgm.shape
+        qimage = QImage(map_pgm.tobytes(), self.w, self.h, self.w, QImage.Format_Grayscale8)
 
         self.map_resolution = map_data["resolution"]
         self.map_origin = map_data["origin"][:2]
 
-        self.pixmap = QPixmap(os.path.join(get_package_share_directory("rio_main"), "maps", map_data["image"]))
+        self.pixmap = QPixmap.fromImage(qimage)
         self.height = self.pixmap.size().height()
         self.width = self.pixmap.size().width()
-        self.image_scale = 2
-        self.pixmap = self.pixmap.transformed(QTransform().scale(-1, -1))
-        self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+
+        self.pixmap = self.pixmap.scaled(self.Map_label.width(), self.Map_label.height())
+        self.Map_label.setPixmap(self.pixmap)
         self.Map_label.setAlignment(Qt.AlignCenter)
         
         header = self.requestTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        self.x_location = 0.0
-        self.y_location = 0.0
+        self.task_requester = TaskRequester()
+        self.init_robot_info()
+
+    def init_robot_info(self):
+        self.robot_locations = {
+            'guidebot': {
+                'prev': [0.0, 0.0],
+                'pres' : [0.0, 0.0]
+            },
+            'deliverybot': {
+                'prev': [0.0, 0.0],
+                'pres' : [0.0, 0.0]
+            },
+            'patrolbot': {
+                'prev': [0.0, 0.0],
+                'pres' : [0.0, 0.0]
+            },
+            'cleanerbot': {
+                'prev': [0.0, 0.0],
+                'pres' : [0.0, 0.0]
+            },
+            'minibot': {
+                'prev': [0.0, 0.0],
+                'pres' : [0.0, 0.0]
+            }
+        }
+
+        self.robot_states_uiEdit = {
+            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.lineEdit],
+            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.lineEdit_2],
+            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.lineEdit_3],
+            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.lineEdit_4],
+            'minibot': [self.yLine, self.yawLine, self.xLine]
+        }
 
     def visitor_alert_to_user(self, message):
         visitor_alert = VisitorService()
@@ -98,9 +152,8 @@ class AdminGUI(QMainWindow, admin_ui):
     def clear_visited_label(self):
         self.visited_label.clear()
 
-    def update_amcl_pose(self, x, y):
-        self.x_location = x
-        self.y_location = y
+    def update_amcl_pose(self, robot_states):
+        self.robot_states = robot_states
 
     def update_path_distance(self, distance):
         if distance < 0.4:
@@ -111,7 +164,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.xLine.setText(str(x))
         self.yLine.setText(str(y))
         self.yawLine.setText(str(yaw))
-        self.topic_test()
+        self.robot_ctl_task()
 
     def select_table_update(self, tables):
         self.select_table_cbx.clear()
@@ -164,28 +217,99 @@ class AdminGUI(QMainWindow, admin_ui):
         self.goal_pose.pose.orientation.z = quaternion[2]
         self.goal_pose.pose.orientation.w = quaternion[3]
         
-    def topic_test(self):
-        self.update_goal_pose()
-        self.nav.goToPose(self.goal_pose)
-        
-    def update_map(self):
-        self.Map_label.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+    def robot_ctl_task(self, robot):
+        if robot == "guidebot":
+            goal = self.end_location_4.currentText()
+            robot = "minibot" # minibot test
+        elif robot == "deliverybot":
+            goal = self.end_location_5.currentText()
+        elif robot == "patrolbot":
+            goal = self.end_location_6.currentText()
+        elif robot == "cleanerbot":
+            goal = self.end_location_7.currentText()
+        self.dispatch_task(robot, goal)
+
+
+    def dispatch_task(self, robot, goal):
+        params = {
+            'fleet': robot,  
+            'robot': robot + "_1", 
+            'place': goal,
+        }
+        self.task_requester.task_msg_pub(params)
+
+
+    def update_robot_state(self, robot, states):
+        loc = self.robot_locations[robot]
+        loc['pres'] = [states['x'], states['y']]
+
+        status = ""
+
+        if loc['prev'] != loc['pres']:
+            loc['prev'] = loc['pres']
+            status = "moving"
+        else:
+            status = "ready"
+        return status
+
+    def update_map(self, robot, states, painter):
+        label_w_r = self.pixmap.width() 
+        label_h_r = self.pixmap.height()
+
+        x, y = self.calc_coord(states['x'], states['y'])
+        posx = x * label_w_r  /100
+        posy = label_h_r - abs(y * label_h_r / 100)
+
+        if robot in robot_colors:
+            pen_color = robot_colors[robot]
+        else:
+            pen_color = Qt.black
+
+        painter.setPen(QPen(pen_color, 15, Qt.SolidLine))
+        painter.drawPoint(int(posx), int(posy))
+        painter.drawText(int(posx-2), int(posy-11), str(robot))
+
+    def update_robot_health(self, robot, states):
+        if states['connection'] >= 10:
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: green;")
+            self.robot_states_uiEdit[robot][1].setStyleSheet("color: green;")
+
+            self.robot_states_uiEdit[robot][0].setText("Connected")
+            self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
+            status = self.update_robot_state(robot, states)
+            self.robot_states_uiEdit[robot][1].setText(status)
+
+        elif 0 < states['connection'] < 10:
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
+            self.robot_states_uiEdit[robot][0].setText("Connecting...")
+        else:
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
+            self.robot_states_uiEdit[robot][0].setText("Disconnected...")
+            self.robot_states_uiEdit[robot][2].setText("")
+
+    def update_robot_status(self):
+        self.Map_label.setPixmap(self.pixmap)
         self.Map_label.setAlignment(Qt.AlignCenter)
-        
         painter = QPainter(self.Map_label.pixmap())
-        
-        painter.setPen(QPen(Qt.red, 20, Qt.SolidLine))
-        
-        x, y = self.calc_coord(self.x_location, self.y_location)
-        
-        painter.drawPoint(int((self.width - x) * self.image_scale), int(y * self.image_scale))
-        painter.drawText(int((self.width - x) * self.image_scale + 13), int(y * self.image_scale + 5), '1')
-        
+
+        for robot, states in self.robot_states.items():
+            # test -> need to delete about minibot
+            if robot == "minibot":
+                states['x'] += 19
+                states['y'] -= 4
+
+            self.update_robot_health(robot, states)
+            self.update_map(robot, states, painter)
+
+        painter.end()
+            
+
     def calc_coord(self, x, y):
         pos_x = (x - self.map_origin[0]) / self.map_resolution
         pos_y = (y - self.map_origin[1]) / self.map_resolution
         return pos_x, pos_y
-    
+
+
     def pub_task(self):
         order = [0, 0, 0, 0, 0, 0]
         table_element = []
@@ -345,6 +469,7 @@ class AddUserGUI(QDialog, add_user_ui):
             print(e)
         finally:
             self.regist_confirm_notice()
+        pass
         
     def closeEvent(self, event):
         event.accept()
@@ -356,7 +481,6 @@ def main():
     db_manager = db_connector.db_manager
     app = QApplication(sys.argv)
     myWindow = AdminGUI()
-    # myWindow = AdminGUI()    
     myWindow.show()
     
     signals = myWindow.signals
