@@ -41,8 +41,10 @@ from rio_db_manager.create_init_db import CreateInitDB
 # from twilio.rest import Client
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
-from rmf_fleet_msgs.msg import FleetState, DestinationRequest
-from visualization_msgs.msg import MarkerArray
+from rmf_fleet_msgs.msg import FleetState, DestinationRequest, ModeRequest, RobotMode
+
+
+robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
 
 class GenerateQRServer(Node):
     def __init__(self):
@@ -244,7 +246,11 @@ class TaskRequester(Node):
             depth=1,
             reliability=Reliability.RELIABLE,
             durability=Durability.TRANSIENT_LOCAL)
+        
         self.pub = self.create_publisher(ApiRequest, 'task_api_requests', transient_qos)
+        self.mode_pubs = {}
+        for robot in robot_types:
+            self.mode_pubs[robot] = self.create_publisher(ModeRequest, f"/{robot}/robot_mode_requests", 5)
 
     def task_msg_pub(self, params):
         self.params = params
@@ -302,17 +308,35 @@ class TaskRequester(Node):
             self.get_logger().info('Did not get a response')
 
         # print(msg.request_id)
+    
+    def mode_change(self, robot, mode, task_id):
+        msg = ModeRequest()
+
+        if mode == "pause":
+            mode = RobotMode.MODE_PAUSED
+            msg.task_id = ""
+
+        elif mode == "moving":
+            mode = RobotMode.MODE_MOVING
+            msg.task_id = str(task_id)
+
+
+        msg.fleet_name = robot
+        msg.robot_name = robot + "_1"
+        msg.mode.mode = mode
+
+        for i in range(5):
+            self.mode_pubs[robot].publish(msg)
+            
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
         super().__init__("amcl_sub")
         self.signals = signals
-
-        self.robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
         self.robot_states = {}
 
-        for robot in self.robot_types:
-            print(robot)
+        for robot in robot_types:
+            # print(robot)
             self.subscription_states = self.create_subscription(
                 FleetState,
                 f"/{robot}/fleet_states",
@@ -329,11 +353,12 @@ class AmclSubscriber(Node):
                 'x' : 0.0,
                 'y' : 0.0,
                 'connection' : 0,
-                'task_id': "0",
+                'task_id_trash': "",
+                'task_id': "",
                 'check' : False,
                 'dest': [0.0, 0.0],
+                'remain_dist': 0.0,
             }
-        # print(self.robot_states)
 
     def robot_states_callback(self, data):
         name = data.name
@@ -343,28 +368,24 @@ class AmclSubscriber(Node):
             x = data.robots[0].location.x
             y = data.robots[0].location.y
             task_id = data.robots[0].task_id
-            # print(name, x)
-            
         except Exception as e:
             x = 0.0
             y = 0.0
-            task_id = 0
+            task_id = ""
             robot['connection'] = 0
             robot['check'] = False
-            # print(e)
 
         if not robot['check'] :
             robot['dest'] = [x, y]
 
-        if x != 0.0 and y != 0.0 and robot['connection'] < 10 :
+        if x != 0.0 and y != 0.0 and robot['connection'] < 20 :
             robot['connection'] += 1
 
+        robot['remain_dist'] = self.distance_cal(robot)
         robot['x'] = x
         robot['y'] = y
-        robot['task_id'] = task_id
-
+        robot['task_id_trash'] = task_id
         self.signals.amcl_pose_received.emit(self.robot_states)
-        # print(self.robot_states)
 
     def destination_info_callback(self, data):
         name = data.fleet_name
@@ -373,7 +394,12 @@ class AmclSubscriber(Node):
         robot = self.robot_states[name]
         robot['check'] = True
         robot['dest'] = [dest_x, dest_y]
+        robot['task_id'] = data.task_id
 
+    def distance_cal(self, robot):
+        x1, x2, y1, y2 = robot['x'], robot['dest'][0], robot['y'], robot['dest'][1]
+        remain_dist = ((abs(abs(x1) - abs(x2))) ** 2 + (abs(abs(y1) - abs(y2))) ** 2) ** 0.5
+        return remain_dist
 
 class PathSubscriber(Node):
     def __init__(self, signals):
