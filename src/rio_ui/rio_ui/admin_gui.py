@@ -61,7 +61,7 @@ class AdminGUI(QMainWindow, admin_ui):
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_robot_status)
-        self.timer.start(100)
+        self.timer.start(10)
         
         self.order = []
         self.node = rclpy.create_node("robot_task_node")
@@ -109,38 +109,14 @@ class AdminGUI(QMainWindow, admin_ui):
         self.task_requester = TaskRequester()
 
     def init_robot_info(self):
-        self.btn_req_guide.clicked.connect(lambda: self.robot_ctl_task("guidebot"))
-        self.btn_req_delivery.clicked.connect(lambda: self.robot_ctl_task("deliverybot"))
-        self.btn_req_patrol.clicked.connect(lambda: self.robot_ctl_task("patrolbot"))
-        self.btn_req_clean.clicked.connect(lambda: self.robot_ctl_task("cleanerbot"))
-        self.btn_stop_guide.clicked.connect(lambda: self.robot_task_stop("guidebot"))
-        self.btn_stop_delivery.clicked.connect(lambda: self.robot_task_stop("deliverybot"))
-        self.btn_stop_patrol.clicked.connect(lambda: self.robot_task_stop("patrolbot"))
-        self.btn_stop_clean.clicked.connect(lambda: self.robot_task_stop("cleanerbot"))
-
-        self.robot_locations = {
-            'guidebot': {
-                'prev': [0.0, 0.0],
-                'pres' : [0.0, 0.0]
-            },
-            'deliverybot': {
-                'prev': [0.0, 0.0],
-                'pres' : [0.0, 0.0]
-            },
-            'patrolbot': {
-                'prev': [0.0, 0.0],
-                'pres' : [0.0, 0.0]
-            },
-            'cleanerbot': {
-                'prev': [0.0, 0.0],
-                'pres' : [0.0, 0.0]
-            },
-            'minibot': {
-                'prev': [0.0, 0.0],
-                'pres' : [0.0, 0.0]
-            }
-        }
-
+        self.btn_req_guide.clicked.connect(lambda: self.click_robot_ctl_task("guidebot"))
+        self.btn_req_delivery.clicked.connect(lambda: self.click_robot_ctl_task("deliverybot"))
+        self.btn_req_patrol.clicked.connect(lambda: self.click_robot_ctl_task("patrolbot"))
+        self.btn_req_clean.clicked.connect(lambda: self.click_robot_ctl_task("cleanerbot"))
+        self.btn_stop_guide.clicked.connect(lambda: self.click_robot_task_stop("guidebot"))
+        self.btn_stop_delivery.clicked.connect(lambda: self.click_robot_task_stop("deliverybot"))
+        self.btn_stop_patrol.clicked.connect(lambda: self.click_robot_task_stop("patrolbot"))
+        self.btn_stop_clean.clicked.connect(lambda: self.click_robot_task_stop("cleanerbot"))
 
         self.robot_last_task = {
             'guidebot': "",
@@ -259,7 +235,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.goal_pose.pose.orientation.z = quaternion[2]
         self.goal_pose.pose.orientation.w = quaternion[3]
         
-    def robot_task_stop(self, robot):
+    def click_robot_task_stop(self, robot):
         flag = self.robot_states_uiEdit[robot][-1]
         btn = self.robot_states_uiEdit[robot][3]
         btn.setStyleSheet("font-weight: bold;")
@@ -273,9 +249,6 @@ class AdminGUI(QMainWindow, admin_ui):
             mode = "moving"
         self.robot_states_uiEdit[robot][-1] = flag
 
-        if robot == "guidebot":
-            robot = "minibot"
-
         last_task = self.load_last_task()
         for r, t in last_task.items():
             self.robot_last_task[r] = t
@@ -287,7 +260,7 @@ class AdminGUI(QMainWindow, admin_ui):
 
         self.robot_last_task[robot] = task_id
 
-        print(task_id)
+        # print(task_id)
         self.task_stop(robot, mode, task_id)
 
     def task_stop(self, robot, mode, task_id):
@@ -295,10 +268,10 @@ class AdminGUI(QMainWindow, admin_ui):
 
         data = self.load_last_task()
         data[robot] = task_id
-        print(data)
+        # print(data)
         self.save_last_task(data)
 
-    def robot_ctl_task(self, robot):
+    def click_robot_ctl_task(self, robot):
         if robot == "guidebot":
             goal = self.end_location_4.currentText()
             robot = "minibot" # minibot test
@@ -310,7 +283,6 @@ class AdminGUI(QMainWindow, admin_ui):
             goal = self.end_location_7.currentText()
         self.dispatch_task(robot, goal)
 
-
     def dispatch_task(self, robot, goal):
         params = {
             'fleet': robot,  
@@ -319,18 +291,37 @@ class AdminGUI(QMainWindow, admin_ui):
         }
         self.task_requester.task_msg_pub(params)
 
+    def update_robot_status(self):
+        self.Map_label.setPixmap(self.pixmap)
+        self.Map_label.setAlignment(Qt.AlignCenter)
+        painter = QPainter(self.Map_label.pixmap())
+        for robot, states in self.robot_states.items():
+            self.update_robot_health(robot, states, painter)
+        painter.end()
 
-    def update_robot_state(self, robot, states):
-        loc = self.robot_locations[robot]
-        loc['pres'] = [states['x'], states['y']]
+    def update_robot_health(self, robot, states, painter):
+        if states['connection'] >= 20:
+            self.update_map(robot, states, painter)
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: green;")
+            self.robot_states_uiEdit[robot][1].setStyleSheet("color: green;")
+            self.robot_states_uiEdit[robot][0].setText("Connected")
 
-        status = ""
+            # TODO location name print
+            self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
+            
+            status = self.update_task_progress(robot, states)
+            self.robot_states_uiEdit[robot][1].setText(status)
 
-        if loc['prev'] != loc['pres']:
-            loc['prev'] = loc['pres']
-            status = "moving"
+        elif 0 < states['connection'] < 20:
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
+            self.robot_states_uiEdit[robot][0].setText("Connecting...")
         else:
-            status = "ready"
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
+            self.robot_states_uiEdit[robot][0].setText("Disconnected...")
+            self.robot_states_uiEdit[robot][2].setText("")
+
+    def update_task_progress(self, robot):
+        status = f"{robot['progress']}"
         return status
 
     def update_map(self, robot, states, painter):
@@ -349,36 +340,6 @@ class AdminGUI(QMainWindow, admin_ui):
         painter.setPen(QPen(pen_color, 15, Qt.SolidLine))
         painter.drawPoint(int(posx), int(posy))
         painter.drawText(int(posx-2), int(posy-11), str(robot))
-
-    def update_robot_health(self, robot, states):
-        if states['connection'] >= 20:
-            self.robot_states_uiEdit[robot][0].setStyleSheet("color: green;")
-            self.robot_states_uiEdit[robot][1].setStyleSheet("color: green;")
-
-            self.robot_states_uiEdit[robot][0].setText("Connected")
-            self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
-            status = self.update_robot_state(robot, states)
-            self.robot_states_uiEdit[robot][1].setText(status)
-
-        elif 0 < states['connection'] < 20:
-            self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
-            self.robot_states_uiEdit[robot][0].setText("Connecting...")
-        else:
-            self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
-            self.robot_states_uiEdit[robot][0].setText("Disconnected...")
-            self.robot_states_uiEdit[robot][2].setText("")
-
-    def update_robot_status(self):
-        self.Map_label.setPixmap(self.pixmap)
-        self.Map_label.setAlignment(Qt.AlignCenter)
-        painter = QPainter(self.Map_label.pixmap())
-
-        for robot, states in self.robot_states.items():
-            self.update_robot_health(robot, states)
-            self.update_map(robot, states, painter)
-
-        painter.end()
-            
 
     def calc_coord(self, x, y):
         pos_x = (x - self.map_origin[0]) / self.map_resolution
@@ -437,10 +398,9 @@ class AdminGUI(QMainWindow, admin_ui):
             self.db_connector.db_manager.close()
 
         for robot in robot_types:
-            self.robot_states[robot] = self.robot_states[robot]['task_id']
+            self.robot_last_task[robot] = self.robot_states[robot]['task_id']
 
-        # print(self.robot_states)
-        self.save_last_task(self.robot_states)
+        self.save_last_task(self.robot_last_task)
 
         rclpy.shutdown()
         # self.tts.stop_tts()

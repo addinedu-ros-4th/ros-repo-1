@@ -44,7 +44,6 @@ from twilio.rest import Client
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 from rmf_fleet_msgs.msg import FleetState, DestinationRequest, ModeRequest, RobotMode
 
-
 robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
 
 class GenerateQRServer(Node):
@@ -321,7 +320,6 @@ class TaskRequester(Node):
             mode = RobotMode.MODE_MOVING
             msg.task_id = str(task_id)
 
-
         msg.fleet_name = robot
         msg.robot_name = robot + "_1"
         msg.mode.mode = mode
@@ -353,12 +351,16 @@ class AmclSubscriber(Node):
             self.robot_states[robot] = {
                 'x' : 0.0,
                 'y' : 0.0,
+                'yaw': 0.0,
                 'connection' : 0,
                 'task_id_trash': "",
                 'task_id': "",
                 'check' : False,
-                'dest': [0.0, 0.0],
+                'dest': [0.0, 0.0, 0.0],
                 'remain_dist': 0.0,
+                'duration': 0.0,
+                'progress': "Waiting",
+                'prog_cnt' : 200,
             }
 
     def robot_states_callback(self, data):
@@ -368,23 +370,29 @@ class AmclSubscriber(Node):
         try:
             x = data.robots[0].location.x
             y = data.robots[0].location.y
+            yaw = data.robots[0].location.yaw
             task_id = data.robots[0].task_id
         except Exception as e:
             x = 0.0
             y = 0.0
+            yaw = 0.0
             task_id = ""
             robot['connection'] = 0
             robot['check'] = False
 
         if not robot['check'] :
-            robot['dest'] = [x, y]
+            robot['dest'] = [x, y, yaw]
 
         if x != 0.0 and y != 0.0 and robot['connection'] < 20 :
             robot['connection'] += 1
 
-        robot['remain_dist'] = self.distance_cal(robot)
         robot['x'] = x
         robot['y'] = y
+        robot['yaw'] = yaw
+
+        robot['remain_dist'] = self.distance_cal(robot)
+        robot['duration'] = self.progress_cal(robot)[0]
+        robot['progress'] = self.progress_cal(robot)[1]
         robot['task_id_trash'] = task_id
         self.signals.amcl_pose_received.emit(self.robot_states)
 
@@ -392,15 +400,38 @@ class AmclSubscriber(Node):
         name = data.fleet_name
         dest_x = data.destination.x
         dest_y = data.destination.y
+        dest_yaw = data.destination.yaw
         robot = self.robot_states[name]
         robot['check'] = True
-        robot['dest'] = [dest_x, dest_y]
+        robot['dest'] = [dest_x, dest_y, dest_yaw]
         robot['task_id'] = data.task_id
 
     def distance_cal(self, robot):
+        # TODO should cal last loc distance
         x1, x2, y1, y2 = robot['x'], robot['dest'][0], robot['y'], robot['dest'][1]
         remain_dist = ((abs(abs(x1) - abs(x2))) ** 2 + (abs(abs(y1) - abs(y2))) ** 2) ** 0.5
         return remain_dist
+    
+    def progress_cal(self, robot):
+        distance = robot['remain_dist']
+        cur_yaw = robot['yaw']
+        target_yaw = robot['dest'][2]
+        duration = (distance / 0.3) + (abs(abs(cur_yaw) - abs(target_yaw)) / 1.5)
+        
+        # TODO should change
+        if duration < 1 and distance < 1:
+            robot['prog_cnt'] += 1
+        else:
+            robot['prog_cnt'] = 0
+
+        if robot['prog_cnt'] > 50:
+            progress = "Arrived"
+            if robot['prog_cnt'] > 100:
+                progress = "Waiting"
+        else:
+            progress = "Driving"
+
+        return duration, progress
 
 class PathSubscriber(Node):
     def __init__(self, signals):
