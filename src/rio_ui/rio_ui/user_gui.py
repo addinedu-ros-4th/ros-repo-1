@@ -8,6 +8,7 @@ import rclpy
 from example_interfaces.msg import Int64MultiArray
 from rio_ui.admin_service import *
 from rio_ui_msgs.srv import GenerateVisitQR, VisitorAlert
+from rio_ui_msgs.msg import RobotCall
 from rclpy.executors import MultiThreadedExecutor
 
 import sys
@@ -31,18 +32,21 @@ class UserGUI(QMainWindow, user_ui):
         if not rclpy.ok():
             rclpy.init(args=None)
         self.robot_call_node = rclpy.create_node('robot_call_user_node')
-        self.robot_request_publisher = self.robot_call_node.create_publisher(Int64MultiArray, 'robot_call_user', 10)
+        self.robot_request_publisher = self.robot_call_node.create_publisher(RobotCall, 'robot_call_user', 10)
         self.service_node = rclpy.create_node('visitor_alert_server')
         self.service = self.service_node.create_service(VisitorAlert, 'get_visitor_info', self.alert_callback)
         self.start_executor_spin()
-        # self.tts = TTSAlertService()
-        # self.tts.run_create_tts("user_greeting", "안녕하세요!")
+        self.tts = TTSAlertService()
+        self.tts.run_create_tts("user_greeting", "안녕하세요!")
+        self.logInPW.installEventFilter(self)
         
         self.db_connector = DBConnector()
         
         self.callRobotGroup.hide()
         self.serviceGroup.hide()
         self.scheduleGroup.hide()
+        self.label_4.hide()
+        self.label_8.hide()
         
         header = self.scheduleTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
@@ -55,30 +59,66 @@ class UserGUI(QMainWindow, user_ui):
         self.update_time()
 
         self.robotTypeCBX.currentIndexChanged.connect(self.set_destination_info)
+        self.destination.currentIndexChanged.connect(self.set_receiver)
         self.logInBtn.clicked.connect(self.log_in)
         self.sendRobotRequestBtn.clicked.connect(self.publish_task)
         self.pre_arrangement_bt.clicked.connect(self.write_pre_arrangement)
         self.orderBtn.clicked.connect(self.order_menu)
+        self.selectRobotBtn.clicked.connect(self.select_robot)
+        self.backBtn.clicked.connect(self.cancel_select_robot)
+    
+    def select_robot(self):
+        self.destination.clear()
+        self.callRobotGroup.show()
+        self.selectRobotBtn.hide()
+        table = "OfficeInfo"
+        column = "office_number"
+        criteria = "close_date"
+        
+        result = self.db_connector.select_specific_null(table, column, criteria)
+        for value in result:
+            if str(value["office_number"]) != str(self.office_number):
+                self.destination.addItem(str(value['office_number'])) 
+
+        
+    def cancel_select_robot(self):
+        self.callRobotGroup.hide()
+        self.selectRobotBtn.show()
+        
+    def set_receiver(self):
+        self.receiver.clear()
+        table = "UserInfo"
+        column = "user_name, company"
+        criteria = {"office": self.destination.currentText()}
+        
+        result = self.db_connector.select_specific(table, column, criteria)
+        
+        for value in result:
+            self.receiver.addItem(str(value['user_name'])) 
+            self.company.setText(str(value["company"]))
         
     def set_destination_info(self):
         robot_type = self.robotTypeCBX.currentText()
         if robot_type == "Delivery RiO":
-            self.destination.setReadOnly(False)
+            self.destination.setEnabled(True)
             self.items.setReadOnly(False)
-            self.receiver.setReadOnly(False)
+            self.receiver.setEnabled(True)
         else:
-            self.destination.setReadOnly(True)
+            self.destination.setEnabled(False)
             self.items.setReadOnly(True)
-            self.receiver.setReadOnly(True)
+            self.receiver.setEnabled(False)
         
     def update_time(self):
         current_time = datetime.now()
         formatted_time = current_time.strftime("%H:%M")
         self.UITimer.setText(formatted_time)
         
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            self.log_in()
+    def eventFilter(self, source, event):
+        if source is self.logInPW and event.type() == event.KeyPress:
+            if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+                self.log_in() 
+                return True  
+        return super().eventFilter(source, event)
         
     def log_in(self):
         self.id = self.logInID.text()
@@ -121,9 +161,11 @@ class UserGUI(QMainWindow, user_ui):
                     
     def set_service_display(self):
         self.officeNumber.setText(str(self.office_number))
-        self.callRobotGroup.show()
+        self.callRobotGroup.hide()
         self.serviceGroup.show()
         self.scheduleGroup.show()
+        self.label_4.show()
+        self.label_8.show()
         self.logInGroup.hide()
         self.label_3.setText(f"{self.id}님 좋은 하루 보내세요!!")
             
@@ -143,19 +185,20 @@ class UserGUI(QMainWindow, user_ui):
         time_int = int(time_str)
         
         robot_type = self.robotTypeCBX.currentText()
-        if robot_type == "Guide RiO":
-            request_robot_type = 0
-        elif robot_type == "Delivery RiO":    
-            request_robot_type = 1
-        elif robot_type == "Patrol RiO":
-            request_robot_type = 2
-        elif robot_type == "Clean RiO":
-            request_robot_type = 3
+        destination = self.destination.currentText()
+        receiver = self.receiver.currentText()
+        items = self.items.text()
+        
             
-        req = Int64MultiArray()
-        req.data = [self.office_number, time_int, request_robot_type]
+        req = RobotCall()
+        req.office_number = self.office_number
+        req.date = time_int
+        req.robot_type = robot_type
+        req.destination = destination 
+        req.receiver = receiver
+        req.items = items
         self.robot_request_publisher.publish(req)
-        print("Published:", req.data)
+        # print("Published:", req)
 
     def write_pre_arrangement(self):
         pre_arrangement_window = SubGUI()
@@ -189,7 +232,7 @@ class UserGUI(QMainWindow, user_ui):
         self.visitor_alert(name, affiliation, robot_guidance)
 
     def visitor_alert(self, name, affiliation, robot_guidance):
-        # self.tts.run_create_tts(f"{affiliation}_{name}_greeting", f"{affiliation}의 {name}님이 방문하셨습니다.")
+        self.tts.run_create_tts(f"{affiliation}_{name}_greeting", f"{affiliation}의 {name}님이 방문하셨습니다.")
         if robot_guidance == True:
             self.service_node.get_logger().info(f"손님 도착 알림, {affiliation}의 {name}님이 방문하였습니다.\n로봇 길 안내를 시작합니다.")
             QMessageBox.information(self, f"손님 도착 알림", f"{affiliation}의 {name}님이 방문하였습니다.\n로봇 길 안내를 시작합니다.")
@@ -202,7 +245,7 @@ class UserGUI(QMainWindow, user_ui):
         self.executor.shutdown()
         self.executor_thread.join()
         rclpy.shutdown()
-        # self.tts.stop_tts()
+        self.tts.stop_tts()
         event.accept()
         
 class OrderGUI(QDialog, order_ui):
@@ -383,7 +426,7 @@ class SubGUI(QDialog, sub_ui):
             self.node.get_logger().info('service not available, waiting again...')              
         self.request = GenerateVisitQR.Request()
 
-        # self.tts = TTSAlertService()
+        self.tts = TTSAlertService()
 
         self.submit_bt.setDefault(True)
         self.submit_bt.clicked.connect(self.handle_submit)
@@ -430,10 +473,10 @@ class SubGUI(QDialog, sub_ui):
     @pyqtSlot(bool, str)
     def announce_sms_success(self, success, message):
         if success:
-            # self.tts.run_tts("message_send_success")
+            self.tts.run_tts("message_send_success")
             QMessageBox.information(self, "발송 완료",message)
         else:
-            # self.tts.run_create_tts(f"message_send_fail", f"메시지 전송을 실패하였습니다. 관리자에게 문의해주세요!")
+            self.tts.run_create_tts(f"message_send_fail", f"메시지 전송을 실패하였습니다. 관리자에게 문의해주세요!")
             QMessageBox.warning(self, "발송 오류", message)
     
     def close_dialog(self):

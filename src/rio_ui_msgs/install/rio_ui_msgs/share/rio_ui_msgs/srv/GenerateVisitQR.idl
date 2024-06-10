@@ -1,0 +1,19 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from rio_ui_msgs/srv/GenerateVisitQR.srv
+// generated code does not contain a copyright notice
+
+
+module rio_ui_msgs {
+  module srv {
+    struct GenerateVisitQR_Request {
+      string visitor_info;
+    };
+    struct GenerateVisitQR_Response {
+      boolean success;
+
+      string message;
+
+      string qr_code_path;
+    };
+  };
+};

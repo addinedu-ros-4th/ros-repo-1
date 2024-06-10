@@ -1,0 +1,4 @@
+string name
+string affiliation
+string visit_place
+bool robot_guidance

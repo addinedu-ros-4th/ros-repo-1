@@ -1,0 +1,4 @@
+string hashed_data
+---
+bool success
+string message

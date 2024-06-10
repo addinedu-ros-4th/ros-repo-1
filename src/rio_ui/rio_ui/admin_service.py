@@ -8,6 +8,7 @@ from example_interfaces.msg import Float64MultiArray, Int64MultiArray
 from ament_index_python.packages import get_package_share_directory
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtWidgets import QTableWidgetItem
+from rio_ui_msgs.msg import RobotCall
 
 import math
 import os
@@ -36,9 +37,9 @@ from rclpy.qos import QoSReliabilityPolicy as Reliability
 from rio_ui_msgs.srv import GenerateVisitQR, QRCheck, VisitorAlert
 from rio_db_manager.db_manager import DBManager
 from rio_db_manager.create_init_db import CreateInitDB
-# from rio_ui.TTS_service import TTSService
+from rio_ui.TTS_service import TTSService
 
-# from twilio.rest import Client
+from twilio.rest import Client
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 from rmf_fleet_msgs.msg import FleetState
@@ -401,43 +402,39 @@ class OrderSubscriber(Node):
         self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
         self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
         self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem("Delivery RiO"))
-        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(order_str))
+        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(str(office_num)))
+        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(order_str))
+        
         
 class RobotCallSubscriber(Node):
     def __init__(self, ui):
         super().__init__("robot_call_sub")
         self.ui = ui
         self.order_subs = self.create_subscription(
-            Int64MultiArray,
+            RobotCall,
             "/robot_call_user_1",
             self.robot_call_callback,
             10
         )
     
     def robot_call_callback(self, msg):
-        office_num = msg.data[0]
-        request_time = msg.data[1]
-        robot_type = msg.data[2]
+        office_num = msg.office_number
+        request_time = msg.date
+        robot_type = msg.robot_type
+        destination = msg.destination
+        receiver = msg.receiver
+        items = msg.items
+        
         
         time_str = str(request_time)
-        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
-        
-        if robot_type == 0:
-            request_robot_type = "Guide RiO"
-        elif robot_type == 1:    
-            request_robot_type = "Delivery RiO"
-        elif robot_type == 2:
-            request_robot_type = "Patrol RiO"
-        elif robot_type == 3:
-            request_robot_type = "Clean RiO"
-        
-                    
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"           
         row_position = self.ui.requestTable.rowCount()
         self.ui.requestTable.insertRow(row_position)
         self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
         self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
-        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(request_robot_type))
-        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(""))
+        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(robot_type))
+        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(destination))
+        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(items))
         
 
 # class RobotCallSubscriber(Node):
@@ -665,36 +662,36 @@ class RFIDSubscriber(Node):
     
         self.db_manager.create("Payment", self.user_data)
 
-# class TTSAlertService():     
-#     def __init__(self):
-#         self.ttsservice = TTSService()
-#         self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
-#         self.tts_thread = None
+class TTSAlertService():     
+    def __init__(self):
+        self.ttsservice = TTSService()
+        self.base_path = '/home/joe/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
+        self.tts_thread = None
         
-#     def create_tts_speak(self, file_name, text):
-#         file_path = os.path.join(self.base_path, f"{file_name}.mp3")
-#         self.ttsservice.create_tts_file(file_path, text)
-#         self.ttsservice.speak(file_path)
+    def create_tts_speak(self, file_name, text):
+        file_path = os.path.join(self.base_path, f"{file_name}.mp3")
+        self.ttsservice.create_tts_file(file_path, text)
+        self.ttsservice.speak(file_path)
     
-#     def tts_speak(self, text):
-#         file_name = f"{text}.mp3"
-#         file_path = os.path.join(self.base_path, file_name)
-#         self.ttsservice.speak(file_path)
+    def tts_speak(self, text):
+        file_name = f"{text}.mp3"
+        file_path = os.path.join(self.base_path, file_name)
+        self.ttsservice.speak(file_path)
 
-#     def run_create_tts(self, file_name, text):
-#         self.stop_tts()
-#         self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(file_name, text,))
-#         self.tts_thread.start()
+    def run_create_tts(self, file_name, text):
+        self.stop_tts()
+        self.tts_thread = threading.Thread(target=self.create_tts_speak, args=(file_name, text,))
+        self.tts_thread.start()
 
-#     def run_tts(self, text):
-#         self.stop_tts()
-#         self.tts_thread = threading.Thread(target=self.tts_speak, args=(text,))
-#         self.tts_thread.start()
+    def run_tts(self, text):
+        self.stop_tts()
+        self.tts_thread = threading.Thread(target=self.tts_speak, args=(text,))
+        self.tts_thread.start()
 
-#     def stop_tts(self):
-#         if self.tts_thread and self.tts_thread.is_alive():
-#             self.tts_thread.join()
-#         self.tts_thread = None
+    def stop_tts(self):
+        if self.tts_thread and self.tts_thread.is_alive():
+            self.tts_thread.join()
+        self.tts_thread = None
 
 def main(args=None):
     rclpy.init(args=args)
