@@ -1,1 +1,0 @@
-string visitor_info

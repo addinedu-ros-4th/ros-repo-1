@@ -42,8 +42,9 @@ from rio_ui.TTS_service import TTSService
 from twilio.rest import Client
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
-from rmf_fleet_msgs.msg import FleetState, DestinationRequest
-from visualization_msgs.msg import MarkerArray
+from rmf_fleet_msgs.msg import FleetState, DestinationRequest, ModeRequest, RobotMode
+
+robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
 
 class GenerateQRServer(Node):
     def __init__(self):
@@ -245,7 +246,11 @@ class TaskRequester(Node):
             depth=1,
             reliability=Reliability.RELIABLE,
             durability=Durability.TRANSIENT_LOCAL)
+        
         self.pub = self.create_publisher(ApiRequest, 'task_api_requests', transient_qos)
+        self.mode_pubs = {}
+        for robot in robot_types:
+            self.mode_pubs[robot] = self.create_publisher(ModeRequest, f"/{robot}/robot_mode_requests", 5)
 
     def task_msg_pub(self, params):
         self.params = params
@@ -303,17 +308,34 @@ class TaskRequester(Node):
             self.get_logger().info('Did not get a response')
 
         # print(msg.request_id)
+    
+    def mode_change(self, robot, mode, task_id):
+        msg = ModeRequest()
+
+        if mode == "pause":
+            mode = RobotMode.MODE_PAUSED
+            msg.task_id = ""
+
+        elif mode == "moving":
+            mode = RobotMode.MODE_MOVING
+            msg.task_id = str(task_id)
+
+        msg.fleet_name = robot
+        msg.robot_name = robot + "_1"
+        msg.mode.mode = mode
+
+        for i in range(5):
+            self.mode_pubs[robot].publish(msg)
+            
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
         super().__init__("amcl_sub")
         self.signals = signals
-
-        self.robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
         self.robot_states = {}
 
-        for robot in self.robot_types:
-            print(robot)
+        for robot in robot_types:
+            # print(robot)
             self.subscription_states = self.create_subscription(
                 FleetState,
                 f"/{robot}/fleet_states",
@@ -329,12 +351,17 @@ class AmclSubscriber(Node):
             self.robot_states[robot] = {
                 'x' : 0.0,
                 'y' : 0.0,
+                'yaw': 0.0,
                 'connection' : 0,
-                'task_id': "0",
+                'task_id_trash': "",
+                'task_id': "",
                 'check' : False,
-                'dest': [0.0, 0.0],
+                'dest': [0.0, 0.0, 0.0],
+                'remain_dist': 0.0,
+                'duration': 0.0,
+                'progress': "Waiting",
+                'prog_cnt' : 200,
             }
-        # print(self.robot_states)
 
     def robot_states_callback(self, data):
         name = data.name
@@ -343,38 +370,68 @@ class AmclSubscriber(Node):
         try:
             x = data.robots[0].location.x
             y = data.robots[0].location.y
+            yaw = data.robots[0].location.yaw
             task_id = data.robots[0].task_id
-            # print(name, x)
-            
         except Exception as e:
             x = 0.0
             y = 0.0
-            task_id = 0
+            yaw = 0.0
+            task_id = ""
             robot['connection'] = 0
             robot['check'] = False
-            # print(e)
 
         if not robot['check'] :
-            robot['dest'] = [x, y]
+            robot['dest'] = [x, y, yaw]
 
-        if x != 0.0 and y != 0.0 and robot['connection'] < 10 :
+        if x != 0.0 and y != 0.0 and robot['connection'] < 20 :
             robot['connection'] += 1
 
         robot['x'] = x
         robot['y'] = y
-        robot['task_id'] = task_id
+        robot['yaw'] = yaw
 
+        robot['remain_dist'] = self.distance_cal(robot)
+        robot['duration'] = self.progress_cal(robot)[0]
+        robot['progress'] = self.progress_cal(robot)[1]
+        robot['task_id_trash'] = task_id
         self.signals.amcl_pose_received.emit(self.robot_states)
-        # print(self.robot_states)
 
     def destination_info_callback(self, data):
         name = data.fleet_name
         dest_x = data.destination.x
         dest_y = data.destination.y
+        dest_yaw = data.destination.yaw
         robot = self.robot_states[name]
         robot['check'] = True
-        robot['dest'] = [dest_x, dest_y]
+        robot['dest'] = [dest_x, dest_y, dest_yaw]
+        robot['task_id'] = data.task_id
 
+    def distance_cal(self, robot):
+        # TODO should cal last loc distance
+        x1, x2, y1, y2 = robot['x'], robot['dest'][0], robot['y'], robot['dest'][1]
+        remain_dist = ((abs(abs(x1) - abs(x2))) ** 2 + (abs(abs(y1) - abs(y2))) ** 2) ** 0.5
+        return remain_dist
+    
+    def progress_cal(self, robot):
+        distance = robot['remain_dist']
+        cur_yaw = robot['yaw']
+        target_yaw = robot['dest'][2]
+        duration = (distance / 0.3) + (abs(abs(cur_yaw) - abs(target_yaw)) / 1.5)
+        
+        # TODO should change
+        if duration < 1 and distance < 1:
+            robot['prog_cnt'] += 1
+        else:
+            robot['prog_cnt'] = 0
+
+        if robot['prog_cnt'] > 50:
+            progress = "Arrived"
+            if robot['prog_cnt'] > 100:
+                progress = "Waiting"
+        else:
+            progress = "Driving"
+
+        return duration, progress
 
 class PathSubscriber(Node):
     def __init__(self, signals):

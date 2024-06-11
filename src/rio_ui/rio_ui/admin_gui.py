@@ -48,21 +48,23 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.btn_req_delivery.clicked.connect(lambda: self.robot_ctl_task("deliverybot"))
         # self.btn_req_patrol.clicked.connect(lambda: self.robot_ctl_task("patrolbot"))
         # self.btn_req_clean.clicked.connect(lambda: self.robot_ctl_task("cleanerbot"))
+        self.init_robot_info()
+
+       
         self.addUserBtn.clicked.connect(self.add_user)
         self.officeManageBtn.clicked.connect(self.office_manage)
         
-        self.nav = BasicNavigator()
-        self.goal_pose = PoseStamped()
-        self.goal_pose.header.frame_id = "map"
-        self.update_goal_pose()
-
-        self.xLine.setText("0")
-        self.yLine.setText("0")
-        self.yawLine.setText("0")
+        # self.nav = BasicNavigator()
+        # self.goal_pose = PoseStamped()
+        # self.goal_pose.header.frame_id = "map"
+        # self.update_goal_pose()
+        # self.xLine.setText("0")
+        # self.yLine.setText("0")
+        # self.yawLine.setText("0")
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_robot_status)
-        self.timer.start(100)
+        self.timer.start(10)
         
         self.order = []
         self.node = rclpy.create_node("robot_task_node")
@@ -80,7 +82,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.signals = ROSNodeSignals()
         self.robot_states = {}
         self.signals.amcl_pose_received.connect(self.update_amcl_pose)
-        self.signals.path_distance_received.connect(self.update_path_distance)
+        # self.signals.path_distance_received.connect(self.update_path_distance)
         # self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
 
@@ -142,6 +144,60 @@ class AdminGUI(QMainWindow, admin_ui):
     #         'minibot': [self.yLine, self.yawLine, self.xLine]
     #     }
 
+    def init_robot_info(self):
+        self.btn_req_guide.clicked.connect(lambda: self.click_robot_ctl_task("guidebot"))
+        self.btn_req_delivery.clicked.connect(lambda: self.click_robot_ctl_task("deliverybot"))
+        self.btn_req_patrol.clicked.connect(lambda: self.click_robot_ctl_task("patrolbot"))
+        self.btn_req_clean.clicked.connect(lambda: self.click_robot_ctl_task("cleanerbot"))
+        self.btn_stop_guide.clicked.connect(lambda: self.click_robot_task_stop("guidebot"))
+        self.btn_stop_delivery.clicked.connect(lambda: self.click_robot_task_stop("deliverybot"))
+        self.btn_stop_patrol.clicked.connect(lambda: self.click_robot_task_stop("patrolbot"))
+        self.btn_stop_clean.clicked.connect(lambda: self.click_robot_task_stop("cleanerbot"))
+        
+        self.robot_task_stack = {
+            'guidebot': [],
+            'deliverybot': [],
+            'patrolbot': [],
+            'cleanerbot': [],
+            'minibot': []
+        }
+
+        self.robot_last_task = {
+            'guidebot': "",
+            'deliverybot': "",
+            'patrolbot': "",
+            'cleanerbot': "",
+            'minibot': ""
+        }
+
+        last_task = self.load_last_task()
+        for robot, task in last_task.items():
+            self.robot_last_task[robot] = task
+
+        self.guidebot_paused = False
+        self.deliverybot_paused = False
+        self.patrolbot_paused = False
+        self.cleanerbot_paused = False
+        self.minibot_paused = False
+
+        self.robot_states_uiEdit = {
+            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.lineEdit, self.btn_stop_guide, self.guidebot_paused],
+            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.lineEdit_2, self.btn_stop_delivery, self.deliverybot_paused],
+            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.lineEdit_3, self.btn_stop_patrol, self.patrolbot_paused],
+            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.lineEdit_4, self.btn_stop_clean, self.cleanerbot_paused],
+            'minibot': [self.yLine, self.yawLine, self.xLine, self.btn_stop_guide, self.minibot_paused]
+        }
+
+    def load_last_task(self):
+        with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'r') as f:
+            last_task = yaml.full_load(f)
+        return last_task
+    
+    def save_last_task(self, data):
+        with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'w') as f:
+            yaml.dump(data, f)
+
+
     def visitor_alert_to_user(self, message):
         visitor_alert = VisitorService()
         visitor_alert.send_visit_alert_req(message)
@@ -161,16 +217,16 @@ class AdminGUI(QMainWindow, admin_ui):
     def update_amcl_pose(self, robot_states):
         self.robot_states = robot_states
 
-    def update_path_distance(self, distance):
-        if distance < 0.4:
-            distance = 0
-        self.remainLine.setText(str("{:.2f}".format(distance)))
+    # def update_path_distance(self, distance):
+    #     if distance < 0.4:
+    #         distance = 0
+    #     self.remainLine.setText(str("{:.2f}".format(distance)))
 
-    def update_task_request(self, x, y, yaw):
-        self.xLine.setText(str(x))
-        self.yLine.setText(str(y))
-        self.yawLine.setText(str(yaw))
-        self.robot_ctl_task()
+    # def update_task_request(self, x, y, yaw):
+    #     self.xLine.setText(str(x))
+    #     self.yLine.setText(str(y))
+    #     self.yawLine.setText(str(yaw))
+    #     self.robot_ctl_task()
 
     def select_table_update(self, tables):
         self.select_table_cbx.clear()
@@ -203,27 +259,63 @@ class AdminGUI(QMainWindow, admin_ui):
                 item = QTableWidgetItem(str(row_data[column_name])) 
                 detail_table.setItem(i, j, item)
         
-    def update_goal_pose(self, x=None, y=None, yaw=None):
-        if x is None:
-            x = float(self.xLine.text())
-        if y is None:
-            y = float(self.yLine.text())
-        if yaw is None:
-            yaw = float(self.yawLine.text())
+    # def update_goal_pose(self, x=None, y=None, yaw=None):
+    #     if x is None:
+    #         x = float(self.xLine.text())
+    #     if y is None:
+    #         y = float(self.yLine.text())
+    #     if yaw is None:
+    #         yaw = float(self.yawLine.text())
 
-        roll, pitch, yaw = 0.0, 0.0, yaw
-        quaternion = quaternion_from_euler(roll, pitch, yaw)
+    #     roll, pitch, yaw = 0.0, 0.0, yaw
+    #     quaternion = quaternion_from_euler(roll, pitch, yaw)
 
-        self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
-        self.goal_pose.pose.position.x = x
-        self.goal_pose.pose.position.y = y
-        self.goal_pose.pose.position.z = 0.0
-        self.goal_pose.pose.orientation.x = quaternion[0]
-        self.goal_pose.pose.orientation.y = quaternion[1]
-        self.goal_pose.pose.orientation.z = quaternion[2]
-        self.goal_pose.pose.orientation.w = quaternion[3]
+    #     self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
+    #     self.goal_pose.pose.position.x = x
+    #     self.goal_pose.pose.position.y = y
+    #     self.goal_pose.pose.position.z = 0.0
+    #     self.goal_pose.pose.orientation.x = quaternion[0]
+    #     self.goal_pose.pose.orientation.y = quaternion[1]
+    #     self.goal_pose.pose.orientation.z = quaternion[2]
+    #     self.goal_pose.pose.orientation.w = quaternion[3]
         
-    def robot_ctl_task(self, robot):
+    def click_robot_task_stop(self, robot):
+        flag = self.robot_states_uiEdit[robot][-1]
+        btn = self.robot_states_uiEdit[robot][3]
+        btn.setStyleSheet("font-weight: bold;")
+        if not flag:
+            flag = True
+            btn.setText("RESUME\nROBOT")
+            mode = "pause"
+        else:
+            flag = False
+            btn.setText("STOP\nROBOT")
+            mode = "moving"
+        self.robot_states_uiEdit[robot][-1] = flag
+
+        last_task = self.load_last_task()
+        for r, t in last_task.items():
+            self.robot_last_task[r] = t
+
+        if self.robot_states[robot]['task_id'] != '':
+            task_id = self.robot_states[robot]['task_id']
+        else:
+            task_id = self.robot_last_task[robot]
+
+        self.robot_last_task[robot] = task_id
+
+        # print(task_id)
+        self.task_stop(robot, mode, task_id)
+
+    def task_stop(self, robot, mode, task_id):
+        self.task_requester.mode_change(robot, mode, task_id)
+
+        data = self.load_last_task()
+        data[robot] = task_id
+        # print(data)
+        self.save_last_task(data)
+
+    def click_robot_ctl_task(self, robot):
         if robot == "guidebot":
             goal = self.end_location_4.currentText()
             robot = "minibot" # minibot test
@@ -235,7 +327,6 @@ class AdminGUI(QMainWindow, admin_ui):
             goal = self.end_location_7.currentText()
         self.dispatch_task(robot, goal)
 
-
     def dispatch_task(self, robot, goal):
         params = {
             'fleet': robot,  
@@ -244,18 +335,42 @@ class AdminGUI(QMainWindow, admin_ui):
         }
         self.task_requester.task_msg_pub(params)
 
+        task = [params, False]
+        self.robot_task_stack[robot].append(task)
 
-    def update_robot_state(self, robot, states):
-        loc = self.robot_locations[robot]
-        loc['pres'] = [states['x'], states['y']]
+        # print(self.robot_task_stack[robot])
 
-        status = ""
+    def update_robot_status(self):
+        self.Map_label.setPixmap(self.pixmap)
+        self.Map_label.setAlignment(Qt.AlignCenter)
+        painter = QPainter(self.Map_label.pixmap())
+        for robot, states in self.robot_states.items():
+            self.update_robot_health(robot, states, painter)
+        painter.end()
 
-        if loc['prev'] != loc['pres']:
-            loc['prev'] = loc['pres']
-            status = "moving"
+    def update_robot_health(self, robot, states, painter):
+        if states['connection'] >= 20:
+            self.update_map(robot, states, painter)
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: green;")
+            self.robot_states_uiEdit[robot][1].setStyleSheet("color: green;")
+            self.robot_states_uiEdit[robot][0].setText("Connected")
+
+            # TODO location name print
+            self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
+            
+            status = self.update_task_progress(robot, states)
+            self.robot_states_uiEdit[robot][1].setText(status)
+
+        elif 0 < states['connection'] < 20:
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
+            self.robot_states_uiEdit[robot][0].setText("Connecting...")
         else:
-            status = "ready"
+            self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
+            self.robot_states_uiEdit[robot][0].setText("Disconnected...")
+            self.robot_states_uiEdit[robot][2].setText("")
+
+    def update_task_progress(self, robot):
+        status = f"{robot['progress']}"
         return status
 
     def update_map(self, robot, states, painter):
@@ -274,41 +389,6 @@ class AdminGUI(QMainWindow, admin_ui):
         painter.setPen(QPen(pen_color, 15, Qt.SolidLine))
         painter.drawPoint(int(posx), int(posy))
         painter.drawText(int(posx-2), int(posy-11), str(robot))
-
-    def update_robot_health(self, robot, states):
-        if states['connection'] >= 10:
-            self.robot_states_uiEdit[robot][0].setStyleSheet("color: green;")
-            self.robot_states_uiEdit[robot][1].setStyleSheet("color: green;")
-
-            self.robot_states_uiEdit[robot][0].setText("Connected")
-            self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
-            status = self.update_robot_state(robot, states)
-            self.robot_states_uiEdit[robot][1].setText(status)
-
-        elif 0 < states['connection'] < 10:
-            self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
-            self.robot_states_uiEdit[robot][0].setText("Connecting...")
-        else:
-            self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
-            self.robot_states_uiEdit[robot][0].setText("Disconnected...")
-            self.robot_states_uiEdit[robot][2].setText("")
-
-    def update_robot_status(self):
-        self.Map_label.setPixmap(self.pixmap)
-        self.Map_label.setAlignment(Qt.AlignCenter)
-        painter = QPainter(self.Map_label.pixmap())
-
-        for robot, states in self.robot_states.items():
-            # test -> need to delete about minibot
-            if robot == "minibot":
-                states['x'] += 19
-                states['y'] -= 4
-
-            self.update_robot_health(robot, states)
-            self.update_map(robot, states, painter)
-
-        painter.end()
-            
 
     def calc_coord(self, x, y):
         pos_x = (x - self.map_origin[0]) / self.map_resolution
@@ -365,6 +445,12 @@ class AdminGUI(QMainWindow, admin_ui):
         self.timer.stop()
         if self.db_connector and self.db_connector.db_manager:
             self.db_connector.db_manager.close()
+
+        for robot in robot_types:
+            self.robot_last_task[robot] = self.robot_states[robot]['task_id']
+
+        self.save_last_task(self.robot_last_task)
+
         rclpy.shutdown()
         # self.tts.stop_tts()
         event.accept()
@@ -648,7 +734,7 @@ def main():
     executor = MultiThreadedExecutor()
 
     amcl_subscriber = AmclSubscriber(signals)
-    path_subscriber = PathSubscriber(signals)
+    # path_subscriber = PathSubscriber(signals)
     request_subscriber = RobotCallSubscriber(myWindow)
     generate_qr_server = GenerateQRServer()
     order_subscriber = OrderSubscriber(myWindow)
@@ -657,7 +743,7 @@ def main():
 
 
     executor.add_node(amcl_subscriber)
-    executor.add_node(path_subscriber)
+    # executor.add_node(path_subscriber)
     executor.add_node(request_subscriber)
     executor.add_node(generate_qr_server)
     executor.add_node(order_subscriber)
