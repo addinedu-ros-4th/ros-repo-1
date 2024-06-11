@@ -44,7 +44,7 @@
    <property name="title">
     <string>Robot status</string>
    </property>
-   <widget class="QLabel" name="Guide_RiO_label">
+   <widget class="QLabel" name="Guide_RiO">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -157,12 +157,12 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="Guide_RiO_label_2">
+   <widget class="QLabel" name="Status">
     <property name="geometry">
      <rect>
-      <x>179</x>
+      <x>210</x>
       <y>30</y>
-      <width>131</width>
+      <width>61</width>
       <height>31</height>
      </rect>
     </property>
@@ -174,7 +174,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Task Status</string>
+     <string>Status</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -271,8 +271,8 @@
    <widget class="QLabel" name="label_17">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>120</y>
+      <x>450</x>
+      <y>130</y>
       <width>121</width>
       <height>17</height>
      </rect>
@@ -284,6 +284,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QComboBox" name="start_location_4">
     <property name="geometry">
      <rect>
@@ -295,12 +296,15 @@
     </property>
    </widget>
    <widget class="QComboBox" name="request_6">
+=======
+   <widget class="QComboBox" name="robot_type">
+>>>>>>> dev
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>450</x>
       <y>90</y>
       <width>141</width>
-      <height>25</height>
+      <height>31</height>
      </rect>
     </property>
     <item>
@@ -328,12 +332,17 @@
       <string>Cleanerbot</string>
      </property>
     </item>
+    <item>
+     <property name="text">
+      <string>minibot</string>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label_23">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>170</y>
+      <x>450</x>
+      <y>190</y>
       <width>100</width>
       <height>17</height>
      </rect>
@@ -373,7 +382,7 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>350</x>
+      <x>440</x>
       <y>70</y>
       <width>100</width>
       <height>17</height>
@@ -386,6 +395,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QComboBox" name="start_location_6">
     <property name="geometry">
      <rect>
@@ -397,12 +407,15 @@
     </property>
    </widget>
    <widget class="QPushButton" name="requestButton1">
+=======
+   <widget class="QPushButton" name="btn_submit_task">
+>>>>>>> dev
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>230</y>
+      <x>450</x>
+      <y>250</y>
       <width>141</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -414,13 +427,16 @@
     </property>
     <property name="text">
      <string>SUBMIT 
- REQUEST</string>
+ TASK</string>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="Guide_RiO_label_3">
+   <widget class="QLabel" name="Task_Submit">
     <property name="geometry">
      <rect>
-      <x>357</x>
+      <x>447</x>
       <y>36</y>
       <width>121</width>
       <height>21</height>
@@ -440,7 +456,7 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="Patrol_RiO_2">
+   <widget class="QLabel" name="Cleaner_RiO">
     <property name="geometry">
      <rect>
       <x>-10</x>
@@ -510,23 +526,23 @@
    <widget class="QLineEdit" name="lineEdit">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>140</y>
+      <x>450</x>
+      <y>150</y>
       <width>141</width>
-      <height>25</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="readOnly">
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_stop_guide">
+   <widget class="QPushButton" name="btn_stop_robot">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>280</y>
+      <x>450</x>
+      <y>300</y>
       <width>141</width>
-      <height>71</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="font">
@@ -540,11 +556,14 @@
      <string>STOP 
  ROBOT</string>
     </property>
+    <property name="autoDefault">
+     <bool>true</bool>
+    </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_guide_2">
+   <widget class="QPushButton" name="btn_clean_loc">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>610</x>
       <y>300</y>
       <width>71</width>
       <height>51</height>
@@ -562,10 +581,10 @@
  Office</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_guide_3">
+   <widget class="QPushButton" name="btn_patrol_loc">
     <property name="geometry">
      <rect>
-      <x>650</x>
+      <x>680</x>
       <y>300</y>
       <width>71</width>
       <height>51</height>
@@ -583,10 +602,10 @@
  Office</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_guide_4">
+   <widget class="QPushButton" name="btn_sell_loc">
     <property name="geometry">
      <rect>
-      <x>650</x>
+      <x>680</x>
       <y>250</y>
       <width>71</width>
       <height>51</height>
@@ -601,13 +620,13 @@
     </property>
     <property name="text">
      <string>Selling 
- Coffee</string>
+ Product</string>
     </property>
    </widget>
-   <widget class="QLabel" name="Guide_RiO_label_4">
+   <widget class="QLabel" name="Task_Custom">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>610</x>
       <y>30</y>
       <width>131</width>
       <height>31</height>
@@ -627,13 +646,13 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QComboBox" name="end_location_5">
+   <widget class="QComboBox" name="task_custom_loc">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>610</x>
       <y>90</y>
       <width>141</width>
-      <height>25</height>
+      <height>31</height>
      </rect>
     </property>
     <item>
@@ -825,7 +844,7 @@
    <widget class="QLabel" name="label_24">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>610</x>
       <y>70</y>
       <width>100</width>
       <height>17</height>
@@ -838,11 +857,11 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_guide_5">
+   <widget class="QPushButton" name="btn_add_loc">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>120</y>
+      <x>610</x>
+      <y>130</y>
       <width>141</width>
       <height>41</height>
      </rect>
@@ -862,17 +881,17 @@
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>170</y>
+      <x>610</x>
+      <y>180</y>
       <width>141</width>
-      <height>71</height>
+      <height>61</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_guide_6">
+   <widget class="QPushButton" name="btn_custom_task">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>610</x>
       <y>250</y>
       <width>71</width>
       <height>51</height>
@@ -890,13 +909,13 @@
  Task</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="end_location_4">
+   <widget class="QComboBox" name="task_goal_loc">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>190</y>
+      <x>450</x>
+      <y>210</y>
       <width>141</width>
-      <height>25</height>
+      <height>31</height>
      </rect>
     </property>
     <item>
@@ -1084,6 +1103,138 @@
       <string>minibot_charger_1</string>
      </property>
     </item>
+   </widget>
+   <widget class="QLabel" name="Location">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>30</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Location</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="location_guide">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>90</y>
+      <width>121</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    color: green;
+    font-weight: bold;
+}</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="location_delivery">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>150</y>
+      <width>121</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    color: green;
+    font-weight: bold;
+}</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="location_patrol">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>210</y>
+      <width>121</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    color: green;
+    font-weight: bold;
+}</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="location_clean">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>270</y>
+      <width>121</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    color: green;
+    font-weight: bold;
+}</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_patrol_loc_2">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>360</y>
+      <width>141</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Return All Robots 
+ To Home</string>
+    </property>
    </widget>
   </widget>
   <widget class="QLabel" name="label_5">
