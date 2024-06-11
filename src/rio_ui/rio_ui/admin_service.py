@@ -531,24 +531,6 @@ class RobotCallSubscriber(Node):
         self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(str(office_num)))
         self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(destination))
         self.ui.requestTable.setItem(row_position, 5, QTableWidgetItem(items))
-        
-
-# class RobotCallSubscriber(Node):
-#     def __init__(self, signals):
-#         super().__init__("req_sub")
-#         self.signals = signals
-#         self.subscription = self.create_subscription(
-#             Int64MultiArray,
-#             "/robot_call_user_1",
-#             self.req_callback,
-#             10
-#         )
-        
-#     def req_callback(self, msg):
-#         data = msg.data
-#         if len(data) == 2:
-#             self.signals.task_request_received.emit(data[0], data[1])
-
 
 class QRCheckServer(Node):
     # has_visited = pyqtSignal(dict)
