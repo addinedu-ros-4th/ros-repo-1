@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1331</width>
+    <width>1349</width>
     <height>724</height>
    </rect>
   </property>
@@ -38,7 +38,7 @@
      <x>560</x>
      <y>20</y>
      <width>761</width>
-     <height>511</height>
+     <height>541</height>
     </rect>
    </property>
    <property name="title">
@@ -70,7 +70,7 @@
    <widget class="QLabel" name="Delivery_RiO">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>200</x>
       <y>40</y>
       <width>171</width>
       <height>17</height>
@@ -93,7 +93,7 @@
    <widget class="QLabel" name="Patrol_RiO">
     <property name="geometry">
      <rect>
-      <x>390</x>
+      <x>400</x>
       <y>40</y>
       <width>171</width>
       <height>20</height>
@@ -113,7 +113,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_cn_guide">
+   <widget class="QLabel" name="robot_st_1">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -129,16 +129,16 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Connected</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_cn_patrol">
+   <widget class="QLabel" name="robot_st_4">
     <property name="geometry">
      <rect>
-      <x>410</x>
+      <x>420</x>
       <y>70</y>
       <width>131</width>
       <height>17</height>
@@ -151,7 +151,7 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Failed</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -161,7 +161,7 @@
     <property name="geometry">
      <rect>
       <x>15</x>
-      <y>100</y>
+      <y>150</y>
       <width>120</width>
       <height>17</height>
      </rect>
@@ -180,11 +180,11 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_ts_guide">
+   <widget class="QLabel" name="robot_st_3">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>130</y>
+      <y>190</y>
       <width>101</width>
       <height>17</height>
      </rect>
@@ -196,16 +196,16 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Ready</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_cn_delivery">
+   <widget class="QLabel" name="robot_st_7">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>230</x>
       <y>70</y>
       <width>101</width>
       <height>17</height>
@@ -218,17 +218,30 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Connecting...</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_ts_delivery">
+   <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>130</y>
+      <x>30</x>
+      <y>110</y>
+      <width>131</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ip, address -&gt; json</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="robot_st_5">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>190</y>
       <width>101</width>
       <height>17</height>
      </rect>
@@ -240,17 +253,17 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Ready</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_ts_patrol">
+   <widget class="QLabel" name="robot_st_6">
     <property name="geometry">
      <rect>
-      <x>430</x>
-      <y>130</y>
+      <x>440</x>
+      <y>190</y>
       <width>101</width>
       <height>17</height>
      </rect>
@@ -262,7 +275,7 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Ready</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -271,8 +284,8 @@
    <widget class="QLabel" name="label_16">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>190</y>
+      <x>440</x>
+      <y>260</y>
       <width>100</width>
       <height>17</height>
      </rect>
@@ -287,45 +300,102 @@
    <widget class="QComboBox" name="request_4">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>210</y>
+      <x>430</x>
+      <y>280</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_17">
+    <property name="geometry">
+     <rect>
+      <x>24</x>
+      <y>320</y>
+      <width>100</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start location</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>320</y>
+      <width>100</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start location</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="end_location_4">
+    <property name="geometry">
+     <rect>
+      <x>17</x>
+      <y>400</y>
       <width>121</width>
       <height>25</height>
      </rect>
     </property>
     <item>
      <property name="text">
-      <string>Patrol</string>
+      <string>test_1</string>
      </property>
     </item>
-   </widget>
-   <widget class="QLabel" name="label_17">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>250</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Present Location</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
+    <item>
+     <property name="text">
+      <string>minibot_charger_1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>point2</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>point1</string>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label_19">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>190</y>
+      <x>230</x>
+      <y>260</y>
       <width>100</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
      <string>Request Type</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_20">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>320</y>
+      <width>100</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start location</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -334,60 +404,85 @@
    <widget class="QComboBox" name="request_5">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>210</y>
+      <x>220</x>
+      <y>280</y>
       <width>121</width>
       <height>25</height>
      </rect>
     </property>
-    <item>
-     <property name="text">
-      <string>Delivery</string>
-     </property>
-    </item>
+   </widget>
+   <widget class="QComboBox" name="end_location_5">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>400</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
    </widget>
    <widget class="QLabel" name="label_21">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>310</y>
+      <x>230</x>
+      <y>380</y>
       <width>100</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Goal Location</string>
+     <string>End location</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QComboBox" name="start_location_4">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>340</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
    <widget class="QComboBox" name="request_6">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>210</y>
+      <x>17</x>
+      <y>280</y>
       <width>121</width>
       <height>25</height>
      </rect>
     </property>
     <item>
      <property name="text">
-      <string>Guide</string>
+      <string>waypoint</string>
      </property>
     </item>
+   </widget>
+   <widget class="QComboBox" name="end_location_6">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>400</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
    </widget>
    <widget class="QLabel" name="label_22">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>310</y>
+      <x>440</x>
+      <y>380</y>
       <width>100</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Goal Location</string>
+     <string>End location</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -396,24 +491,49 @@
    <widget class="QLabel" name="label_23">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>310</y>
+      <x>24</x>
+      <y>380</y>
       <width>100</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Goal Location</string>
+     <string>End location</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QComboBox" name="start_location_5">
+    <property name="geometry">
+     <rect>
+      <x>17</x>
+      <y>340</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>minibot_charger_1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>point1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>point2</string>
+     </property>
+    </item>
+   </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>190</y>
+      <x>24</x>
+      <y>260</y>
       <width>100</width>
       <height>17</height>
      </rect>
@@ -425,11 +545,21 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_guide">
+   <widget class="QComboBox" name="start_location_6">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>340</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="requestButton1">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>380</y>
+      <y>450</y>
       <width>121</width>
       <height>51</height>
      </rect>
@@ -450,7 +580,7 @@
     <property name="geometry">
      <rect>
       <x>17</x>
-      <y>160</y>
+      <y>230</y>
       <width>121</width>
       <height>17</height>
      </rect>
@@ -469,11 +599,11 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_delivery">
+   <widget class="QPushButton" name="pushButton_6">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>380</y>
+      <x>420</x>
+      <y>440</y>
       <width>121</width>
       <height>51</height>
      </rect>
@@ -490,11 +620,11 @@
  REQUEST</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_patrol">
+   <widget class="QPushButton" name="deliRequestBtn">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>380</y>
+      <x>220</x>
+      <y>450</y>
       <width>121</width>
       <height>51</height>
      </rect>
@@ -514,7 +644,7 @@
    <widget class="QLabel" name="Patrol_RiO_2">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>600</x>
       <y>40</y>
       <width>171</width>
       <height>20</height>
@@ -534,7 +664,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_cn_clean">
+   <widget class="QLabel" name="robot_st_8">
     <property name="geometry">
      <rect>
       <x>620</x>
@@ -550,17 +680,17 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Failed</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_ts_clean">
+   <widget class="QLabel" name="robot_st_9">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>130</y>
+      <x>640</x>
+      <y>190</y>
       <width>101</width>
       <height>17</height>
      </rect>
@@ -572,17 +702,17 @@
 }</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Ready</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_req_clean">
+   <widget class="QPushButton" name="deliRequestBtn_2">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>380</y>
+      <x>630</x>
+      <y>450</y>
       <width>121</width>
       <height>51</height>
      </rect>
@@ -602,8 +732,8 @@
    <widget class="QLabel" name="label_24">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>190</y>
+      <x>640</x>
+      <y>260</y>
       <width>100</width>
       <height>17</height>
      </rect>
@@ -615,17 +745,27 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QComboBox" name="start_location_7">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>340</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
    <widget class="QLabel" name="label_25">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>310</y>
+      <x>640</x>
+      <y>380</y>
       <width>100</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Goal Location</string>
+     <string>End location</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -634,730 +774,21 @@
    <widget class="QComboBox" name="request_7">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>210</y>
+      <x>630</x>
+      <y>280</y>
       <width>121</width>
       <height>25</height>
      </rect>
     </property>
-    <item>
-     <property name="text">
-      <string>Clean</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="end_location_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>330</y>
-      <width>141</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>test_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>minibot_charger_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Select Location</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_inside</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>patrolbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cvs_and_cafe</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>guidebot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_manager</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>deliverybot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cleanerbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_room</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_desk</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_space</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_printer</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_cafe</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="end_location_5">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>330</y>
-      <width>141</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select Location</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_inside</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>patrolbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cvs_and_cafe</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>guidebot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_manager</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>deliverybot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cleanerbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_room</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_desk</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_space</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_printer</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_cafe</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="end_location_6">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>330</y>
-      <width>141</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select Location</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_inside</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>patrolbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cvs_and_cafe</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>guidebot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_manager</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>deliverybot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cleanerbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_room</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_desk</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_space</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_printer</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_cafe</string>
-     </property>
-    </item>
    </widget>
    <widget class="QComboBox" name="end_location_7">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>330</y>
-      <width>141</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>Select Location</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_outside_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>enter_inside</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>patrolbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cvs_and_cafe</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>guidebot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_manager</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lobby_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_2</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>office_desk_3</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>deliverybot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>cleanerbot_hold_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_room</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>meeting_desk</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_space</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_printer</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>share_cafe</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QLabel" name="label_18">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>250</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Present Location</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_20">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>250</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Present Location</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_26">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>250</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Present Location</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>270</y>
+      <x>630</x>
+      <y>400</y>
       <width>121</width>
       <height>25</height>
      </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>270</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_3">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>270</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_4">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>270</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_stop_guide">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>440</y>
-      <width>121</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>STOP 
- ROBOT</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_stop_delivery">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>440</y>
-      <width>121</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>STOP 
- ROBOT</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_stop_patrol">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>440</y>
-      <width>121</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>STOP 
- ROBOT</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_stop_clean">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>440</y>
-      <width>121</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>STOP 
- ROBOT</string>
     </property>
    </widget>
   </widget>
@@ -1566,12 +997,22 @@
   <widget class="QTableWidget" name="requestTable">
    <property name="geometry">
     <rect>
-     <x>800</x>
+     <x>770</x>
      <y>570</y>
-     <width>521</width>
+     <width>571</width>
      <height>131</height>
     </rect>
    </property>
+   <column>
+    <property name="text">
+     <string>Robot Type</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Robot Mode</string>
+    </property>
+   </column>
    <column>
     <property name="text">
      <string>Time</string>
@@ -1579,12 +1020,7 @@
    </column>
    <column>
     <property name="text">
-     <string>Office Number</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Robot Type</string>
+     <string>Request Office</string>
     </property>
    </column>
    <column>

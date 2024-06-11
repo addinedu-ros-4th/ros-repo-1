@@ -458,6 +458,7 @@ class RobotCallSubscriber(Node):
         office_num = msg.office_number
         request_time = msg.date
         robot_type = msg.robot_type
+        robot_mode = msg.robot_mode
         destination = msg.destination
         receiver = msg.receiver
         items = msg.items
@@ -467,11 +468,12 @@ class RobotCallSubscriber(Node):
         formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"           
         row_position = self.ui.requestTable.rowCount()
         self.ui.requestTable.insertRow(row_position)
-        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
-        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
-        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(robot_type))
-        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(destination))
-        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(items))
+        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(robot_type))
+        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(robot_mode))
+        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(formatted_time_str))
+        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(str(office_num)))
+        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(destination))
+        self.ui.requestTable.setItem(row_position, 5, QTableWidgetItem(items))
         
 
 # class RobotCallSubscriber(Node):
@@ -729,6 +731,21 @@ class TTSAlertService():
         if self.tts_thread and self.tts_thread.is_alive():
             self.tts_thread.join()
         self.tts_thread = None
+        
+class TaskAllocationNode(Node):
+    def __init__(self, ui):
+        self.ui = ui
+        self.completion_subs = self.create_subscription(
+            Int64MultiArray,
+            "",
+            self.completion_callback,
+            10
+        )
+        
+    def completion_callback(self):
+        pass
+        
+        
 
 def main(args=None):
     rclpy.init(args=args)

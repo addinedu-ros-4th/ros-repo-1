@@ -5,7 +5,6 @@ from PyQt5.QtCore import *
 from ament_index_python.packages import get_package_share_directory
 import rclpy
 
-from example_interfaces.msg import Int64MultiArray
 from rio_ui.admin_service import *
 from rio_ui_msgs.srv import GenerateVisitQR, VisitorAlert
 from rio_ui_msgs.msg import RobotCall
@@ -79,7 +78,8 @@ class UserGUI(QMainWindow, user_ui):
         for value in result:
             if str(value["office_number"]) != str(self.office_number):
                 self.destination.addItem(str(value['office_number'])) 
-
+        self.destination.addItem("share_office")
+        self.destination.addItem("meeting_room")
         
     def cancel_select_robot(self):
         self.callRobotGroup.hide()
@@ -194,6 +194,7 @@ class UserGUI(QMainWindow, user_ui):
         req.office_number = self.office_number
         req.date = time_int
         req.robot_type = robot_type
+        req.robot_mode = "delivery"
         req.destination = destination 
         req.receiver = receiver
         req.items = items
@@ -265,7 +266,7 @@ class OrderGUI(QDialog, order_ui):
         self.officeNumber.setText(str(self.office_num))
         
         self.node = rclpy.create_node("order_node")
-        self.order_publisher = self.node.create_publisher(Int64MultiArray, "order_request", 10)
+        self.order_publisher = self.node.create_publisher(RobotCall, "robot_call_user", 10)
         
         self.addCokeBtn.clicked.connect(self.add_coke)
         self.subCokeBtn.clicked.connect(self.sub_coke)
@@ -386,14 +387,25 @@ class OrderGUI(QDialog, order_ui):
             confirmation.exec_()
 
     def order_confirm(self):
+        order_string = ""
         current_time = datetime.now().time()
         time_str = current_time.strftime('%H%M%S')
         time_int = int(time_str)
-        order = [self.office_num, time_int]
+        
+        item_list = list(self.order.keys())
         order_list = list(self.order.values())
-        order.extend(order_list)
-        msg = Int64MultiArray()
-        msg.data = order
+        for i in range(4):
+            order_string += f"{item_list[i]} : {order_list[i]}, "
+        
+        msg = RobotCall()
+        msg.office_number = self.office_num
+        msg.date = time_int
+        msg.robot_type = "Delivery RiO"
+        msg.robot_mode = "order"
+        msg.destination = str(self.ui.office_number)
+        msg.receiver = ""
+        msg.items = order_string
+        
         self.order_publisher.publish(msg)
         
         self.remove_list()
