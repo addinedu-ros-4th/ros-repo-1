@@ -280,8 +280,8 @@
     <widget class="QPushButton" name="sendRobotRequestBtn">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>30</y>
+       <x>180</x>
+       <y>252</y>
        <width>101</width>
        <height>51</height>
       </rect>
@@ -309,22 +309,27 @@ Robot</string>
      </property>
      <item>
       <property name="text">
-       <string>Guide RiO</string>
+       <string>guidebot</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Delivery RiO</string>
+       <string>deliverybot</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Patrol RiO</string>
+       <string>patrolbot</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Clean RiO</string>
+       <string>cleanerbot</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>minibot</string>
       </property>
      </item>
     </widget>
@@ -332,7 +337,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>100</y>
+       <y>95</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -345,7 +350,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>222</y>
+       <y>217</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -358,7 +363,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>218</y>
+       <y>213</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -368,7 +373,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>179</y>
+       <y>174</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -381,7 +386,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>95</y>
+       <y>90</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -391,7 +396,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>136</y>
+       <y>131</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -404,7 +409,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>140</y>
+       <y>135</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -417,7 +422,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>176</y>
+       <y>171</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -426,10 +431,10 @@ Robot</string>
     <widget class="QPushButton" name="backBtn">
      <property name="geometry">
       <rect>
-       <x>200</x>
-       <y>260</y>
-       <width>81</width>
-       <height>41</height>
+       <x>190</x>
+       <y>30</y>
+       <width>101</width>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">

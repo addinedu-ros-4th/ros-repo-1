@@ -32,8 +32,8 @@ from rio_ui.guide_service import *
 
 # import resource_rc
 
-ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "guide_service.ui")
-guide_ui = uic.loadUiType(ui_file)[0]
+# ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "guide_service.ui")
+# guide_ui = uic.loadUiType(ui_file)[0]
 
 
 class GuideGUI(QMainWindow, guide_ui):

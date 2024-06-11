@@ -20,6 +20,7 @@ from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
 
+
 admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
 add_user_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "add_user.ui")
 office_manage_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "office_manage.ui")
@@ -77,6 +78,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
         self.select_table_update(tables)
+        self.requestTable.currentIndexChanged.connect(self.request_table_update)
         self.detail_bt.clicked.connect(self.table_detail)
         
         self.signals = ROSNodeSignals()
@@ -169,6 +171,14 @@ class AdminGUI(QMainWindow, admin_ui):
             'cleanerbot': "",
             'minibot': ""
         }
+        
+        self.robot_task_info = {
+            'guidebot': [],
+            'deliverybot': [],
+            'patrolbot': [],
+            'cleanerbot': [],
+            'minibot': []
+        }
 
         last_task = self.load_last_task()
         for robot, task in last_task.items():
@@ -196,6 +206,16 @@ class AdminGUI(QMainWindow, admin_ui):
     def save_last_task(self, data):
         with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'w') as f:
             yaml.dump(data, f)
+            
+    def request_table_update(self):
+        select_robot_type = self.selectRobotTask.currentText()
+        task_list = self.robot_task_info[select_robot_type]
+        try:
+            for row_position in range(len(task_list)):
+                for i, value in enumerate():
+                    self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(value))
+        except Exception as e:
+            print(e)
 
 
     def visitor_alert_to_user(self, message):

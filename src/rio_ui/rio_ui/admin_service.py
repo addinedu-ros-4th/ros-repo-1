@@ -517,20 +517,43 @@ class RobotCallSubscriber(Node):
         robot_type = msg.robot_type
         robot_mode = msg.robot_mode
         destination = msg.destination
+        if destination in ["501", "502", "503"]:
+            destination = "office_" + destination
         receiver = msg.receiver
         items = msg.items
         
-        
         time_str = str(request_time)
-        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"           
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"      
+        
+        self.task_info_value = [robot_mode, formatted_time_str, str(office_num), destination, "", "waiting"]
+        
+        if robot_mode == "order":
+            stop_by = "cvs_and_cafe"
+            self.ui.dispatch_task(robot_type, stop_by)
+            self.task_info_value[4] = "load foods"
+        elif robot_mode == "delivery":
+            self.ui.dispatch_task(robot_type, f"office_{office_num}")
+            self.task_info_value[4] = "load items"
+            
+        self.ui.robot_task_info[robot_type].append(self.task_info_value)     
+        
+        if robot_mode == "order":
+            self.task_info_value[4] = "delivering foods"
+        elif robot_mode == "delivery":
+            self.task_info_value[4]= "deliverying items"    
+            
+        self.ui.dispatch_task(robot_type, destination)
+        self.ui.robot_task_info[robot_type].append(self.task_info_value)   
+        self.update_request_table()
+        
+        
+    def update_request_table(self):
         row_position = self.ui.requestTable.rowCount()
         self.ui.requestTable.insertRow(row_position)
-
-        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(robot_mode))
-        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(formatted_time_str))
-        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(str(office_num)))
-        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(destination))
-        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(items))
+        
+        for i, info in enumerate(self.task_info_value):
+            self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(info))
+            
 
 class QRCheckServer(Node):
     # has_visited = pyqtSignal(dict)

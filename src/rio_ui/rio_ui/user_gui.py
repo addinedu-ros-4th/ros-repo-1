@@ -60,7 +60,7 @@ class UserGUI(QMainWindow, user_ui):
         self.robotTypeCBX.currentIndexChanged.connect(self.set_destination_info)
         self.destination.currentIndexChanged.connect(self.set_receiver)
         self.logInBtn.clicked.connect(self.log_in)
-        self.sendRobotRequestBtn.clicked.connect(self.publish_task)
+        self.sendRobotRequestBtn.clicked.connect(self.publish_request)
         self.pre_arrangement_bt.clicked.connect(self.write_pre_arrangement)
         self.orderBtn.clicked.connect(self.order_menu)
         self.selectRobotBtn.clicked.connect(self.select_robot)
@@ -99,7 +99,7 @@ class UserGUI(QMainWindow, user_ui):
         
     def set_destination_info(self):
         robot_type = self.robotTypeCBX.currentText()
-        if robot_type == "Delivery RiO":
+        if robot_type == "deliverybot":
             self.destination.setEnabled(True)
             self.items.setReadOnly(False)
             self.receiver.setEnabled(True)
@@ -179,7 +179,7 @@ class UserGUI(QMainWindow, user_ui):
         confirmation.exec_()  
             
 
-    def publish_task(self):
+    def publish_request(self):
         current_time = datetime.now().time()
         time_str = current_time.strftime('%H%M%S')
         time_int = int(time_str)
@@ -400,7 +400,7 @@ class OrderGUI(QDialog, order_ui):
         msg = RobotCall()
         msg.office_number = self.office_num
         msg.date = time_int
-        msg.robot_type = "Delivery RiO"
+        msg.robot_type = "deliverybot"
         msg.robot_mode = "order"
         msg.destination = str(self.ui.office_number)
         msg.receiver = ""
