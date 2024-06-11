@@ -38,7 +38,7 @@
      <x>560</x>
      <y>20</y>
      <width>761</width>
-     <height>541</height>
+     <height>511</height>
     </rect>
    </property>
    <property name="title">
@@ -1005,11 +1005,6 @@
    </property>
    <column>
     <property name="text">
-     <string>Robot Type</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
      <string>Robot Mode</string>
     </property>
    </column>
@@ -1046,6 +1041,41 @@
    <property name="text">
     <string/>
    </property>
+  </widget>
+  <widget class="QComboBox" name="selectRobotTask">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>540</y>
+     <width>121</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>guidebot</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>deliverybot</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>patrolbot</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>cleanerbot</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>minibot</string>
+    </property>
+   </item>
   </widget>
  </widget>
  <resources/>

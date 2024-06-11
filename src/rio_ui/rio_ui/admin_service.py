@@ -525,12 +525,12 @@ class RobotCallSubscriber(Node):
         formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"           
         row_position = self.ui.requestTable.rowCount()
         self.ui.requestTable.insertRow(row_position)
-        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(robot_type))
-        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(robot_mode))
-        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(formatted_time_str))
-        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(str(office_num)))
-        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(destination))
-        self.ui.requestTable.setItem(row_position, 5, QTableWidgetItem(items))
+
+        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(robot_mode))
+        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(formatted_time_str))
+        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(str(office_num)))
+        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(destination))
+        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(items))
 
 class QRCheckServer(Node):
     # has_visited = pyqtSignal(dict)
