@@ -9,6 +9,7 @@ import rclpy as rp
 
 from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
+from std_msgs.msg import Bool
 
 
 import numpy as np
@@ -74,6 +75,9 @@ class WindowClass(QMainWindow, delivery_ui):
         self.subSnackBtn.clicked.connect(self.sub_snack)
         self.cancelBtn.clicked.connect(self.remove_list)
         self.closeBtn.clicked.connect(self.close_case)
+        
+        self.node = rclpy.create_node("service_over_deli")
+        self.publisher_delisrv_over = self.node.create_publisher(Bool, "/service_deli_over", 10)
         
     def set_normal_display(self):
         self.normalBtn.show()
@@ -320,6 +324,7 @@ class WindowClass(QMainWindow, delivery_ui):
 
     def close_case(self):
         self.servo.set_angle(0)
+        self.publisher_delisrv_over.publish(True)
         self.set_normal_display()
             
             
