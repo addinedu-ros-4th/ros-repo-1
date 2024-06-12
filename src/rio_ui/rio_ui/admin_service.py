@@ -22,6 +22,9 @@ import threading
 import http.server
 import socketserver
 from datetime import datetime
+import cv2
+import struct
+import numpy as np
 
 import sys
 import uuid
@@ -326,7 +329,57 @@ class TaskRequester(Node):
 
         for i in range(5):
             self.mode_pubs[robot].publish(msg)
-            
+
+# class TCPIPServer:
+#     def __init__(self):
+#         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+#         self.server_socket.bind(('0.0.0.0', 5605))
+#         self.server_socket.listen(2)
+#         print("Waiting for connections...")
+        
+#         self.clients = []
+#         self.accept_thread = threading.Thread(target=self.accept_connections)
+#         self.accept_thread.start()
+
+#     def accept_connections(self):
+#         try:
+#             while len(self.clients) < 2:
+#                 client_socket, client_address = self.server_socket.accept()
+#                 print(f"Connection from {client_address}")
+#                 self.clients.append(client_socket)
+#                 threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+                
+#             print("Both clients connected. Ready to relay messages.")
+        
+#         except Exception as e:
+#             print(f"accept_connections: {e}")
+   
+#     def handle_client(self, client_socket):
+#         try:
+#             while True:
+#                 data = client_socket.recv(1024)
+#                 if not data:
+#                     break
+#                 self.relay_data(client_socket, data)
+#         except Exception as e:
+#             print(f"handle_client: {e}")
+#         finally:
+#             client_socket.close()
+
+#     def relay_data(self, sender_socket, data):
+#         for client in self.clients:
+#             if client != sender_socket:
+#                 try:
+#                     client.sendall(data)
+#                 except Exception as e:
+#                     print(f"relay_data: {e}")
+
+#     def stop_server(self):
+#         for client_socket in self.clients:
+#             client_socket.close()
+#         self.server_socket.close()
+#         print("Server is closed")
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
@@ -759,7 +812,7 @@ class RFIDSubscriber(Node):
 class TTSAlertService():     
     def __init__(self):
         self.ttsservice = TTSService()
-        self.base_path = '/home/joe/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
+        self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
         self.tts_thread = None
         
     def create_tts_speak(self, file_name, text):

@@ -66,7 +66,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.node = rclpy.create_node("robot_task_node")
         self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
 
-        # self.tts = TTSAlertService()
+        self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
 
         self.db_connector = DBConnector()
@@ -106,6 +106,8 @@ class AdminGUI(QMainWindow, admin_ui):
         header.setSectionResizeMode(QHeaderView.Stretch)
 
         self.task_requester = TaskRequester()
+
+        # self.tcpip_server = TCPIPServer()
 
     def init_robot_info(self):
         self.btn_req_guide.clicked.connect(lambda: self.click_robot_ctl_task("guidebot"))
@@ -415,7 +417,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.save_last_task(self.robot_last_task)
 
         rclpy.shutdown()
-        # self.tts.stop_tts()
+        self.tts.stop_tts()
         event.accept()
         
         
