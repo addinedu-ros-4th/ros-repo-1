@@ -57,10 +57,10 @@ class AdminGUI(QMainWindow, admin_ui):
         
         self.order = []
         self.node = rclpy.create_node("robot_task_node_deli")
-        self.task_publisher_delisrv = self.node.create_publisher(RobotCall, "/robot_service_deli", 10)
+        self.task_publisher_delisrv = self.node.create_publisher(Int64MultiArray, "/robot_service_deli", 10)
         
         self.node = rclpy.create_node("robot_task_node_guide")
-        self.task_publisher_guidesrv = self.node.create_publisher(RobotCall, "/robot_service_guide", 10)
+        self.task_publisher_guidesrv = self.node.create_publisher(Int64MultiArray, "/robot_service_guide", 10)
 
         self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
@@ -103,7 +103,9 @@ class AdminGUI(QMainWindow, admin_ui):
         header = self.requestTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        self.task_requester = TaskRequester()
+        self.task_requester = TaskRequester(self.signals)
+        
+        self.is_deli_service_over = True
 
 
     def init_robot_info(self):
@@ -205,16 +207,49 @@ class AdminGUI(QMainWindow, admin_ui):
         self.robot_states = robot_states
         
     def publish_robot_service(self, robot_service_start):
-        print(robot_service_start)
-        msg = RobotService()
-        msg.robot_type = robot_service_start[0]
-        msg.mode = self.service_info[robot_service_start[0]][0][1]
-        msg.detail = self.service_info[robot_service_start[0]][0][5]
+        data = []
+        msg = Int64MultiArray()
         
-        if robot_service_start[0] == "deliverybot":
-            self.task_publisher_delisrv.publish(msg)
-        elif robot_service_start[0] == "guidebot":
-            self.task_publisher_guidesrv.publish(msg)
+        
+        if self.robot_task_info[robot_service_start[0]][0][0] == "delivery":
+            mode = 1
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "order":
+            mode = 2
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "sale":
+            mode = 3
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "ready":
+            mode = 0
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "guide":
+            mode = 1
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "ready":
+            mode = 0
+            
+        data.append(mode)
+        
+        order_info = self.service_info[robot_service_start[0]][0][1].replace(" ", "")
+        order_list_str = order_info.split(",")
+        self.order_list = [0, 0, 0, 0]
+        for order in order_list_str:
+            menu_info = order.split(":")
+            if menu_info[0] == "americano":
+                self.order_list[0] = int(menu_info[1])
+            elif menu_info[0] == "latte":
+                self.order_list[1] = int(menu_info[1])
+            elif menu_info[0] == "coke":
+                self.order_list[2] = int(menu_info[1])
+            elif menu_info[0] == "snack":
+                self.order_list[3] = int(menu_info[1])
+        data.extend(self.order_list)
+        print(self.order_list)
+        
+        msg.data = data
+        print(self.robot_task_info[robot_service_start[0]][0][4])
+        
+        if "load" in self.robot_task_info[robot_service_start[0]][0][4]:
+            if robot_service_start[0] == "deliverybot":
+                self.task_publisher_delisrv.publish(msg)
+            elif robot_service_start[0] == "guidebot":
+                self.task_publisher_guidesrv.publish(msg)
         
         
 
@@ -733,6 +768,7 @@ def main():
     order_subscriber = OrderSubscriber(myWindow)
     rfid_node = RFIDSubscriber(db_manager) 
     qr_check_server = QRCheckServer(signals)
+    service_over_subscriber = ServiceOverSubscriber(myWindow)
 
 
     executor.add_node(amcl_subscriber)
@@ -742,6 +778,7 @@ def main():
     executor.add_node(order_subscriber)
     executor.add_node(rfid_node)
     executor.add_node(qr_check_server)
+    executor.add_node(service_over_subscriber)
 
     thread = threading.Thread(target=executor.spin)
     thread.start()

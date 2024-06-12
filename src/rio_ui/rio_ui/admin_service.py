@@ -4,6 +4,7 @@ from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Path
 from example_interfaces.msg import Float64MultiArray, Int64MultiArray
+from std_msgs.msg import Bool
 
 from ament_index_python.packages import get_package_share_directory
 from PyQt5.QtCore import pyqtSignal, QObject
@@ -242,8 +243,10 @@ class ROSNodeSignals(QObject):
     service_signal_received = pyqtSignal(list)
     
 class TaskRequester(Node):
-    def __init__(self):
+    def __init__(self, signals):
         super().__init__('task_requester')
+        self.signals = signals
+        self.robot_service_start = ["", False]
         self.response = asyncio.Future()
         transient_qos = QoSProfile(
             history=History.KEEP_LAST,
@@ -310,6 +313,11 @@ class TaskRequester(Node):
             self.get_logger().info(f'Got response:\n{self.response.result()}')
         else:
             self.get_logger().info('Did not get a response')
+            
+            self.robot_service_start[0] = self.params['fleet']
+            self.robot_service_start[1] = True
+            self.signals.service_signal_received.emit(self.robot_service_start) 
+            
 
         # print(msg.request_id)
     
@@ -389,7 +397,6 @@ class AmclSubscriber(Node):
         self.robot_states = {}
         self.pre_progress = "Waiting"
         self.robot_service_start = ["", False]
-
         for robot in robot_types:
             # print(robot)
             self.subscription_states = self.create_subscription(
@@ -600,11 +607,11 @@ class RobotCallSubscriber(Node):
         self.task_info_value = [robot_mode, formatted_time_str, "office_" + str(office_num), destination, "", "waiting"]
         if robot_mode == "order":
             stop_by = "cvs_and_cafe"
-            
             self.task_info_value[3] = stop_by
             self.task_info_value[4] = "load foods"
-            self.ui.dispatch_task(robot_type, stop_by)
             self.ui.robot_task_info[robot_type].append(self.task_info_value)  
+            self.ui.dispatch_task(robot_type, stop_by)
+            
             # self.update_request_table(robot_type)  
             
             
@@ -619,8 +626,9 @@ class RobotCallSubscriber(Node):
             test[4] = "delivering foods"
         elif robot_mode == "delivery":
             test[4]= "deliverying items" 
-        self.ui.dispatch_task(robot_type, destination)
         self.ui.robot_task_info[robot_type].append(test)  
+        self.ui.service_info[robot_type].append(self.service_info_value)
+        self.ui.dispatch_task(robot_type, destination)
         # self.ui.service_info[robot_type].appen
         self.update_request_table(robot_type)
         
@@ -844,6 +852,22 @@ class RFIDSubscriber(Node):
         }
     
         self.db_manager.create("Payment", self.user_data)
+
+class ServiceOverSubscriber(Node):
+    def __init__(self, ui):
+        super().__init__("service_end_sub")
+        self.ui = ui
+        self.subscription = self.create_subscription(
+            Bool,
+            "/service_deli_over_1",
+            self.over_callback,
+            10
+        )
+        
+    def over_callback(self, data):
+        self.ui.is_deli_service_over = data
+        print(self.ui.is_deli_service_over)
+        
 
 class TTSAlertService():     
     def __init__(self):
