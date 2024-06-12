@@ -65,7 +65,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
         self.select_table_update(tables)
-        self.requestTable.currentIndexChanged.connect(self.request_table_update)
+        self.selectRobotTask.currentIndexChanged.connect(self.request_table_update)
         self.detail_bt.clicked.connect(self.table_detail)
         
         self.signals = ROSNodeSignals()
@@ -224,7 +224,7 @@ class AdminGUI(QMainWindow, admin_ui):
         
 
     def click_robot_task_stop(self):
-        selected = self.robot_type.currentText()
+        selected = self.cb_robot_type.currentText().lower()
         if selected not in robot_types:
             print("[WARN] Select Robot First.")
             return
@@ -267,7 +267,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.save_last_task(data)
 
     def click_robot_ctl_task(self):
-        selected = self.robot_type.currentText()
+        selected = self.cb_robot_type.currentText().lower()
 
         if selected not in robot_types:
             print("[WARN] Select Robot First.")
@@ -312,7 +312,8 @@ class AdminGUI(QMainWindow, admin_ui):
             # TODO location name print
             self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
             
-            status = self.update_task_progress(robot, states)
+            # status = self.update_task_progress(robot)
+            status = self.robot_states[robot]['progress']
             self.robot_states_uiEdit[robot][1].setText(status)
 
         elif 0 < states['connection'] < 20:
@@ -324,7 +325,7 @@ class AdminGUI(QMainWindow, admin_ui):
             self.robot_states_uiEdit[robot][2].setText("")
 
     def update_task_progress(self, robot):
-        status = f"{robot['progress']}"
+        status = robot['progress']
         return status
 
     def update_map(self, robot, states, painter):

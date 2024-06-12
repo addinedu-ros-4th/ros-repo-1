@@ -113,7 +113,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_1">
+   <widget class="QLabel" name="robot_cn_guide">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -135,7 +135,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_4">
+   <widget class="QLabel" name="robot_cn_patrol">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -180,7 +180,7 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_3">
+   <widget class="QLabel" name="robot_ts_guide">
     <property name="geometry">
      <rect>
       <x>180</x>
@@ -202,7 +202,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_7">
+   <widget class="QLabel" name="robot_cn_delivery">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -224,7 +224,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="robot_ts_delivery">
     <property name="geometry">
      <rect>
       <x>180</x>
@@ -246,7 +246,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_6">
+   <widget class="QLabel" name="robot_ts_patrol">
     <property name="geometry">
      <rect>
       <x>180</x>
@@ -284,7 +284,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QComboBox" name="robot_type">
+   <widget class="QComboBox" name="cb_robot_type">
     <property name="geometry">
      <rect>
       <x>450</x>
@@ -426,7 +426,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_8">
+   <widget class="QLabel" name="robot_cn_clean">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -448,7 +448,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="robot_st_9">
+   <widget class="QLabel" name="robot_ts_clean">
     <property name="geometry">
      <rect>
       <x>180</x>
