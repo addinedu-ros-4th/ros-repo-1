@@ -11,11 +11,9 @@ from tracker_tcpip import ObjectTracker
 
 class TrackingController(Node):
     def __init__(self, object_tracker):
-        print("실행은 되는감?")
         super().__init__('obj_tracking_controller')
-        self.publisher_ = self.create_publisher(Twist, 'base_controller/cmd_vel_unstamped', 10)
+        self.publisher_ = self.create_publisher(Twist, '/base_controller/cmd_vel_unstamped', 10)
         self.timer = self.create_timer(0.1, self.timer_callback)
-        print("으악")
         self.height = 480 
         self.width = 640 
         self.is_control_active = True
@@ -27,7 +25,6 @@ class TrackingController(Node):
 
     def timer_callback(self):
         if self.is_control_active:
-            print("컨트롤 액티브니?", self.is_control_active)
             distance, obj_area = self.get_box_info()
 
             if distance is None or obj_area is None:
@@ -44,7 +41,7 @@ class TrackingController(Node):
                 self.control_direction(twist, distance)
                 self.publisher_.publish(twist)
         else:
-            print("컨트롤 디액티브다 임마")
+            print("control_deactivate")
 
     def get_box_info(self):
         distance = self.object_tracker.track_distance
@@ -157,10 +154,10 @@ class TCPIPClientNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    ip_address = "192.168.0.63"
-    # ip_address = "172.30.1.44"
+    # ip_address = "192.168.0.63"
+    ip_address = "172.30.1.44"
     model_path = 'best.pt'
-    object_name = 'ho'  # db에서 제공받은 이름
+    object_name = 'wook'  # db에서 제공받은 이름
 
     object_tracker = ObjectTracker(model_path, object_name)
     tracking_controller = TrackingController(object_tracker)

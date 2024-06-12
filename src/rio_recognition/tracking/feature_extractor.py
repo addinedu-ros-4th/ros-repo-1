@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-from skimage.feature import graycomatrix, graycoprops
+from skimage.feature import graycomatrix, graycoprops, local_binary_pattern
 from skimage.io import imread
 from skimage.color import rgb2gray
 from scipy.spatial import distance
@@ -9,6 +9,14 @@ from scipy.spatial import distance
 class FeatureExtractor:
     def __init__(self, bins=(8, 8, 8)):
         self.bins = bins
+
+    def extract_lbp_features(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        lbp = local_binary_pattern(gray, P=24, R=3, method="uniform")
+        (hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 26))
+        hist = hist.astype("float")
+        hist /= (hist.sum() + 1e-6)
+        return hist
 
     def extract_color_histogram(self, image):
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -29,7 +37,8 @@ class FeatureExtractor:
     def extract_features(self, image):
         color_histogram = self.extract_color_histogram(image)
         haralick_features = self.extract_haralick_features(image)
-        return np.concatenate([color_histogram, haralick_features])
+        ibp_features = self.extract_lbp_features(image)
+        return np.concatenate([color_histogram, haralick_features, ibp_features])
 
 class ObjectRecognizer:
     def __init__(self, image_folder, extractor):
