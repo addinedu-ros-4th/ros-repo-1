@@ -340,31 +340,6 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QComboBox" name="start_location_5">
-    <property name="geometry">
-     <rect>
-      <x>17</x>
-      <y>340</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>minibot_charger_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>point1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>point2</string>
-     </property>
-    </item>
-   </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
