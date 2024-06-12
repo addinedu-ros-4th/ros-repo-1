@@ -146,13 +146,13 @@ class AdminGUI(QMainWindow, admin_ui):
         for robot, task in last_task.items():
             self.robot_last_task[robot] = task
 
-        # self.robot_states_uiEdit = {
-        #     'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.location_guide, False],
-        #     'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.location_delivery, False],
-        #     'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.location_patrol, False],
-        #     'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.location_clean, False],
-        #     'minibot': [self.yLine, self.yawLine, self.xLine, False]
-        # }
+        self.robot_states_uiEdit = {
+            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.location_guide, False],
+            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.location_delivery, False],
+            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.location_patrol, False],
+            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.location_clean, False],
+            'minibot': [self.yLine, self.yawLine, self.xLine, False]
+        }
 
     def load_last_task(self):
         with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'r') as f:
