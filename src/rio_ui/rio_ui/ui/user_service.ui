@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>861</width>
-    <height>737</height>
+    <height>745</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -280,8 +280,8 @@
     <widget class="QPushButton" name="sendRobotRequestBtn">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>30</y>
+       <x>180</x>
+       <y>252</y>
        <width>101</width>
        <height>51</height>
       </rect>
@@ -309,22 +309,27 @@ Robot</string>
      </property>
      <item>
       <property name="text">
-       <string>Guide RiO</string>
+       <string>guidebot</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Delivery RiO</string>
+       <string>deliverybot</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Patrol RiO</string>
+       <string>patrolbot</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Clean RiO</string>
+       <string>cleanerbot</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>minibot</string>
       </property>
      </item>
     </widget>
@@ -332,7 +337,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>100</y>
+       <y>95</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -345,7 +350,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>222</y>
+       <y>217</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -358,7 +363,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>218</y>
+       <y>213</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -368,7 +373,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>179</y>
+       <y>174</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -381,7 +386,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>95</y>
+       <y>90</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -391,7 +396,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>136</y>
+       <y>131</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -404,7 +409,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>140</y>
+       <y>135</y>
        <width>101</width>
        <height>16</height>
       </rect>
@@ -417,7 +422,7 @@ Robot</string>
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>176</y>
+       <y>171</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -426,10 +431,10 @@ Robot</string>
     <widget class="QPushButton" name="backBtn">
      <property name="geometry">
       <rect>
-       <x>200</x>
-       <y>260</y>
-       <width>81</width>
-       <height>41</height>
+       <x>190</x>
+       <y>30</y>
+       <width>101</width>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">
@@ -455,6 +460,26 @@ Robot</string>
     </property>
     <property name="text">
      <string>Select Robot</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="enter_videomeet_bt">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>440</y>
+      <width>301</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Enter video-meeting</string>
     </property>
    </widget>
   </widget>
@@ -638,6 +663,91 @@ Robot</string>
    <property name="text">
     <string/>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="video_confGroup">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>50</y>
+     <width>821</width>
+     <height>671</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="video_conf_frame">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>140</y>
+      <width>720</width>
+      <height>480</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="video_conf_frame_2">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>140</y>
+      <width>240</width>
+      <height>180</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="connect_meet_bt">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>30</y>
+      <width>301</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Connect</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="disconnect_meet_bt">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>30</y>
+      <width>301</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Disconnect</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

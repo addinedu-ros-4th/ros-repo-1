@@ -44,7 +44,7 @@ class FaceRecognition:
                         name = self.known_face_names[best_match_index]
 
             face_names.append(name)
-
+            print(face_names)
         for (top, right, bottom, left), name in zip(face_locations, face_names):
             color = (0, 255, 0) if name != "Unknown" else (0, 0, 255)
             cv2.rectangle(image, (left, top), (right, bottom), color, 1)

@@ -111,13 +111,16 @@ class TCPIPClientNode(Node):
         super().__init__('tcpip_client_node')
         self.client_socket = None
         self.connection = None
+        self.db_connector = DBConnector()
+        self.facerecognition = FaceRecognition()
+        self.get_user_face()
         self.ip_address = ip_address
         self.connect_to_server(ip_address)
         self.receive_thread = threading.Thread(target=self.receive_video)
         self.receive_thread.start()
-        self.facerecognition = FaceRecognition()
-        self.db_connector = DBConnector()
-        self.get_user_face()
+        
+        
+        
         
         
         self.face_names_pub = self.create_publisher(String, '/face_names_1', 10)
@@ -191,10 +194,10 @@ def main(args=None):
         rp.spin(tcpip_client_node)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
-    finally:
-        tcpip_client_node.destroy()
+    # finally:
+    #     # tcpip_client_node.destroy()
 
-        rp.shutdown()
+    #     rp.shutdown()
 
 if __name__ == '__main__':
     main()

@@ -124,13 +124,38 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      <string>QR 체크인</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="video_refer_bt">
+    <property name="geometry">
+     <rect>
+      <x>760</x>
+      <y>30</y>
+      <width>161</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>25</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
+QWidget:hover{background-color : rgb(200, 200, 200);}
+QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
+    </property>
+    <property name="text">
+     <string>화상회의</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="cameraGroup">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1023</width>
+     <width>1030</width>
      <height>537</height>
     </rect>
    </property>
@@ -437,6 +462,77 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
     <property name="text">
      <string>돌아가기</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="video_confGroup">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1023</width>
+     <height>537</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QLabel" name="video_conf_frame">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>40</y>
+      <width>640</width>
+      <height>480</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushBack_3">
+    <property name="geometry">
+     <rect>
+      <x>862</x>
+      <y>380</y>
+      <width>131</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>돌아가기</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="connect_bt">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>40</y>
+      <width>131</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>연결하기</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="video_conf_frame_2">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>40</y>
+      <width>240</width>
+      <height>180</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

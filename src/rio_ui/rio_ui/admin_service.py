@@ -22,6 +22,9 @@ import threading
 import http.server
 import socketserver
 from datetime import datetime
+import cv2
+import struct
+import numpy as np
 
 import sys
 import uuid
@@ -326,7 +329,57 @@ class TaskRequester(Node):
 
         for i in range(5):
             self.mode_pubs[robot].publish(msg)
-            
+
+# class TCPIPServer:
+#     def __init__(self):
+#         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+#         self.server_socket.bind(('0.0.0.0', 5605))
+#         self.server_socket.listen(2)
+#         print("Waiting for connections...")
+        
+#         self.clients = []
+#         self.accept_thread = threading.Thread(target=self.accept_connections)
+#         self.accept_thread.start()
+
+#     def accept_connections(self):
+#         try:
+#             while len(self.clients) < 2:
+#                 client_socket, client_address = self.server_socket.accept()
+#                 print(f"Connection from {client_address}")
+#                 self.clients.append(client_socket)
+#                 threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+                
+#             print("Both clients connected. Ready to relay messages.")
+        
+#         except Exception as e:
+#             print(f"accept_connections: {e}")
+   
+#     def handle_client(self, client_socket):
+#         try:
+#             while True:
+#                 data = client_socket.recv(1024)
+#                 if not data:
+#                     break
+#                 self.relay_data(client_socket, data)
+#         except Exception as e:
+#             print(f"handle_client: {e}")
+#         finally:
+#             client_socket.close()
+
+#     def relay_data(self, sender_socket, data):
+#         for client in self.clients:
+#             if client != sender_socket:
+#                 try:
+#                     client.sendall(data)
+#                 except Exception as e:
+#                     print(f"relay_data: {e}")
+
+#     def stop_server(self):
+#         for client_socket in self.clients:
+#             client_socket.close()
+#         self.server_socket.close()
+#         print("Server is closed")
 
 class AmclSubscriber(Node):
     def __init__(self, signals):
@@ -515,38 +568,45 @@ class RobotCallSubscriber(Node):
         office_num = msg.office_number
         request_time = msg.date
         robot_type = msg.robot_type
+        robot_mode = msg.robot_mode
         destination = msg.destination
+        if destination in ["501", "502", "503"]:
+            destination = "office_" + destination
         receiver = msg.receiver
         items = msg.items
         
-        
         time_str = str(request_time)
-        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"           
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"      
+        
+        self.task_info_value = [robot_mode, formatted_time_str, str(office_num), destination, "", "waiting"]
+        
+        if robot_mode == "order":
+            stop_by = "cvs_and_cafe"
+            self.ui.dispatch_task(robot_type, stop_by)
+            self.task_info_value[4] = "load foods"
+        elif robot_mode == "delivery":
+            self.ui.dispatch_task(robot_type, f"office_{office_num}")
+            self.task_info_value[4] = "load items"
+            
+        self.ui.robot_task_info[robot_type].append(self.task_info_value)     
+        
+        if robot_mode == "order":
+            self.task_info_value[4] = "delivering foods"
+        elif robot_mode == "delivery":
+            self.task_info_value[4]= "deliverying items"    
+            
+        self.ui.dispatch_task(robot_type, destination)
+        self.ui.robot_task_info[robot_type].append(self.task_info_value)   
+        self.update_request_table()
+        
+        
+    def update_request_table(self):
         row_position = self.ui.requestTable.rowCount()
         self.ui.requestTable.insertRow(row_position)
-        self.ui.requestTable.setItem(row_position, 0, QTableWidgetItem(formatted_time_str))
-        self.ui.requestTable.setItem(row_position, 1, QTableWidgetItem(str(office_num)))
-        self.ui.requestTable.setItem(row_position, 2, QTableWidgetItem(robot_type))
-        self.ui.requestTable.setItem(row_position, 3, QTableWidgetItem(destination))
-        self.ui.requestTable.setItem(row_position, 4, QTableWidgetItem(items))
         
-
-# class RobotCallSubscriber(Node):
-#     def __init__(self, signals):
-#         super().__init__("req_sub")
-#         self.signals = signals
-#         self.subscription = self.create_subscription(
-#             Int64MultiArray,
-#             "/robot_call_user_1",
-#             self.req_callback,
-#             10
-#         )
-        
-#     def req_callback(self, msg):
-#         data = msg.data
-#         if len(data) == 2:
-#             self.signals.task_request_received.emit(data[0], data[1])
-
+        for i, info in enumerate(self.task_info_value):
+            self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(info))
+            
 
 class QRCheckServer(Node):
     # has_visited = pyqtSignal(dict)
@@ -759,7 +819,7 @@ class RFIDSubscriber(Node):
 class TTSAlertService():     
     def __init__(self):
         self.ttsservice = TTSService()
-        self.base_path = '/home/joe/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
+        self.base_path = '/home/subin/project_ws/ros-repo-1/src/rio_ui/rio_ui/data/tts_mp3_files'
         self.tts_thread = None
         
     def create_tts_speak(self, file_name, text):
@@ -786,6 +846,21 @@ class TTSAlertService():
         if self.tts_thread and self.tts_thread.is_alive():
             self.tts_thread.join()
         self.tts_thread = None
+        
+class TaskAllocationNode(Node):
+    def __init__(self, ui):
+        self.ui = ui
+        self.completion_subs = self.create_subscription(
+            Int64MultiArray,
+            "",
+            self.completion_callback,
+            10
+        )
+        
+    def completion_callback(self):
+        pass
+        
+        
 
 def main(args=None):
     rclpy.init(args=args)

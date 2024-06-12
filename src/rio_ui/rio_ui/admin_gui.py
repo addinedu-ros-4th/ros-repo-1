@@ -20,6 +20,7 @@ from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
 
+
 admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
 add_user_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "add_user.ui")
 office_manage_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "office_manage.ui")
@@ -45,18 +46,9 @@ class AdminGUI(QMainWindow, admin_ui):
         super().__init__()
         self.setupUi(self)
         self.init_robot_info()
-
        
         self.addUserBtn.clicked.connect(self.add_user)
         self.officeManageBtn.clicked.connect(self.office_manage)
-        
-        # self.nav = BasicNavigator()
-        # self.goal_pose = PoseStamped()
-        # self.goal_pose.header.frame_id = "map"
-        # self.update_goal_pose()
-        # self.xLine.setText("0")
-        # self.yLine.setText("0")
-        # self.yawLine.setText("0")
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_robot_status)
@@ -66,13 +58,14 @@ class AdminGUI(QMainWindow, admin_ui):
         self.node = rclpy.create_node("robot_task_node")
         self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
 
-        # self.tts = TTSAlertService()
+        self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
 
         self.db_connector = DBConnector()
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
         self.select_table_update(tables)
+        self.selectRobotTask.currentIndexChanged.connect(self.request_table_update)
         self.detail_bt.clicked.connect(self.table_detail)
         
         self.signals = ROSNodeSignals()
@@ -107,16 +100,11 @@ class AdminGUI(QMainWindow, admin_ui):
 
         self.task_requester = TaskRequester()
 
+
     def init_robot_info(self):
-        self.btn_req_guide.clicked.connect(lambda: self.click_robot_ctl_task("guidebot"))
-        self.btn_req_delivery.clicked.connect(lambda: self.click_robot_ctl_task("deliverybot"))
-        self.btn_req_patrol.clicked.connect(lambda: self.click_robot_ctl_task("patrolbot"))
-        self.btn_req_clean.clicked.connect(lambda: self.click_robot_ctl_task("cleanerbot"))
-        self.btn_stop_guide.clicked.connect(lambda: self.click_robot_task_stop("guidebot"))
-        self.btn_stop_delivery.clicked.connect(lambda: self.click_robot_task_stop("deliverybot"))
-        self.btn_stop_patrol.clicked.connect(lambda: self.click_robot_task_stop("patrolbot"))
-        self.btn_stop_clean.clicked.connect(lambda: self.click_robot_task_stop("cleanerbot"))
-        
+        self.btn_submit_task.clicked.connect(self.click_robot_ctl_task)
+        self.btn_stop_robot.clicked.connect(self.click_robot_task_stop)
+
         self.robot_task_stack = {
             'guidebot': [],
             'deliverybot': [],
@@ -132,23 +120,25 @@ class AdminGUI(QMainWindow, admin_ui):
             'cleanerbot': "",
             'minibot': ""
         }
+        
+        self.robot_task_info = {
+            'guidebot': [],
+            'deliverybot': [],
+            'patrolbot': [],
+            'cleanerbot': [],
+            'minibot': []
+        }
 
         last_task = self.load_last_task()
         for robot, task in last_task.items():
             self.robot_last_task[robot] = task
 
-        self.guidebot_paused = False
-        self.deliverybot_paused = False
-        self.patrolbot_paused = False
-        self.cleanerbot_paused = False
-        self.minibot_paused = False
-
         self.robot_states_uiEdit = {
-            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.lineEdit, self.btn_stop_guide, self.guidebot_paused],
-            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.lineEdit_2, self.btn_stop_delivery, self.deliverybot_paused],
-            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.lineEdit_3, self.btn_stop_patrol, self.patrolbot_paused],
-            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.lineEdit_4, self.btn_stop_clean, self.cleanerbot_paused],
-            'minibot': [self.yLine, self.yawLine, self.xLine, self.btn_stop_guide, self.minibot_paused]
+            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.location_guide, False],
+            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.location_delivery, False],
+            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.location_patrol, False],
+            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.location_clean, False],
+            'minibot': [self.yLine, self.yawLine, self.xLine, False]
         }
 
     def load_last_task(self):
@@ -159,6 +149,16 @@ class AdminGUI(QMainWindow, admin_ui):
     def save_last_task(self, data):
         with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'w') as f:
             yaml.dump(data, f)
+            
+    def request_table_update(self):
+        select_robot_type = self.selectRobotTask.currentText()
+        task_list = self.robot_task_info[select_robot_type]
+        try:
+            for row_position in range(len(task_list)):
+                for i, value in enumerate():
+                    self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(value))
+        except Exception as e:
+            print(e)
 
 
     def visitor_alert_to_user(self, message):
@@ -222,29 +222,17 @@ class AdminGUI(QMainWindow, admin_ui):
                 item = QTableWidgetItem(str(row_data[column_name])) 
                 detail_table.setItem(i, j, item)
         
-    # def update_goal_pose(self, x=None, y=None, yaw=None):
-    #     if x is None:
-    #         x = float(self.xLine.text())
-    #     if y is None:
-    #         y = float(self.yLine.text())
-    #     if yaw is None:
-    #         yaw = float(self.yawLine.text())
 
-    #     roll, pitch, yaw = 0.0, 0.0, yaw
-    #     quaternion = quaternion_from_euler(roll, pitch, yaw)
+    def click_robot_task_stop(self):
+        selected = self.cb_robot_type.currentText().lower()
+        if selected not in robot_types:
+            print("[WARN] Select Robot First.")
+            return
+        else:
+            robot = selected
 
-    #     self.goal_pose.header.stamp = self.nav.get_clock().now().to_msg()
-    #     self.goal_pose.pose.position.x = x
-    #     self.goal_pose.pose.position.y = y
-    #     self.goal_pose.pose.position.z = 0.0
-    #     self.goal_pose.pose.orientation.x = quaternion[0]
-    #     self.goal_pose.pose.orientation.y = quaternion[1]
-    #     self.goal_pose.pose.orientation.z = quaternion[2]
-    #     self.goal_pose.pose.orientation.w = quaternion[3]
-        
-    def click_robot_task_stop(self, robot):
         flag = self.robot_states_uiEdit[robot][-1]
-        btn = self.robot_states_uiEdit[robot][3]
+        btn = self.btn_stop_robot
         btn.setStyleSheet("font-weight: bold;")
         if not flag:
             flag = True
@@ -278,17 +266,20 @@ class AdminGUI(QMainWindow, admin_ui):
         # print(data)
         self.save_last_task(data)
 
-    def click_robot_ctl_task(self, robot):
-        if robot == "guidebot":
-            goal = self.end_location_4.currentText()
-            robot = "minibot" # minibot test
-        elif robot == "deliverybot":
-            goal = self.end_location_5.currentText()
-        elif robot == "patrolbot":
-            goal = self.end_location_6.currentText()
-        elif robot == "cleanerbot":
-            goal = self.end_location_7.currentText()
-        self.dispatch_task(robot, goal)
+    def click_robot_ctl_task(self):
+        selected = self.cb_robot_type.currentText().lower()
+
+        if selected not in robot_types:
+            print("[WARN] Select Robot First.")
+            return
+        else:
+            robot = selected
+
+            if robot == "guidebot":
+                robot = "minibot" # minibot test
+
+            goal = self.task_goal_loc.currentText()
+            self.dispatch_task(robot, goal)
 
     def dispatch_task(self, robot, goal):
         params = {
@@ -321,7 +312,8 @@ class AdminGUI(QMainWindow, admin_ui):
             # TODO location name print
             self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
             
-            status = self.update_task_progress(robot, states)
+            # status = self.update_task_progress(robot)
+            status = self.robot_states[robot]['progress']
             self.robot_states_uiEdit[robot][1].setText(status)
 
         elif 0 < states['connection'] < 20:
@@ -333,7 +325,7 @@ class AdminGUI(QMainWindow, admin_ui):
             self.robot_states_uiEdit[robot][2].setText("")
 
     def update_task_progress(self, robot):
-        status = f"{robot['progress']}"
+        status = robot['progress']
         return status
 
     def update_map(self, robot, states, painter):
@@ -415,7 +407,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.save_last_task(self.robot_last_task)
 
         rclpy.shutdown()
-        # self.tts.stop_tts()
+        self.tts.stop_tts()
         event.accept()
         
         

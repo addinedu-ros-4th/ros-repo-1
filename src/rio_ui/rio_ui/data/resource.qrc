@@ -1,8 +1,5 @@
 <RCC>
-  <qresource prefix="Icon">
-    <file>NFC-Card.png</file>
-    <file>check.png</file>
-    <file>smile.png</file>
-    <file>normal.png</file>
+  <qresource prefix="newPrefix">
+    <file>resource_rc.py</file>
   </qresource>
 </RCC>
