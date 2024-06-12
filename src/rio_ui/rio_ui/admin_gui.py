@@ -62,7 +62,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.node = rclpy.create_node("robot_task_node_guide")
         self.task_publisher_guidesrv = self.node.create_publisher(RobotCall, "/robot_service_guide", 10)
 
-        # self.tts = TTSAlertService()
+        self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
 
         self.db_connector = DBConnector()
@@ -444,7 +444,7 @@ class AdminGUI(QMainWindow, admin_ui):
         self.save_last_task(self.robot_last_task)
 
         rclpy.shutdown()
-        # self.tts.stop_tts()
+        self.tts.stop_tts()
         event.accept()
         
         

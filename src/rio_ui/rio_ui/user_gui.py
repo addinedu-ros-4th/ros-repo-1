@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
+from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 from ament_index_python.packages import get_package_share_directory
@@ -15,6 +16,7 @@ import os
 import json
 import threading
 from datetime import datetime
+from PIL import Image
 
 main_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "user_service.ui")
 sub_ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "pre_arrangement.ui")
@@ -36,7 +38,7 @@ class UserGUI(QMainWindow, user_ui):
         self.service = self.service_node.create_service(VisitorAlert, 'get_visitor_info', self.alert_callback)
         self.start_executor_spin()
         self.tts = TTSAlertService()
-        self.tts.run_create_tts("user_greeting", "안녕하세요!")
+        # self.tts.run_tts("user_greeting", "안녕하세요!")
         self.logInPW.installEventFilter(self)
         
         self.db_connector = DBConnector()
@@ -46,6 +48,7 @@ class UserGUI(QMainWindow, user_ui):
         self.scheduleGroup.hide()
         self.label_4.hide()
         self.label_8.hide()
+        self.video_confGroup.hide()
         
         header = self.scheduleTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
@@ -65,7 +68,72 @@ class UserGUI(QMainWindow, user_ui):
         self.orderBtn.clicked.connect(self.order_menu)
         self.selectRobotBtn.clicked.connect(self.select_robot)
         self.backBtn.clicked.connect(self.cancel_select_robot)
+
+        # self.userserver = UserVideoServer('192.168.0.10', 5600, self.video_conf_frame)
+        # threading.Thread(target=self.userserver.receive_images, daemon=True).start()
+
+        self.enter_videomeet_bt.clicked.connect(self.enter_video_conf)
+        self.connect_meet_bt.clicked.connect(self.connect_meeting)
+        self.disconnect_meet_bt.clicked.connect(self.disconnect_meeting)
+        self.pixmap = QPixmap()
+        self.tcpip_server = None
     
+    # video_conf_frame
+    def enter_video_conf(self):
+        self.callRobotGroup.hide()
+        self.serviceGroup.hide()
+        self.scheduleGroup.hide()
+        self.video_confGroup.show()
+        self.mycam = MyCam()
+        self.mycam.daemon = True
+        self.image_updater = ImageUpdater()
+        self.camera_start()
+        self.mycam.update.connect(self.update_mycam)
+        # client = GuideVideoClient('192.168.0.17', 5607)
+        # client.send_frame()
+    
+    def connect_meeting(self):
+        self.client_node = GuideTCPIPClientNode('192.168.0.48', 5608)
+        self.client_node.image_received.connect(self.update_somebody_cam) 
+
+    def disconnect_meeting(self):
+        self.video_confGroup.hide()
+
+    def camera_start(self):
+        self.mycam.running = True
+        self.mycam.start()
+        self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+        if not self.cap.isOpened():
+            print("cannot open camera")
+            return
+        if self.tcpip_server is None:
+            self.tcpip_server = UserTCPIPServer(self.image_updater)
+    
+    def camera_stop(self):
+        self.mycam.running = False
+        self.cap.release()
+
+    def update_mycam(self):
+        ret, image = self.cap.read()
+        if ret:
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            h, w, c = rgb_image.shape
+            qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
+            qt_img_scaled = qimage.scaled(self.video_conf_frame_2.width(), self.video_conf_frame_2.height(), Qt.KeepAspectRatio)
+            self.pixmap = self.pixmap.fromImage(qt_img_scaled)
+            self.video_conf_frame_2.setPixmap(self.pixmap)
+            
+            self.image_updater.update_image(image)
+
+    @pyqtSlot(np.ndarray)
+    def update_somebody_cam(self, frame):
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, c = rgb_image.shape
+        qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
+        qt_img_scaled = qimage.scaled(self.video_conf_frame.width(), self.video_conf_frame.height(), Qt.KeepAspectRatio)
+        pixmap = QPixmap.fromImage(qt_img_scaled)
+        self.video_conf_frame.setPixmap(pixmap)
+
     def select_robot(self):
         self.destination.clear()
         self.callRobotGroup.show()
@@ -172,6 +240,7 @@ class UserGUI(QMainWindow, user_ui):
         confirmation = QMessageBox()
         confirmation.setIcon(QMessageBox.Information)
         confirmation.setText(f"{self.id}님 환영합니다!")
+        self.tts.run_create_tts(f"{self.id}_user_greeting", f"{self.id}님 환영합니다!")
         confirmation.setWindowTitle("welcome")
         confirmation.setStandardButtons(QMessageBox.Ok)
         confirmation.buttonClicked.connect(self.set_service_display)
@@ -548,6 +617,129 @@ class SubGUI(QDialog, sub_ui):
     def closeEvent(self, event):
         self.node.destroy_node()
         event.accept()
+
+class ImageUpdater(QObject):
+    image_updated = pyqtSignal(np.ndarray)
+
+    def __init__(self):
+        super().__init__()
+
+    def update_image(self, image):
+        # 이미지 업데이트 로직
+        self.image_updated.emit(image)
+
+class MyCam(QThread):
+    #시그널 종류 생성
+    update = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        
+    def run(self):
+        while self.running == True:
+
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
+
+
+class UserTCPIPServer(QObject):
+    def __init__(self, image_updater):
+        super().__init__()
+        self.image_updater = image_updater
+        self.image_updater.image_updated.connect(self.publish_frames)
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(('192.168.0.24', 5604))
+        self.server_socket.listen(1)
+        print("waiting connection")
+        
+        self.client_socket = None
+        self.connection = None
+        self.accept_thread = threading.Thread(target=self.accept_connections)
+        self.accept_thread.start()
+
+    def accept_connections(self):
+        try:
+            while True:
+                self.client_socket, self.client_address = self.server_socket.accept()
+                self.connection = self.client_socket.makefile('wb')
+                
+        except Exception as e:
+            print(f"accept_connection :{e}")
+
+    def publish_frames(self, frame):
+        if self.connection:
+            try:
+                encoded, buffer = cv2.imencode('.jpg', frame)
+                data = np.array(buffer)
+                string_data = data.tobytes()
+                self.connection.write(struct.pack('<L', len(string_data)))
+                self.connection.write(string_data)
+                self.connection.flush()
+                    
+            except Exception as e:
+                self.connection.close()
+                self.client_socket = None
+                self.connection = None
+                print(f"publish_frames{e}")
+                
+    def stop_server(self):
+        if self.connection:
+            self.connection.close()
+        if self.client_socket:
+            self.client_socket.close()
+        self.server_socket.close()
+        print("Server is closed")
+
+
+class GuideTCPIPClientNode(QObject):
+    image_received = pyqtSignal(np.ndarray)
+
+    def __init__(self, ip_address, port):
+        super().__init__()
+        self.client_socket = None
+        self.connection = None
+        self.connect_to_server(ip_address, port)
+        self.receive_thread = threading.Thread(target=self.receive_video)
+        self.receive_thread.start()
+
+            
+    def connect_to_server(self, ip_address, port):
+        while True:
+            try:
+                self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.client_socket.connect((ip_address, port))
+                self.connection = self.client_socket.makefile('rb')
+                print(f"Connected to server at {ip_address}:{port}")
+                break
+            except Exception as e:
+                print(f"Failed to connect to server at {ip_address}:{port}: {e}")
+                time.sleep(5)
+
+    def receive_video(self):
+        while True:
+            try:
+                while True:
+                    packed_msg_size = self.connection.read(struct.calcsize('<L'))
+                    
+                    if not packed_msg_size:
+                        break
+                    msg_size = struct.unpack('<L', packed_msg_size)[0]
+                    frame_data = self.connection.read(msg_size)
+                    frame = np.frombuffer(frame_data, dtype=np.uint8)
+                    frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                    
+                    if frame is not None and frame.size != 0:
+                        self.image_received.emit(frame)  # 이미지 수신 시그널 방출
+                    else:
+                        print("Invalid frame received")
+            except Exception as e:
+                print(f"Error: {e}")
+
 
 def main():
     app = QApplication(sys.argv)
