@@ -138,6 +138,7 @@ class UserGUI(QMainWindow, user_ui):
         self.destination.clear()
         self.callRobotGroup.show()
         self.selectRobotBtn.hide()
+        self.enter_videomeet_bt.hide()
         table = "OfficeInfo"
         column = "office_number"
         criteria = "close_date"
@@ -167,6 +168,7 @@ class UserGUI(QMainWindow, user_ui):
     def cancel_select_robot(self):
         self.callRobotGroup.hide()
         self.selectRobotBtn.show()
+        self.enter_videomeet_bt.show()
         
     def set_receiver(self):
         self.receiver.clear()
