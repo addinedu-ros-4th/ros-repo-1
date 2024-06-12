@@ -46,23 +46,24 @@ class GuideGUI(QMainWindow, guide_ui):
         self.current_mode = "main"
         self.pixmap = QPixmap()
 
-        self.pushNormal.show()
         self.setmain()
-        self.pushRegister.setEnabled(True)
-        # self.pushVisitor.setEnabled(False)
-        self.pushQR.setEnabled(True)
-        self.pushCommute.setEnabled(True)
+        self.QR_bt.setEnabled(True)
+        self.tenant_group_bt.setEnabled(True)
 
-        self.pushNormal.clicked.connect(self.setmain)
+        # self.pushRegister.setEnabled(True)
+        # # self.pushVisitor.setEnabled(False)
+        # self.pushCommute.setEnabled(True)
+
         self.pushRegister.clicked.connect(self.register)
         self.pushRetake.clicked.connect(self.retake)
         self.pushRegister2.clicked.connect(self.registerinfo)
-        self.pushQR.clicked.connect(self.qrcheck)
+        self.QR_bt.clicked.connect(self.qrcheck)
+        self.tenant_group_bt.clicked.connect(self.tenant_service)
         self.pushCommute.clicked.connect(self.setcamera)
         self.pushBack.clicked.connect(self.setmain)
         self.pushBack_2.clicked.connect(self.setmain2)
         self.pushBack_3.clicked.connect(self.setmain)
-        self.video_refer_bt.clicked.connect(self.video_conf)
+        self.video_meet_bt.clicked.connect(self.video_conf)
         self.connect_bt.clicked.connect(self.connect_meeting)
 
         self.birthEdit.setCalendarPopup(True)
@@ -92,8 +93,8 @@ class GuideGUI(QMainWindow, guide_ui):
     def setmain(self):
         self.current_mode = "main"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        self.pushNormal.hide()
-        self.mainGroup.show()
+        self.maingroup.show()
+        self.tenant_service_group.hide()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
@@ -105,8 +106,8 @@ class GuideGUI(QMainWindow, guide_ui):
         self.current_mode = "main"
         # self.signals.update_mode_signal.emit(self.current_mode)
         self.QRframe.clear()
-        self.pushNormal.hide()
-        self.mainGroup.show()
+        self.maingroup.show()
+        self.tenant_service_group.hide()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
@@ -120,11 +121,21 @@ class GuideGUI(QMainWindow, guide_ui):
 
         # self.timer.stop()        
 
+    def tenant_service(self):
+        self.QRframe.clear()
+        self.maingroup.hide()
+        self.tenant_service_group.show()
+        self.registerGroup.hide()
+        self.registerGroup2.hide()
+        self.cameraGroup.hide()
+        self.QRGroup.hide()
+        self.video_confGroup.hide()
+        
     def register(self):
         self.current_mode = "register"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        self.pushNormal.hide()
-        self.mainGroup.hide()
+        self.maingroup.hide()
+        self.tenant_service_group.hide()
         self.registerGroup.show()
         self.registerGroup2.hide()
         self.cameraGroup.hide()
@@ -138,8 +149,8 @@ class GuideGUI(QMainWindow, guide_ui):
     def qrcheck(self):
         self.current_mode = "qrcheck"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        self.pushNormal.hide()
-        self.mainGroup.hide()
+        self.maingroup.hide()
+        self.tenant_service_group.hide()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()    
@@ -187,8 +198,8 @@ class GuideGUI(QMainWindow, guide_ui):
             print("Not all required landmarks are available!")
 
     def info_registration(self, saved_face):
-        self.pushNormal.hide()
-        self.mainGroup.hide()
+        self.maingroup.hide()
+        self.tenant_service_group.hide()
         self.registerGroup.hide()
         self.registerGroup2.show()
         self.cameraGroup.hide()
@@ -233,8 +244,8 @@ class GuideGUI(QMainWindow, guide_ui):
     def setcamera(self):
         self.current_mode = "commute"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        self.pushNormal.hide()
-        self.mainGroup.hide()
+        self.maingroup.hide()
+        self.tenant_service_group.hide()
         self.registerGroup.hide()
         self.QRGroup.hide()
         self.cameraGroup.show()
@@ -275,8 +286,8 @@ class GuideGUI(QMainWindow, guide_ui):
         self.qr_client.send_request(decoded_data)
 
     def video_conf(self):
-        self.pushNormal.hide()
-        self.mainGroup.hide()
+        self.maingroup.hide()
+        self.tenant_service_group.hide()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()    

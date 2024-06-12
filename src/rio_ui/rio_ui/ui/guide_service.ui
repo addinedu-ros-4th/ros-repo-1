@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1023</width>
     <height>538</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QGroupBox" name="mainGroup">
+  <widget class="QGroupBox" name="tenant_service_group">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -33,10 +33,10 @@
    <widget class="QPushButton" name="pushRegister">
     <property name="geometry">
      <rect>
-      <x>25</x>
-      <y>130</y>
-      <width>300</width>
-      <height>300</height>
+      <x>11</x>
+      <y>10</y>
+      <width>328</width>
+      <height>521</height>
      </rect>
     </property>
     <property name="font">
@@ -47,21 +47,22 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
+     <string notr="true">QWidget{ background-color : white; border : 2px solid black; color : black;}
 QWidget:hover{background-color : rgb(200, 200, 200);}
 QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
     <property name="text">
-     <string>사용자 등록</string>
+     <string>신규 사용자 
+ 등록</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushCommute">
     <property name="geometry">
      <rect>
-      <x>358</x>
-      <y>130</y>
-      <width>300</width>
-      <height>300</height>
+      <x>348</x>
+      <y>10</y>
+      <width>328</width>
+      <height>521</height>
      </rect>
     </property>
     <property name="font">
@@ -72,40 +73,21 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
+     <string notr="true">QWidget{background-color : white; border : 2px solid black; color : black;}
 QWidget:hover{background-color : rgb(200, 200, 200);}
 QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
     <property name="text">
-     <string>출 / 퇴근 서비스</string>
+     <string>출 / 퇴근</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushNormal">
+   <widget class="QPushButton" name="video_meet_bt">
     <property name="geometry">
      <rect>
-      <x>387</x>
-      <y>21</y>
-      <width>241</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">image: url(:/Icon/normal.png);</string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="default">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushQR">
-    <property name="geometry">
-     <rect>
-      <x>693</x>
-      <y>130</y>
-      <width>300</width>
-      <height>300</height>
+      <x>684</x>
+      <y>10</y>
+      <width>330</width>
+      <height>521</height>
      </rect>
     </property>
     <property name="font">
@@ -116,32 +98,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
-QWidget:hover{background-color : rgb(200, 200, 200);}
-QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
-    </property>
-    <property name="text">
-     <string>QR 체크인</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="video_refer_bt">
-    <property name="geometry">
-     <rect>
-      <x>760</x>
-      <y>30</y>
-      <width>161</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>25</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
+     <string notr="true">QWidget{background-color : white; border : 2px solid black; color : black;}
 QWidget:hover{background-color : rgb(200, 200, 200);}
 QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
@@ -155,7 +112,7 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1030</width>
+     <width>1023</width>
      <height>537</height>
     </rect>
    </property>
@@ -533,6 +490,117 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="maingroup">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1023</width>
+     <height>537</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QPushButton" name="QR_bt">
+    <property name="geometry">
+     <rect>
+      <x>8</x>
+      <y>100</y>
+      <width>501</width>
+      <height>431</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>25</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget{background-color : white; border : 2px solid black; color : black;}
+QWidget:hover{background-color : rgb(200, 200, 200);}
+QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
+    </property>
+    <property name="text">
+     <string>사전 예약 방문객 서비스</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="call_admin">
+    <property name="geometry">
+     <rect>
+      <x>770</x>
+      <y>20</y>
+      <width>241</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>25</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget{border-radius : 150px; background-color : white; border : 2px solid black; color : black;}
+QWidget:hover{background-color : rgb(200, 200, 200);}
+QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
+    </property>
+    <property name="text">
+     <string>관리자 문의</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="tenant_group_bt">
+    <property name="geometry">
+     <rect>
+      <x>515</x>
+      <y>100</y>
+      <width>501</width>
+      <height>431</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>25</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget{background-color : white; border : 2px solid black; color : black;}
+QWidget:hover{background-color : rgb(200, 200, 200);}
+QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
+    </property>
+    <property name="text">
+     <string>RiO 이용자 서비스</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>30</y>
+      <width>281</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>화면을 터치해주세요!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

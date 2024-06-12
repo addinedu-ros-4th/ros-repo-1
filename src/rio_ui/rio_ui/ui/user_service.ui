@@ -215,7 +215,7 @@
      </font>
     </property>
     <property name="text">
-     <string>write Pre-arrangement</string>
+     <string>Visitor Registration</string>
     </property>
    </widget>
    <widget class="QPushButton" name="orderBtn">
