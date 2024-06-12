@@ -1200,8 +1200,8 @@
   <widget class="QLabel" name="xx">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>590</y>
+     <x>350</x>
+     <y>30</y>
      <width>70</width>
      <height>17</height>
     </rect>
@@ -1213,8 +1213,8 @@
   <widget class="QLabel" name="yy">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>620</y>
+     <x>350</x>
+     <y>60</y>
      <width>70</width>
      <height>17</height>
     </rect>
@@ -1226,8 +1226,8 @@
   <widget class="QLabel" name="zz">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>650</y>
+     <x>530</x>
+     <y>20</y>
      <width>70</width>
      <height>17</height>
     </rect>
@@ -1239,8 +1239,8 @@
   <widget class="QLineEdit" name="xLine">
    <property name="geometry">
     <rect>
-     <x>610</x>
-     <y>582</y>
+     <x>400</x>
+     <y>22</y>
      <width>113</width>
      <height>25</height>
     </rect>
@@ -1252,8 +1252,8 @@
   <widget class="QLineEdit" name="yLine">
    <property name="geometry">
     <rect>
-     <x>610</x>
-     <y>615</y>
+     <x>400</x>
+     <y>55</y>
      <width>113</width>
      <height>25</height>
     </rect>
@@ -1265,8 +1265,8 @@
   <widget class="QLineEdit" name="yawLine">
    <property name="geometry">
     <rect>
-     <x>610</x>
-     <y>648</y>
+     <x>580</x>
+     <y>18</y>
      <width>113</width>
      <height>25</height>
     </rect>
@@ -1278,8 +1278,8 @@
   <widget class="QLabel" name="remain">
    <property name="geometry">
     <rect>
-     <x>560</x>
-     <y>682</y>
+     <x>530</x>
+     <y>52</y>
      <width>70</width>
      <height>17</height>
     </rect>
@@ -1291,8 +1291,8 @@
   <widget class="QLineEdit" name="remainLine">
    <property name="geometry">
     <rect>
-     <x>610</x>
-     <y>680</y>
+     <x>580</x>
+     <y>50</y>
      <width>113</width>
      <height>25</height>
     </rect>
@@ -1389,9 +1389,9 @@
   <widget class="QTableWidget" name="requestTable">
    <property name="geometry">
     <rect>
-     <x>740</x>
+     <x>580</x>
      <y>560</y>
-     <width>581</width>
+     <width>741</width>
      <height>191</height>
     </rect>
    </property>
@@ -1442,7 +1442,7 @@
   <widget class="QComboBox" name="selectRobotTask">
    <property name="geometry">
     <rect>
-     <x>740</x>
+     <x>580</x>
      <y>530</y>
      <width>121</width>
      <height>25</height>

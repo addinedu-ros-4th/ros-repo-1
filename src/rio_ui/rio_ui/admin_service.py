@@ -239,6 +239,7 @@ class ROSNodeSignals(QObject):
     path_distance_received = pyqtSignal(float)
     # task_request_received = pyqtSignal(float, float, float)
     visitor_alert_received = pyqtSignal(list)
+    service_signal_received = pyqtSignal(list)
     
 class TaskRequester(Node):
     def __init__(self):
@@ -386,6 +387,8 @@ class AmclSubscriber(Node):
         super().__init__("amcl_sub")
         self.signals = signals
         self.robot_states = {}
+        self.pre_progress = "Waiting"
+        self.robot_service_start = ["", False]
 
         for robot in robot_types:
             # print(robot)
@@ -415,6 +418,8 @@ class AmclSubscriber(Node):
                 'progress': "Waiting",
                 'prog_cnt' : 200,
             }
+            
+            
 
     def robot_states_callback(self, data):
         name = data.name
@@ -448,6 +453,19 @@ class AmclSubscriber(Node):
         robot['progress'] = self.progress_cal(robot)[1]
         robot['task_id_trash'] = task_id
         self.signals.amcl_pose_received.emit(self.robot_states)
+        
+        if self.pre_progress != robot['progress'] and robot["progress"] == "Arrived":
+            self.robot_service_start[0] = name
+            self.robot_service_start[1] = True
+            self.signals.service_signal_received.emit(self.robot_service_start)    
+        else:
+            self.robot_service_start[0] = name
+            self.robot_service_start[1] = False 
+                
+        
+        
+        self.pre_progress = robot['progress']
+        
 
     def destination_info_callback(self, data):
         name = data.fleet_name
@@ -457,7 +475,6 @@ class AmclSubscriber(Node):
         robot = self.robot_states[name]
         robot['check'] = True
         robot['dest'] = [dest_x, dest_y, dest_yaw]
-        robot['task_id'] = data.task_id
 
     def distance_cal(self, robot):
         # TODO should cal last loc distance
@@ -563,7 +580,7 @@ class RobotCallSubscriber(Node):
             self.robot_call_callback,
             10
         )
-    
+                
     def robot_call_callback(self, msg):
         office_num = msg.office_number
         request_time = msg.date
@@ -575,37 +592,49 @@ class RobotCallSubscriber(Node):
         receiver = msg.receiver
         items = msg.items
         
+        self.service_info_value = [receiver, items]
+        
         time_str = str(request_time)
-        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"      
-        
-        self.task_info_value = [robot_mode, formatted_time_str, str(office_num), destination, "", "waiting"]
-        
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
+           
+        self.task_info_value = [robot_mode, formatted_time_str, "office_" + str(office_num), destination, "", "waiting"]
         if robot_mode == "order":
             stop_by = "cvs_and_cafe"
-            self.ui.dispatch_task(robot_type, stop_by)
+            
+            self.task_info_value[3] = stop_by
             self.task_info_value[4] = "load foods"
+            self.ui.dispatch_task(robot_type, stop_by)
+            self.ui.robot_task_info[robot_type].append(self.task_info_value)  
+            # self.update_request_table(robot_type)  
+            
+            
         elif robot_mode == "delivery":
-            self.ui.dispatch_task(robot_type, f"office_{office_num}")
             self.task_info_value[4] = "load items"
-            
-        self.ui.robot_task_info[robot_type].append(self.task_info_value)     
-        
+            self.ui.robot_task_info[robot_type].append(self.task_info_value) 
+            self.ui.dispatch_task(robot_type, f"office_{office_num}") 
+            # self.update_request_table(robot_type)  
+        test = self.task_info_value.copy()
         if robot_mode == "order":
-            self.task_info_value[4] = "delivering foods"
+            test[3] = destination
+            test[4] = "delivering foods"
         elif robot_mode == "delivery":
-            self.task_info_value[4]= "deliverying items"    
-            
+            test[4]= "deliverying items" 
         self.ui.dispatch_task(robot_type, destination)
-        self.ui.robot_task_info[robot_type].append(self.task_info_value)   
-        self.update_request_table()
+        self.ui.robot_task_info[robot_type].append(test)  
+        # self.ui.service_info[robot_type].appen
+        self.update_request_table(robot_type)
         
         
-    def update_request_table(self):
-        row_position = self.ui.requestTable.rowCount()
-        self.ui.requestTable.insertRow(row_position)
+    def update_request_table(self, robot_type):
         
-        for i, info in enumerate(self.task_info_value):
-            self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(info))
+        current_table = self.ui.robot_task_info[robot_type]
+        if self.ui.selectRobotTask.currentText() == robot_type:
+            row_position = self.ui.requestTable.rowCount()
+            self.ui.requestTable.insertRow(row_position)
+            for row in current_table:
+                if self.ui.selectRobotTask.currentText() == robot_type:
+                    for i, info in enumerate(row):
+                        self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(info))
             
 
 class QRCheckServer(Node):
