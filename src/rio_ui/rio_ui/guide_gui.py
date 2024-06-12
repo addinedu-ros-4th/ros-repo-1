@@ -14,6 +14,7 @@ import rclpy as rp
 from rclpy.executors import MultiThreadedExecutor
 
 import cv2
+import struct
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.guide_service import *
@@ -60,12 +61,16 @@ class GuideGUI(QMainWindow, guide_ui):
         self.pushCommute.clicked.connect(self.setcamera)
         self.pushBack.clicked.connect(self.setmain)
         self.pushBack_2.clicked.connect(self.setmain2)
+        self.pushBack_3.clicked.connect(self.setmain)
+        self.video_refer_bt.clicked.connect(self.video_conf)
+        self.connect_bt.clicked.connect(self.connect_meeting)
 
         self.birthEdit.setCalendarPopup(True)
         self.birthEdit.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.camera = None
         self.decode_thread = None
+        self.tcpip_server = None
 
         # self.register_service = RegisterService()
 
@@ -76,6 +81,11 @@ class GuideGUI(QMainWindow, guide_ui):
         self.signals.update_image_signal.connect(self.update_image)
         self.signals.face_registration.connect(self.face_registration)
         self.signals.qr_service_signal.connect(self.qrcheck_success)
+
+        self.image_updater = ImageUpdater()
+
+        # self.guideserver = GuideVideoServer('192.168.0.10', 5600, self.video_conf_frame)
+        # threading.Thread(target=self.guideserver.receive_images, daemon=True).start()
 
         # self.signals.update_mode_signal = pyqtSignal(str)
 
@@ -88,6 +98,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup2.hide()
         self.cameraGroup.hide()
         self.QRGroup.hide()
+        self.video_confGroup.hide()
         # self.timer.stop()
 
     def setmain2(self):
@@ -100,6 +111,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup2.hide()
         self.cameraGroup.hide()
         self.QRGroup.hide()
+        self.video_confGroup.hide()
         if self.camera is not None and self.camera.isRunning():
             self.camera.stop()
             self.decode_thread.stop()
@@ -117,6 +129,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup2.hide()
         self.cameraGroup.hide()
         self.QRGroup.hide()
+        self.video_confGroup.hide()
         self.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
 
         # self.guide_service.send_service_request()
@@ -131,6 +144,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup2.hide()
         self.cameraGroup.hide()    
         self.QRGroup.show()
+        self.video_confGroup.hide()
         self.qr_label.setText("카메라 중앙에 qr을 위치시켜 주세요.")
         self.qr_client = QRCheckClient(self.signals)
         self.decode_thread = QRDecodeThread()
@@ -179,6 +193,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.registerGroup2.show()
         self.cameraGroup.hide()
         self.QRGroup.hide()
+        self.video_confGroup.hide()
         # self.timer.stop()
         scaled_pixmap = saved_face.scaled(self.frame3.size(), QtCore.Qt.KeepAspectRatio)
         self.frame3.setPixmap(scaled_pixmap)
@@ -224,6 +239,7 @@ class GuideGUI(QMainWindow, guide_ui):
         self.QRGroup.hide()
         self.cameraGroup.show()
         self.QRGroup.hide()
+        self.video_confGroup.hide()
         # self.timer.stop()
 
     # @pyqtSlot(np.ndarray, list, bool)
@@ -258,6 +274,59 @@ class GuideGUI(QMainWindow, guide_ui):
     def handle_decoded_data(self, decoded_data):
         self.qr_client.send_request(decoded_data)
 
+    def video_conf(self):
+        self.pushNormal.hide()
+        self.mainGroup.hide()
+        self.registerGroup.hide()
+        self.registerGroup2.hide()
+        self.cameraGroup.hide()    
+        self.QRGroup.hide()
+        self.video_confGroup.show()
+        self.mycam = MyCam()
+        self.mycam.daemon = True
+        self.camera_start()
+        self.mycam.update.connect(self.update_camera)
+
+    def camera_start(self):
+        self.mycam.running = True
+        self.mycam.start()
+        self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+        if not self.cap.isOpened():
+            print("cannot open camera")
+            return
+        if self.tcpip_server is None:
+            self.tcpip_server = GuideTCPIPServer(self.image_updater)
+    
+    def camera_stop(self):
+        self.mycam.running = False
+        self.cap.release()
+
+    def update_camera(self):
+        ret, image = self.cap.read()
+        if ret:
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            h, w, c = rgb_image.shape
+            qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
+            qt_img_scaled = qimage.scaled(self.video_conf_frame_2.width(), self.video_conf_frame_2.height(), Qt.KeepAspectRatio)
+            self.pixmap = self.pixmap.fromImage(qt_img_scaled)
+            self.video_conf_frame_2.setPixmap(self.pixmap)
+            
+            self.image_updater.update_image(image)
+
+    def connect_meeting(self):
+        self.client_node = UserTCPIPClientNode('192.168.0.48', 5608)
+        self.client_node.image_received.connect(self.update_somebody_cam)
+
+    @pyqtSlot(np.ndarray)
+    def update_somebody_cam(self, frame):
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, c = rgb_image.shape
+        qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
+        qt_img_scaled = qimage.scaled(self.video_conf_frame.width(), self.video_conf_frame.height(), Qt.KeepAspectRatio)
+        pixmap = QPixmap.fromImage(qt_img_scaled)
+        self.video_conf_frame.setPixmap(pixmap)
+
+
     def closeEvent(self, event):
         if self.camera is not None:
             self.camera.stop()
@@ -266,7 +335,7 @@ class GuideGUI(QMainWindow, guide_ui):
             self.qr_client.destroy_node()
             rp.shutdown()
         event.accept()        
-    
+
 class Camera(QThread):
     frame_captured_signal = pyqtSignal(np.ndarray)
     update_image_signal = pyqtSignal(QImage)
@@ -300,6 +369,22 @@ class Camera(QThread):
         self.cap.release()
         self.quit()
 
+class MyCam(QThread):
+    #시그널 종류 생성
+    update = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        
+    def run(self):
+        while self.running == True:
+
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
 
 class QRDecodeThread(QThread):
     decoded_data_signal = pyqtSignal(str)

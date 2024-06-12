@@ -12,7 +12,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
+import socket
+import threading
+import cv2
+import struct
 import numpy as np
+import time
 from cv_bridge import CvBridge, CvBridgeError
 
 class RegisterService(Node):
@@ -132,7 +137,6 @@ class FacenameSubscriber(Node):
             print(e)   
 
 class FacelandmarkSubscriber(Node):
-
     def __init__(self, signals):
         super().__init__("face_landmarks_sub")
         self.signals = signals
@@ -160,7 +164,110 @@ class FacelandmarkSubscriber(Node):
             return True
         else:
             return False
+
+class ImageUpdater(QObject):
+    image_updated = pyqtSignal(np.ndarray)
+
+    def __init__(self):
+        super().__init__()
+
+    def update_image(self, image):
+        # 이미지 업데이트 로직
+        self.image_updated.emit(image)
+
+class GuideTCPIPServer(QObject):
+    def __init__(self, image_updater):
+        super().__init__()
+        self.image_updater = image_updater
+        self.image_updater.image_updated.connect(self.publish_frames)
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(('192.168.0.24', 5604))
+        self.server_socket.listen(1)
+        print("waiting connection")
         
+        self.client_socket = None
+        self.connection = None
+        self.accept_thread = threading.Thread(target=self.accept_connections)
+        self.accept_thread.start()
+
+    def accept_connections(self):
+        try:
+            while True:
+                self.client_socket, self.client_address = self.server_socket.accept()
+                self.connection = self.client_socket.makefile('wb')
+                
+        except Exception as e:
+            print(f"accept_connection :{e}")
+    def publish_frames(self, frame):
+        if self.connection:
+            try:
+                encoded, buffer = cv2.imencode('.jpg', frame)
+                data = np.array(buffer)
+                string_data = data.tobytes()
+                self.connection.write(struct.pack('<L', len(string_data)))
+                self.connection.write(string_data)
+                self.connection.flush()
+                    
+            except Exception as e:
+                self.connection.close()
+                self.client_socket = None
+                self.connection = None
+                print(f"publish_frames{e}")
+                
+    def stop_server(self):
+        if self.connection:
+            self.connection.close()
+        if self.client_socket:
+            self.client_socket.close()
+        self.server_socket.close()
+        print("Server is closed")
+
+class UserTCPIPClientNode(QObject):
+    image_received = pyqtSignal(np.ndarray)
+
+    def __init__(self, ip_address, port):
+        super().__init__()
+        self.client_socket = None
+        self.connection = None
+        self.connect_to_server(ip_address, port)
+        self.receive_thread = threading.Thread(target=self.receive_video)
+        self.receive_thread.start()
+
+            
+    def connect_to_server(self, ip_address, port):
+        while True:
+            try:
+                self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.client_socket.connect((ip_address, port))
+                self.connection = self.client_socket.makefile('rb')
+                print(f"Connected to server at {ip_address}:{port}")
+                break
+            except Exception as e:
+                print(f"Failed to connect to server at {ip_address}:{port}: {e}")
+                time.sleep(5)
+
+    def receive_video(self):
+        while True:
+            try:
+                while True:
+                    packed_msg_size = self.connection.read(struct.calcsize('<L'))
+                    
+                    if not packed_msg_size:
+                        break
+                    msg_size = struct.unpack('<L', packed_msg_size)[0]
+                    frame_data = self.connection.read(msg_size)
+                    frame = np.frombuffer(frame_data, dtype=np.uint8)
+                    frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                    
+                    if frame is not None and frame.size != 0:
+                        self.image_received.emit(frame)  # 이미지 수신 시그널 방출
+                    else:
+                        print("Invalid frame received")
+            except Exception as e:
+                print(f"Error: {e}")
+
+
 def main(args=None):
     rp.init(args=args)
     guide_service = RegisterService()
