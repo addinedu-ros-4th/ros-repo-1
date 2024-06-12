@@ -60,8 +60,11 @@ class AdminGUI(QMainWindow, admin_ui):
         self.timer.start(10)
         
         self.order = []
-        self.node = rclpy.create_node("robot_task_node")
-        self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
+        self.node = rclpy.create_node("robot_task_node_deli")
+        self.task_publisher_deli = self.node.create_publisher(Int64MultiArray, "/robot_task_deli", 10)
+        
+        self.node = rclpy.create_node("robot_task_node_guide")
+        self.task_publisher_guide = self.node.create_publisher(Int64MultiArray, "/robot_task_guide", 10)
 
         # self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
@@ -70,7 +73,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
         self.select_table_update(tables)
-        self.requestTable.currentIndexChanged.connect(self.request_table_update)
+        self.selectRobotTask.currentIndexChanged.connect(self.request_table_update)
         self.detail_bt.clicked.connect(self.table_detail)
         
         self.signals = ROSNodeSignals()
@@ -79,6 +82,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.signals.path_distance_received.connect(self.update_path_distance)
         # self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
+        # self.signals.service_signal_received.connect(self.publish_robot_service)
 
         with open(os.path.join(get_package_share_directory("rio_main"), "maps", "office.yaml")) as f:
             map_data = yaml.full_load(f)
@@ -165,18 +169,26 @@ class AdminGUI(QMainWindow, admin_ui):
             'cleanerbot': [],
             'minibot': []
         }
+        
+        self.service_info = {
+            'guidebot': [],
+            'deliverybot': [],
+            'patrolbot': [],
+            'cleanerbot': [],
+            'minibot': []
+        }
 
         last_task = self.load_last_task()
         for robot, task in last_task.items():
             self.robot_last_task[robot] = task
 
-        self.robot_states_uiEdit = {
-            'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.location_guide, False],
-            'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.location_delivery, False],
-            'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.location_patrol, False],
-            'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.location_clean, False],
-            'minibot': [self.yLine, self.yawLine, self.xLine, False]
-        }
+        # self.robot_states_uiEdit = {
+        #     'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.location_guide, False],
+        #     'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.location_delivery, False],
+        #     'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.location_patrol, False],
+        #     'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.location_clean, False],
+        #     'minibot': [self.yLine, self.yawLine, self.xLine, False]
+        # }
 
     def load_last_task(self):
         with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'r') as f:
@@ -216,6 +228,7 @@ class AdminGUI(QMainWindow, admin_ui):
 
     def update_amcl_pose(self, robot_states):
         self.robot_states = robot_states
+        
 
     # def update_path_distance(self, distance):
     #     if distance < 0.4:

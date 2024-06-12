@@ -43,6 +43,7 @@ from twilio.rest import Client
 
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 from rmf_fleet_msgs.msg import FleetState, DestinationRequest, ModeRequest, RobotMode
+from rio_ui_msgs.msg import RobotService
 
 robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
 
@@ -362,6 +363,11 @@ class AmclSubscriber(Node):
                 'progress': "Waiting",
                 'prog_cnt' : 200,
             }
+            
+            self.publish_robot_service = self.create_pulisher(
+                RobotService,
+                f"/"
+            )
 
     def robot_states_callback(self, data):
         name = data.name
@@ -510,6 +516,9 @@ class RobotCallSubscriber(Node):
             self.robot_call_callback,
             10
         )
+        
+        self.task_id = {"deliverybot": 0, "guidebot": 0, "cleanerbot": 0, "patrolbot": 0, "minibot": 0}
+        
     
     def robot_call_callback(self, msg):
         office_num = msg.office_number
@@ -522,28 +531,32 @@ class RobotCallSubscriber(Node):
         receiver = msg.receiver
         items = msg.items
         
-        time_str = str(request_time)
-        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"      
+        self.service_info_value = [receiver, items]
         
-        self.task_info_value = [robot_mode, formatted_time_str, str(office_num), destination, "", "waiting"]
+        self.task_id[robot_type] += 1 
+        time_str = str(request_time)
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
+           
+        self.task_info_value = [self.task_id[robot_type], robot_mode, formatted_time_str, str(office_num), destination, "", "waiting"]
         
         if robot_mode == "order":
             stop_by = "cvs_and_cafe"
             self.ui.dispatch_task(robot_type, stop_by)
-            self.task_info_value[4] = "load foods"
+            self.task_info_value[5] = "load foods"
         elif robot_mode == "delivery":
             self.ui.dispatch_task(robot_type, f"office_{office_num}")
-            self.task_info_value[4] = "load items"
+            self.task_info_value[5] = "load items"
             
         self.ui.robot_task_info[robot_type].append(self.task_info_value)     
         
         if robot_mode == "order":
-            self.task_info_value[4] = "delivering foods"
+            self.task_info_value[5] = "delivering foods"
         elif robot_mode == "delivery":
-            self.task_info_value[4]= "deliverying items"    
+            self.task_info_value[5]= "deliverying items"    
             
         self.ui.dispatch_task(robot_type, destination)
-        self.ui.robot_task_info[robot_type].append(self.task_info_value)   
+        self.ui.robot_task_info[robot_type].append(self.task_info_value)  
+        self.ui.service_info[robot_type].append 
         self.update_request_table()
         
         

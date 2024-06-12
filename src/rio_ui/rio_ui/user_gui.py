@@ -73,11 +73,17 @@ class UserGUI(QMainWindow, user_ui):
         table = "OfficeInfo"
         column = "office_number"
         criteria = "close_date"
+        destination_list = ["meeting_room", "share_space", "share_printer", "share_cafe"]
+        self.set_destination_info()
         
         result = self.db_connector.select_specific_null(table, column, criteria)
         for value in result:
             if str(value["office_number"]) != str(self.office_number):
                 self.destination.addItem(str(value['office_number'])) 
+        
+        for dt in destination_list:
+            self.destination.addItem(dt)        
+        
         self.destination.addItem("share_office")
         self.destination.addItem("meeting_room")
         
@@ -88,14 +94,20 @@ class UserGUI(QMainWindow, user_ui):
     def set_receiver(self):
         self.receiver.clear()
         table = "UserInfo"
-        column = "user_name, company"
-        criteria = {"office": self.destination.currentText()}
         
+        if self.destination.currentIndex() in ["501", "502", "503"]:
+            column = "user_name, company"
+            criteria = {"office": self.destination.currentText()}
+        else:
+            column = "user_name"
+            criteria = None
+            
         result = self.db_connector.select_specific(table, column, criteria)
         
         for value in result:
             self.receiver.addItem(str(value['user_name'])) 
-            self.company.setText(str(value["company"]))
+            if self.destination.currentIndex() in ["501", "502", "503"]:
+                self.company.setText(str(value["company"]))
         
     def set_destination_info(self):
         robot_type = self.robotTypeCBX.currentText()
@@ -181,7 +193,7 @@ class UserGUI(QMainWindow, user_ui):
 
     def publish_request(self):
         current_time = datetime.now().time()
-        time_str = current_time.strftime('%H%M%S')
+        time_str = current_time.strftime('%HH%MM%SS')
         time_int = int(time_str)
         
         robot_type = self.robotTypeCBX.currentText()
@@ -199,7 +211,7 @@ class UserGUI(QMainWindow, user_ui):
         req.receiver = receiver
         req.items = items
         self.robot_request_publisher.publish(req)
-        # print("Published:", req)
+        print("Published:", req)
 
     def write_pre_arrangement(self):
         pre_arrangement_window = SubGUI()
@@ -389,7 +401,7 @@ class OrderGUI(QDialog, order_ui):
     def order_confirm(self):
         order_string = ""
         current_time = datetime.now().time()
-        time_str = current_time.strftime('%H%M%S')
+        time_str = current_time.strftime('%HH%MM%SS')
         time_int = int(time_str)
         
         item_list = list(self.order.keys())
