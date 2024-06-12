@@ -74,18 +74,27 @@ class UserGUI(QMainWindow, user_ui):
         column = "office_number"
         criteria = "close_date"
         destination_list = ["meeting_room", "share_space", "share_printer", "share_cafe"]
-        self.set_destination_info()
         
         result = self.db_connector.select_specific_null(table, column, criteria)
-        for value in result:
-            if str(value["office_number"]) != str(self.office_number):
+        if self.robotTypeCBX.currentIndex() == "deliverybot":
+            for value in result:
+                    self.destination.addItem(str(value['office_number'])) 
+                    
+        else:
+            for value in result:
                 self.destination.addItem(str(value['office_number'])) 
-        
+                    
+        print(result)
+                
         for dt in destination_list:
-            self.destination.addItem(dt)        
+            self.destination.addItem(dt)  
+            
+        self.destination.setCurrentText(str(self.office_number))
         
-        self.destination.addItem("share_office")
-        self.destination.addItem("meeting_room")
+        self.set_destination_info()
+        
+        
+        # self.destination.setCurrentText(str(self.office_number))
         
     def cancel_select_robot(self):
         self.callRobotGroup.hide()
@@ -94,31 +103,36 @@ class UserGUI(QMainWindow, user_ui):
     def set_receiver(self):
         self.receiver.clear()
         table = "UserInfo"
-        
-        if self.destination.currentIndex() in ["501", "502", "503"]:
+        print(self.destination.currentIndex())
+        if self.destination.currentText() in ["501", "502", "503"]:
             column = "user_name, company"
             criteria = {"office": self.destination.currentText()}
         else:
             column = "user_name"
             criteria = None
+            self.company.setText(self.id)
             
         result = self.db_connector.select_specific(table, column, criteria)
         
         for value in result:
             self.receiver.addItem(str(value['user_name'])) 
-            if self.destination.currentIndex() in ["501", "502", "503"]:
+            if self.destination.currentText() in ["501", "502", "503"]:
                 self.company.setText(str(value["company"]))
         
     def set_destination_info(self):
         robot_type = self.robotTypeCBX.currentText()
+        self.items.setText("")
         if robot_type == "deliverybot":
             self.destination.setEnabled(True)
             self.items.setReadOnly(False)
-            self.receiver.setEnabled(True)
+            # self.destination.removeItem(str(self.office_number))
+            # self.receiver.setEnabled(True)
         else:
             self.destination.setEnabled(False)
             self.items.setReadOnly(True)
-            self.receiver.setEnabled(False)
+            # self.receiver.setEnabled(False)
+            self.destination.setCurrentText(str(self.office_number))
+            
         
     def update_time(self):
         current_time = datetime.now()
@@ -193,7 +207,9 @@ class UserGUI(QMainWindow, user_ui):
 
     def publish_request(self):
         current_time = datetime.now().time()
-        time_str = current_time.strftime('%HH%MM%SS')
+        time_str = current_time.strftime('%H%M%S')
+        if len(time_str) == 5:
+            time_str = "0" + time_str
         time_int = int(time_str)
         
         robot_type = self.robotTypeCBX.currentText()
@@ -206,7 +222,14 @@ class UserGUI(QMainWindow, user_ui):
         req.office_number = self.office_number
         req.date = time_int
         req.robot_type = robot_type
-        req.robot_mode = "delivery"
+        if robot_type == "deliverybot":
+            req.robot_mode = "delivery"
+        elif robot_type == "guidebot":
+            req.robot_mode = "guide"
+        elif robot_type == "cleanerbot":
+            req.robot_mode = "clean"
+        elif robot_type == "patrolblt":
+            req.robot_mode = "patrol"
         req.destination = destination 
         req.receiver = receiver
         req.items = items
@@ -274,6 +297,7 @@ class OrderGUI(QDialog, order_ui):
         self.lat_price = 1500
         self.snack_price = 2000
         self.order = {"americano": 0, "latte": 0, "coke": 0, "snack": 0}
+        self.db_connector = self.ui.db_connector
         
         self.officeNumber.setText(str(self.office_num))
         
@@ -374,7 +398,7 @@ class OrderGUI(QDialog, order_ui):
                 self.order[item] -= 1
     
     def remove_list(self):
-        self.orderTable.setRowCount(0)
+        self.orderTable.clearContents()
         self.total_price = 0
         self.totalPrice.setText(str(self.total_price))
         
@@ -401,7 +425,9 @@ class OrderGUI(QDialog, order_ui):
     def order_confirm(self):
         order_string = ""
         current_time = datetime.now().time()
-        time_str = current_time.strftime('%HH%MM%SS')
+        time_str = current_time.strftime('%H%M%S')
+        if len(time_str) == 5:
+            time_str = "0" + time_str
         time_int = int(time_str)
         
         item_list = list(self.order.keys())
@@ -415,10 +441,11 @@ class OrderGUI(QDialog, order_ui):
         msg.robot_type = "deliverybot"
         msg.robot_mode = "order"
         msg.destination = str(self.ui.office_number)
-        msg.receiver = ""
+        msg.receiver = self.set_order_receiver(self.office_num)
         msg.items = order_string
         
         self.order_publisher.publish(msg)
+        print("Published:", msg)
         
         self.remove_list()
         
@@ -429,6 +456,18 @@ class OrderGUI(QDialog, order_ui):
         confirmation.setStandardButtons(QMessageBox.Ok)
         confirmation.buttonClicked.connect(self.order_complete)
         confirmation.exec_()
+        
+    def set_order_receiver(self, office_number):
+        table = "UserInfo"
+        column = "user_name"
+        criteria = {"office": office_number}
+        users = ""
+                    
+        result = self.db_connector.select_specific(table, column, criteria)
+        for user in result:
+            users += user["user_name"] + ","
+            
+        return users
             
     def order_complete(self, button):
         self.accept()

@@ -19,6 +19,7 @@ from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
+from rio_ui_msgs.msg import RobotService
 
 
 admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
@@ -56,10 +57,10 @@ class AdminGUI(QMainWindow, admin_ui):
         
         self.order = []
         self.node = rclpy.create_node("robot_task_node_deli")
-        self.task_publisher_deli = self.node.create_publisher(Int64MultiArray, "/robot_task_deli", 10)
+        self.task_publisher_delisrv = self.node.create_publisher(RobotCall, "/robot_service_deli", 10)
         
         self.node = rclpy.create_node("robot_task_node_guide")
-        self.task_publisher_guide = self.node.create_publisher(Int64MultiArray, "/robot_task_guide", 10)
+        self.task_publisher_guidesrv = self.node.create_publisher(RobotCall, "/robot_service_guide", 10)
 
         # self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
@@ -77,7 +78,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.signals.path_distance_received.connect(self.update_path_distance)
         # self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
-        # self.signals.service_signal_received.connect(self.publish_robot_service)
+        self.signals.service_signal_received.connect(self.publish_robot_service)
 
         with open(os.path.join(get_package_share_directory("rio_main"), "maps", "office.yaml")) as f:
             map_data = yaml.full_load(f)
@@ -163,12 +164,23 @@ class AdminGUI(QMainWindow, admin_ui):
             yaml.dump(data, f)
             
     def request_table_update(self):
+        self.requestTable.clearContents()
+        self.requestTable.setRowCount(0)
+        
         select_robot_type = self.selectRobotTask.currentText()
         task_list = self.robot_task_info[select_robot_type]
+        
+        # row_position = self.requestTable.rowCount()
+        # self.requestTable.insertRow(row_position)
         try:
-            for row_position in range(len(task_list)):
-                for i, value in enumerate():
-                    self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(value))
+            print(task_list)
+            for row in task_list:
+                if self.selectRobotTask.currentText() == select_robot_type:
+                    row_position = self.requestTable.rowCount()
+                    self.requestTable.insertRow(row_position)
+                    for i, info in enumerate(row):
+                        self.requestTable.setItem(row_position, i, QTableWidgetItem(info))
+    
         except Exception as e:
             print(e)
 
@@ -191,6 +203,19 @@ class AdminGUI(QMainWindow, admin_ui):
 
     def update_amcl_pose(self, robot_states):
         self.robot_states = robot_states
+        
+    def publish_robot_service(self, robot_service_start):
+        print(robot_service_start)
+        msg = RobotService()
+        msg.robot_type = robot_service_start[0]
+        msg.mode = self.service_info[robot_service_start[0]][0][1]
+        msg.detail = self.service_info[robot_service_start[0]][0][5]
+        
+        if robot_service_start[0] == "deliverybot":
+            self.task_publisher_delisrv.publish(msg)
+        elif robot_service_start[0] == "guidebot":
+            self.task_publisher_guidesrv.publish(msg)
+        
         
 
     # def update_path_distance(self, distance):

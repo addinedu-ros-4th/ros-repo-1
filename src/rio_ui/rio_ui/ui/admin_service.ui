@@ -1397,11 +1397,6 @@
    </property>
    <column>
     <property name="text">
-     <string>Task ID</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
      <string>Robot Mode</string>
     </property>
    </column>
