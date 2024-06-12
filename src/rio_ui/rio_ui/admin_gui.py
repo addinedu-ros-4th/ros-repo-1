@@ -45,12 +45,7 @@ class AdminGUI(QMainWindow, admin_ui):
     def __init__(self):    
         super().__init__()
         self.setupUi(self)
-        # self.btn_req_guide.clicked.connect(lambda: self.robot_ctl_task("guidebot"))
-        # self.btn_req_delivery.clicked.connect(lambda: self.robot_ctl_task("deliverybot"))
-        # self.btn_req_patrol.clicked.connect(lambda: self.robot_ctl_task("patrolbot"))
-        # self.btn_req_clean.clicked.connect(lambda: self.robot_ctl_task("cleanerbot"))
         self.init_robot_info()
-
        
         self.addUserBtn.clicked.connect(self.add_user)
         self.officeManageBtn.clicked.connect(self.office_manage)
@@ -104,39 +99,7 @@ class AdminGUI(QMainWindow, admin_ui):
         header.setSectionResizeMode(QHeaderView.Stretch)
 
         self.task_requester = TaskRequester()
-        # self.init_robot_info()
 
-    # def init_robot_info(self):
-    #     self.robot_locations = {
-    #         'guidebot': {
-    #             'prev': [0.0, 0.0],
-    #             'pres' : [0.0, 0.0]
-    #         },
-    #         'deliverybot': {
-    #             'prev': [0.0, 0.0],
-    #             'pres' : [0.0, 0.0]
-    #         },
-    #         'patrolbot': {
-    #             'prev': [0.0, 0.0],
-    #             'pres' : [0.0, 0.0]
-    #         },
-    #         'cleanerbot': {
-    #             'prev': [0.0, 0.0],
-    #             'pres' : [0.0, 0.0]
-    #         },
-    #         'minibot': {
-    #             'prev': [0.0, 0.0],
-    #             'pres' : [0.0, 0.0]
-    #         }
-    #     }
-
-    #     self.robot_states_uiEdit = {
-    #         'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.lineEdit],
-    #         'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.lineEdit_2],
-    #         'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.lineEdit_3],
-    #         'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.lineEdit_4],
-    #         'minibot': [self.yLine, self.yawLine, self.xLine]
-    #     }
 
     def init_robot_info(self):
         self.btn_submit_task.clicked.connect(self.click_robot_ctl_task)

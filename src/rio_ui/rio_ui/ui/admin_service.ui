@@ -284,21 +284,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-<<<<<<< HEAD
-   <widget class="QComboBox" name="start_location_4">
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>340</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="request_6">
-=======
    <widget class="QComboBox" name="robot_type">
->>>>>>> dev
     <property name="geometry">
      <rect>
       <x>450</x>
@@ -354,31 +340,6 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QComboBox" name="start_location_5">
-    <property name="geometry">
-     <rect>
-      <x>17</x>
-      <y>340</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>minibot_charger_1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>point1</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>point2</string>
-     </property>
-    </item>
-   </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
@@ -395,21 +356,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-<<<<<<< HEAD
-   <widget class="QComboBox" name="start_location_6">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>340</y>
-      <width>121</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="requestButton1">
-=======
    <widget class="QPushButton" name="btn_submit_task">
->>>>>>> dev
     <property name="geometry">
      <rect>
       <x>450</x>
