@@ -138,6 +138,13 @@ class AdminGUI(QMainWindow, admin_ui):
             'patrolbot': "",
             'cleanerbot': "",
         }
+
+        self.robot_mode = {
+            'guidebot': "",
+            'deliverybot': "",
+            'patrolbot': "",
+            'cleanerbot': "",
+        }
         
         self.robot_task_info = {
             'guidebot': [],
@@ -191,7 +198,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # row_position = self.requestTable.rowCount()
         # self.requestTable.insertRow(row_position)
         try:
-            print(task_list)
+            # print(task_list)
             for row in task_list:
                 if self.selectRobotTask.currentText() == select_robot_type:
                     row_position = self.requestTable.rowCount()
@@ -256,10 +263,10 @@ class AdminGUI(QMainWindow, admin_ui):
             elif menu_info[0] == "snack":
                 self.order_list[3] = int(menu_info[1])
         data.extend(self.order_list)
-        print(self.order_list)
+        # print(self.order_list)
         
         msg.data = data
-        print(self.robot_task_info[robot_service_start[0]][0][4])
+        # print(self.robot_task_info[robot_service_start[0]][0][4])
         
         if "load" in self.robot_task_info[robot_service_start[0]][0][4]:
             if robot_service_start[0] == "deliverybot":
@@ -333,7 +340,8 @@ class AdminGUI(QMainWindow, admin_ui):
             mode = "moving"
         self.robot_states_uiEdit[robot][-1] = flag
 
-        self.task_stop(robot, mode)
+        # self.task_stop(robot, mode)
+        self.task_stop(robot, "move")
 
     def task_stop(self, robot, mode):
         last_task = self.load_last_task()
@@ -347,11 +355,15 @@ class AdminGUI(QMainWindow, admin_ui):
 
         self.robot_last_task[robot] = task_id
 
-        self.task_requester.mode_change(robot, mode, task_id)
+        # self.task_requester.mode_change(robot, mode, task_id)
 
         data = self.load_last_task()
         data[robot] = task_id
         self.save_last_task(data)
+
+        self.robot_mode[robot] = mode
+
+        return mode
 
     def click_robot_ctl_task(self):
         selected = self.cb_robot_type.currentText()
@@ -425,22 +437,25 @@ class AdminGUI(QMainWindow, admin_ui):
             self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
 
             try:
-                if len(self.robot_task_stack[robot]) > 0:
+                if len(self.robot_task_stack[robot]) > 0 :
                     robot_task = self.robot_task_stack[robot]
-                    if not robot_task[0][-1]:
+                    robot_mode = self.robot_mode[robot]
+                    print(f"update_robot_health : {robot_task} / {robot_mode}" )
+
+                    if not robot_task[0][-1] and robot_mode != "pause":
                         robot_task[0][-1] = True
-                        print(robot_task)
                         self.pub_rmf_task(robot_task[0][0])
                         self.robot_task_info[robot][0][5] = "In progress"
                     
-                    if robot_task[0][-1] == True and robot_task[0][1] == False:
+                    if robot_task[0][-1] == True and robot_task[0][1] == False and robot_mode != "pause":
                         goal = robot_task[0][0]['place']
                         robot_task[0][1] = self.cal_remain(states, goal)
 
                     if robot_task[0][1] :
                         robot_task.pop(0)
+                        mode = self.task_stop(robot, "pause")
+                        self.robot_mode[robot] = mode
                         self.robot_task_info[robot].pop(0)
-                        self.task_stop(robot, "pause")
                 else:
                     self.robot_states[robot]['progress'] = "Waiting"
                 status = self.robot_states[robot]['progress']
