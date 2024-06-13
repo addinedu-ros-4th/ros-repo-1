@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1023</width>
-    <height>538</height>
+    <width>1027</width>
+    <height>545</height>
    </rect>
   </property>
   <property name="font">
@@ -104,48 +104,6 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
     </property>
     <property name="text">
      <string>화상회의</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="cameraGroup">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1023</width>
-     <height>537</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string/>
-   </property>
-   <widget class="QLabel" name="frame2">
-    <property name="geometry">
-     <rect>
-      <x>190</x>
-      <y>40</y>
-      <width>640</width>
-      <height>480</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushBack">
-    <property name="geometry">
-     <rect>
-      <x>862</x>
-      <y>380</y>
-      <width>131</width>
-      <height>111</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>돌아가기</string>
     </property>
    </widget>
   </widget>
@@ -492,12 +450,73 @@ QWidget:pressed{background-color:rgb(50, 50, 50);}</string>
      <string/>
     </property>
    </widget>
+   <widget class="QGroupBox" name="cameraGroup">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1023</width>
+      <height>537</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QLabel" name="frame2">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>40</y>
+       <width>640</width>
+       <height>480</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushBack">
+     <property name="geometry">
+      <rect>
+       <x>862</x>
+       <y>380</y>
+       <width>131</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>돌아가기</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="commute_label">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>70</y>
+       <width>451</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="maingroup">
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>0</y>
+     <y>-10</y>
      <width>1023</width>
      <height>537</height>
     </rect>
