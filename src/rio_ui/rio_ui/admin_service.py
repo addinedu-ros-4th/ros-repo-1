@@ -727,7 +727,7 @@ class QRCheckServer(Node):
         self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
         self.db_connector = DBConnector()
 
-        self.guide_pub = self.node.create_publisher(RobotCall, "robot_call_user_2", 10)
+        self.guide_pub = self.create_publisher(RobotCall, "robot_call_user_2", 10)
 
     def qr_code_callback(self, request, response):
         hashed_data = request.hashed_data
