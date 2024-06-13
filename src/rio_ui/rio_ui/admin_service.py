@@ -586,7 +586,58 @@ class RobotCallSubscriber(Node):
             self.robot_call_callback,
             10
         )
-                
+
+
+        self.guide_subs = self.create_subscription(
+            RobotCall,
+            "/robot_call_user_2",
+            self.guide_call_callback,
+            10
+        )
+
+    def guide_call_callback(self, msg):
+        print("GUIDE RobotCallSubscriber")
+        time = msg.date
+        destination = msg.destination
+
+        if destination == "애드인에듀":
+            dest = "office_501"
+        elif destination == "까사미아":
+            dest = "office_502"
+        elif destination == "pinklab":
+            dest = "office_503"
+        elif destination == "메머드커피":
+            dest = "cvs_and_cafe"
+
+        robot_type = msg.robot_type
+        robot_mode = msg.robot_mode
+
+        time_str = str(time)
+        formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
+
+        self.task_info_value = [robot_mode, formatted_time_str, "", dest, "", "waiting"]
+
+        if len(self.ui.robot_task_info[robot_type]) > 1:
+            self.ui.robot_task_info[robot_type].pop()
+
+        self.ui.robot_task_info[robot_type].append(self.task_info_value)
+        params_1 = self.ui.dispatch_task(robot_type, self.task_info_value[3])
+        task_1 = [params_1, False, False]
+        self.ui.robot_task_stack[robot_type].append(task_1)
+
+        task_info_value_return = self.task_info_value.copy()
+        task_info_value_return[3] = f"{robot_type}_staging"
+        task_info_value_return[4] = "return"
+
+        self.ui.robot_task_info[robot_type].append(task_info_value_return)
+        params_2 = self.ui.dispatch_task(robot_type, task_info_value_return[3])
+        task_2 = [params_2, False, False]
+        self.ui.robot_task_stack[robot_type].append(task_2)
+
+        self.update_request_table(robot_type)
+
+        pass
+
     def robot_call_callback(self, msg):
         print("RobotCallSubscriber")
         office_num = msg.office_number
@@ -634,7 +685,7 @@ class RobotCallSubscriber(Node):
         elif robot_mode == "delivery":
             task_info_value_2[4]= "deliverying items" 
             
-        self.ui.robot_task_info[robot_type].append(task_info_value_2)  
+        self.ui.robot_task_info[robot_type].append(task_info_value_2)
         self.ui.service_info[robot_type].append(self.service_info_value)
         params_2 = self.ui.dispatch_task(robot_type, destination)
         task = [params_2, False, False]
@@ -646,9 +697,9 @@ class RobotCallSubscriber(Node):
         task_info_value_return[4] = "return"
         
         self.ui.robot_task_info[robot_type].append(task_info_value_return)  
-        self.ui.robot_task_stack[robot_type].append(task_info_value_return)
         params_3 = self.ui.dispatch_task(robot_type, task_info_value_return[3])
         task = [params_3, False, False]
+        self.ui.robot_task_stack[robot_type].append(task)
         
         
         self.update_request_table(robot_type)
@@ -674,6 +725,8 @@ class QRCheckServer(Node):
         self.srv = self.create_service(QRCheck, 'qr_check', self.qr_code_callback)
         self.db_connector = DBConnector()
 
+        self.guide_pub = self.node.create_publisher(RobotCall, "robot_call_user_2", 10)
+
     def qr_code_callback(self, request, response):
         hashed_data = request.hashed_data
         if hashed_data:
@@ -685,7 +738,25 @@ class QRCheckServer(Node):
                     data = {"updated_at": datetime.now()}
                     self.db_connector.db_manager.update("VisitorInfo", data, criteria)
                     visited_msg = [{'name': item['name'], 'affiliation': item['affiliation'], 'visit_place': item['visit_place']} for item in result]
-                    print(visited_msg)
+                    # print(visited_msg)
+
+                    current_time = datetime.now().time()
+                    time_str = current_time.strftime('%H%M%S')
+                    if len(time_str) == 5:
+                        time_str = "0" + time_str
+                    time_int = int(time_str)
+                                
+                    msg = RobotCall()
+                    msg.office_number = ""
+                    msg.date = time_int
+                    msg.robot_type = "guidebot"
+                    msg.robot_mode = "guide"
+                    msg.destination = visited_msg[0]['visit_place']
+                    msg.receiver = ""
+                    msg.items = ""
+
+                    self.guide_pub.publish(msg)
+
                     # self.visitalert.send_visit_alert_req(visited_msg)
                     self.signals.visitor_alert_received.emit(visited_msg)
                     response.success = True
