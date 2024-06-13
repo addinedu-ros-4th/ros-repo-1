@@ -1,0 +1,35 @@
+desk_501 : [-8.12, -4.98]
+desk_502 : [-7.23, -4.98]
+desk_503 : [-6.34, -4.98]
+office_501 : [-7.7, -4.98]
+office_502 : [-6.8, -4.98]
+office_503 : [-5.8, -4.98]
+
+lobby_1 : [0,0]
+lobby_2 : [0,0]
+lobby_3 : [0,0]
+lobby_4 : [0,0]
+lobby_5 : [0,0]
+lobby_6 : [0,0]
+lobby_7 : [0,0]
+lobby_8 : [0,0]
+lobby_9 : [0,0]
+
+meeting_room : [-7.4, -6.33]
+meeting_desk : [-7.4, -6.62]
+
+outside : [-9.4, -3.14]
+out_entrance : [-9.4, -4.9]
+in_entrance : [-9.0, -4.9]
+cvs_and_cafe : [-8.55, -4.9]
+
+guidebot_staging : [-8.98, -4.9]
+patrolbot_staging : [-9.15, -5.37]
+deliverybot_staging : [-9.1, -6.5]
+cleanerbot_staging : [-9.15, -5.8]
+office_manager : [-9.05, -6.05]
+
+share_space : [-6.32, -6.28]
+share_cafe : [-5.88, -6.54]
+share_printer : [-5.88, -6.04]
+
