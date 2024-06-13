@@ -960,7 +960,7 @@ class ServiceOverSubscriber(Node):
         
     def over_callback(self, data):
         if data:
-            self.task_stop("deliverybot", "move")
+            self.ui.task_stop("deliverybot", "move")
         
 
 class TTSAlertService():     
