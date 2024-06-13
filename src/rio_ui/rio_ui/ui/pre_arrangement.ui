@@ -31,41 +31,6 @@
    <property name="checkable">
     <bool>false</bool>
    </property>
-   <widget class="QComboBox" name="info_1">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>48</y>
-      <width>181</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string/>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>애드인에듀</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>pinklab</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>까사미아</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>메머드커피</string>
-     </property>
-    </item>
-   </widget>
    <widget class="QPushButton" name="cancel_bt">
     <property name="geometry">
      <rect>
@@ -320,7 +285,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -411,6 +376,226 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QComboBox" name="info_1">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>50</y>
+      <width>181</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Select Location</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>애드인에듀</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>pinklab</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>까사미아</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>메머드커피</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>guidebot_staging</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>deliverybot_staging</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>patrolbot_staging</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>cleanerbot_staging</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>------------------------------------------</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>cvs_and_cafe</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>office_manager</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>outside</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>in_enterance</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>out_enterance</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>------------------------------------------</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_2</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_3</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_4</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_5</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_6</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_7</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_8</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_9</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_10</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>------------------------------------------</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>office_501</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>desk_501</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>office_502</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>desk_502</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>office_503</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>desk_503</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>------------------------------------------</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>meeting_room</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>meeting_desk</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>share_space</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>share_printer</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>share_cafe</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>------------------------------------------</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>test_1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>minibot_charger_1</string>
+     </property>
+    </item>
    </widget>
   </widget>
  </widget>
