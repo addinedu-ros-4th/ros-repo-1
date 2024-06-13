@@ -300,22 +300,22 @@
     </item>
     <item>
      <property name="text">
-      <string>guidebot</string>
+      <string>Guidebot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>deliverybot</string>
+      <string>Deliverybot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>patrolbot</string>
+      <string>Patrolbot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>cleanerbot</string>
+      <string>Cleanerbot</string>
      </property>
     </item>
     <item>
@@ -972,11 +972,6 @@
     </item>
     <item>
      <property name="text">
-      <string>lobby_10</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
       <string>------------------------------------------</string>
      </property>
     </item>
@@ -1200,110 +1195,6 @@
    </property>
    <property name="text">
     <string>Map</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="xx">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>30</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>x</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="yy">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>60</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>y</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="zz">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>20</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>yaw</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="xLine">
-   <property name="geometry">
-    <rect>
-     <x>400</x>
-     <y>22</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="yLine">
-   <property name="geometry">
-    <rect>
-     <x>400</x>
-     <y>55</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="yawLine">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>18</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="remain">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>52</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>remain</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="remainLine">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>50</y>
-     <width>113</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>0</string>
    </property>
   </widget>
   <widget class="QGroupBox" name="db_group">
@@ -1536,14 +1427,6 @@ border-left: none; </string>
   <zorder>Map_label</zorder>
   <zorder>robot_st_group</zorder>
   <zorder>label_5</zorder>
-  <zorder>xx</zorder>
-  <zorder>yy</zorder>
-  <zorder>zz</zorder>
-  <zorder>xLine</zorder>
-  <zorder>yLine</zorder>
-  <zorder>yawLine</zorder>
-  <zorder>remain</zorder>
-  <zorder>remainLine</zorder>
   <zorder>db_group</zorder>
   <zorder>requestTable</zorder>
   <zorder>visited_label</zorder>

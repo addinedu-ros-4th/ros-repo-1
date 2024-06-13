@@ -431,6 +431,7 @@ class AdminGUI(QMainWindow, admin_ui):
                         robot_task[0][-1] = True
                         print(robot_task)
                         self.pub_rmf_task(robot_task[0][0])
+                        self.robot_task_info[robot][0][5] = "In progress"
                     
                     if robot_task[0][-1] == True and robot_task[0][1] == False:
                         goal = robot_task[0][0]['place']
@@ -438,6 +439,7 @@ class AdminGUI(QMainWindow, admin_ui):
 
                     if robot_task[0][1] :
                         robot_task.pop(0)
+                        self.robot_task_info[robot].pop(0)
                 else:
                     self.robot_states[robot]['progress'] = "Waiting"
                     status = self.robot_states[robot]['progress']
@@ -453,6 +455,8 @@ class AdminGUI(QMainWindow, admin_ui):
             self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
             self.robot_states_uiEdit[robot][0].setText("Disconnected...")
             self.robot_states_uiEdit[robot][2].setText("")
+            
+        self.request_table_update()
 
     def update_task_progress(self, robot):
         status = robot['progress']
