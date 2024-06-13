@@ -85,9 +85,16 @@ class AdminGUI(QMainWindow, admin_ui):
 
         with Image.open(os.path.join(get_package_share_directory("rio_main"), "maps", "office.pgm")) as f:
             map_pgm = np.array(f)
+            
+        with Image.open(os.path.join(get_package_share_directory("rio_ui"), "data", "rio_loggo.png")) as f:
+            img_rgb = f.convert("RGB")
+            rio_loggo = np.array(img_rgb)
 
         self.h, self.w = map_pgm.shape
         qimage = QImage(map_pgm.tobytes(), self.w, self.h, self.w, QImage.Format_Grayscale8)
+        
+        self.loggo_h, self.loggo_w, _ = rio_loggo.shape
+        qimage_loggo = QImage(rio_loggo.tobytes(), self.loggo_w, self.loggo_h, self.loggo_w * 3, QImage.Format_RGB888)
 
         self.map_resolution = map_data["resolution"]
         self.map_origin = map_data["origin"][:2]
@@ -99,6 +106,14 @@ class AdminGUI(QMainWindow, admin_ui):
         self.pixmap = self.pixmap.scaled(self.Map_label.width(), self.Map_label.height())
         self.Map_label.setPixmap(self.pixmap)
         self.Map_label.setAlignment(Qt.AlignCenter)
+        
+        self.loggo_map = QPixmap.fromImage(qimage_loggo)
+        self.loggo_height = self.loggo.size().height()
+        self.loggo_width = self.loggo.size().width()
+
+        self.loggo_map = self.loggo_map.scaled(self.loggo_width, self.loggo_height, Qt.KeepAspectRatio)
+        self.loggo.setPixmap(self.loggo_map)
+        self.loggo.setAlignment(Qt.AlignCenter)
         
         header = self.requestTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)

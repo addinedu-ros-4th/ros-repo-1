@@ -605,31 +605,52 @@ class RobotCallSubscriber(Node):
         formatted_time_str = f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
            
         self.task_info_value = [robot_mode, formatted_time_str, "office_" + str(office_num), destination, "", "waiting"]
+        if len(self.ui.robot_task_info[robot_type]) > 1:
+            self.ui.robot_task_info[robot_type].pop()
+            
+            
         if robot_mode == "order":
             stop_by = "cvs_and_cafe"
             self.task_info_value[3] = stop_by
             self.task_info_value[4] = "load foods"
             self.ui.robot_task_info[robot_type].append(self.task_info_value)  
-            self.ui.dispatch_task(robot_type, stop_by)
-            
-            # self.update_request_table(robot_type)  
-            
+            params_1 = self.ui.dispatch_task(robot_type, stop_by)
+            task_1 = [params_1, False, False]
+            self.ui.robot_task_stack[robot_type].append(task_1)
             
         elif robot_mode == "delivery":
             self.task_info_value[4] = "load items"
             self.ui.robot_task_info[robot_type].append(self.task_info_value) 
-            self.ui.dispatch_task(robot_type, f"office_{office_num}") 
-            # self.update_request_table(robot_type)  
-        test = self.task_info_value.copy()
+            params_1 = self.ui.dispatch_task(robot_type, f"office_{office_num}") 
+            task_1 = [params_1, False, False]
+            self.ui.robot_task_stack[robot_type].append(task_1)
+            
+        
+        task_info_value_2= self.task_info_value.copy()
+        
         if robot_mode == "order":
-            test[3] = destination
-            test[4] = "delivering foods"
+            task_info_value_2[3] = destination
+            task_info_value_2[4] = "delivering foods"
         elif robot_mode == "delivery":
-            test[4]= "deliverying items" 
-        self.ui.robot_task_info[robot_type].append(test)  
+            task_info_value_2[4]= "deliverying items" 
+            
+        self.ui.robot_task_info[robot_type].append(task_info_value_2)  
         self.ui.service_info[robot_type].append(self.service_info_value)
-        self.ui.dispatch_task(robot_type, destination)
-        # self.ui.service_info[robot_type].appen
+        params_2 = self.ui.dispatch_task(robot_type, destination)
+        task = [params_2, False, False]
+        self.ui.robot_task_stack[robot_type].append(task)
+        
+        task_info_value_return = self.task_info_value.copy()
+        
+        task_info_value_return[3] = f"{robot_type}_staging"
+        task_info_value_return[4] = "return"
+        
+        self.ui.robot_task_info[robot_type].append(task_info_value_return)  
+        self.ui.robot_task_stack[robot_type].append(task_info_value_return)
+        params_3 = self.ui.dispatch_task(robot_type, task_info_value_return[3])
+        task = [params_3, False, False]
+        
+        
         self.update_request_table(robot_type)
         
         
