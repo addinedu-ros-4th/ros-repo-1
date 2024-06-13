@@ -306,6 +306,15 @@ class UserGUI(QMainWindow, user_ui):
         req.items = items
         self.robot_request_publisher.publish(req)
         print("Published:", req)
+        self.confirmation_robot_call()
+        
+    def confirmation_robot_call(self):
+        confirmation = QMessageBox()
+        confirmation.setIcon(QMessageBox.Information)
+        confirmation.setText("로봇이 호출되었습니다")
+        confirmation.setWindowTitle("Robot Call Confirm")
+        confirmation.setStandardButtons(QMessageBox.Ok)
+        confirmation.exec_()  
 
     def write_pre_arrangement(self):
         pre_arrangement_window = SubGUI()

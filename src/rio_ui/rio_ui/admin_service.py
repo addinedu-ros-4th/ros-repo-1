@@ -311,12 +311,13 @@ class TaskRequester(Node):
         rclpy.spin_until_future_complete(self, self.response, timeout_sec=1.0)
         if self.response.done():
             self.get_logger().info(f'Got response:\n{self.response.result()}')
+            # self.robot_service_start[0] = self.params['fleet']
+            # self.robot_service_start[1] = True
+            # self.signals.service_signal_received.emit(self.robot_service_start) 
         else:
             self.get_logger().info('Did not get a response')
             
-            self.robot_service_start[0] = self.params['fleet']
-            self.robot_service_start[1] = True
-            self.signals.service_signal_received.emit(self.robot_service_start) 
+            
             
 
         # print(msg.request_id)
@@ -646,9 +647,10 @@ class RobotCallSubscriber(Node):
         task_info_value_return[4] = "return"
         
         self.ui.robot_task_info[robot_type].append(task_info_value_return)  
-        self.ui.robot_task_stack[robot_type].append(task_info_value_return)
         params_3 = self.ui.dispatch_task(robot_type, task_info_value_return[3])
         task = [params_3, False, False]
+        self.ui.robot_task_stack[robot_type].append(task)
+
         
         
         self.update_request_table(robot_type)
