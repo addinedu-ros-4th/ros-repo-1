@@ -455,6 +455,8 @@ class AdminGUI(QMainWindow, admin_ui):
             self.robot_states_uiEdit[robot][0].setStyleSheet("color: red;")
             self.robot_states_uiEdit[robot][0].setText("Disconnected...")
             self.robot_states_uiEdit[robot][2].setText("")
+            
+        self.request_table_update()
 
     def update_task_progress(self, robot):
         status = robot['progress']
