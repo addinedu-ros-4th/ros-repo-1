@@ -303,22 +303,29 @@ class AdminGUI(QMainWindow, admin_ui):
 
     def cal_remain(self, robot, goal):
         dest = self.location_info[goal]
-        print(dest)
         x1, x2, y1, y2 = robot['x'], dest[0], robot['y'], dest[1]
         dist = ((abs(abs(x1) - abs(x2))) ** 2 + (abs(abs(y1) - abs(y2))) ** 2) ** 0.5
-        print(dist)
         cur_yaw = robot['yaw']
-        print(cur_yaw)
-        print(x1, x2, y1, y2)
         angle = np.arctan2(y2-y1, x2-x1)
-        print(angle)
         duration = (dist / 0.15) + (abs(abs(cur_yaw) - abs(angle)) / 1.5)
-        print(dist, duration)
-
+        
+        robot['remain_dist'] = dist
+        robot['duration'] = duration
         if dist < 0.5 :
-            return True
+            if robot['prog_cnt'] >= 100:
+                robot['progress'] = "Arrived"
+                robot['remain_dist'] = 0.0
+                robot['duration'] = 0.0
+                return True
+            else:
+                robot['prog_cnt'] += 1
+                robot['progress'] = "Alomost Arrived"
+                return False
         else : 
+            robot['prog_cnt'] = 0
+            robot['progress'] = "Driving"
             return False
+
 
     def update_robot_health(self, robot, states, painter):
         if states['connection'] >= 20:
@@ -329,10 +336,6 @@ class AdminGUI(QMainWindow, admin_ui):
 
             # TODO location name print
             self.robot_states_uiEdit[robot][2].setText(str(f"{states['x']:.2f} / {states['y']:.2f}"))
-            
-            # status = self.update_task_progress(robot)
-            status = self.robot_states[robot]['progress']
-            self.robot_states_uiEdit[robot][1].setText(status)
 
             try:
                 if len(self.robot_task_stack[robot]) > 0:
@@ -348,6 +351,10 @@ class AdminGUI(QMainWindow, admin_ui):
 
                     if robot_task[0][1] :
                         robot_task.pop(0)
+                else:
+                    self.robot_states[robot]['progress'] = "Waiting"
+                    status = self.robot_states[robot]['progress']
+                    self.robot_states_uiEdit[robot][1].setText(status)
             except Exception as e:
                 print(e)
                 pass

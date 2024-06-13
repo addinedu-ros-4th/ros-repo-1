@@ -300,22 +300,22 @@
     </item>
     <item>
      <property name="text">
-      <string>Guidebot</string>
+      <string>guidebot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Deliverybot</string>
+      <string>deliverybot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Patrolbot</string>
+      <string>patrolbot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Cleanerbot</string>
+      <string>cleanerbot</string>
      </property>
     </item>
     <item>
@@ -968,6 +968,11 @@
     <item>
      <property name="text">
       <string>lobby_9</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>lobby_10</string>
      </property>
     </item>
     <item>

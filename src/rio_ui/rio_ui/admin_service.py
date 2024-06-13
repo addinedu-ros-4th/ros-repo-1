@@ -47,7 +47,7 @@ from twilio.rest import Client
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 from rmf_fleet_msgs.msg import FleetState, DestinationRequest, ModeRequest, RobotMode
 
-robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot", "minibot"]
+robot_types = ["guidebot", "deliverybot", "patrolbot", "cleanerbot"]
 
 class GenerateQRServer(Node):
     def __init__(self):
@@ -443,9 +443,9 @@ class AmclSubscriber(Node):
         robot['y'] = y
         robot['yaw'] = yaw
 
-        robot['remain_dist'] = self.distance_cal(robot)
-        robot['duration'] = self.progress_cal(robot)[0]
-        robot['progress'] = self.progress_cal(robot)[1]
+        # robot['remain_dist'] = self.distance_cal(robot)
+        # robot['duration'] = self.progress_cal(robot)[0]
+        # robot['progress'] = self.progress_cal(robot)[1]
         robot['task_id_trash'] = task_id
         self.signals.amcl_pose_received.emit(self.robot_states)
 
@@ -469,7 +469,7 @@ class AmclSubscriber(Node):
         distance = robot['remain_dist']
         cur_yaw = robot['yaw']
         target_yaw = robot['dest'][2]
-        duration = (distance / 0.3) + (abs(abs(cur_yaw) - abs(target_yaw)) / 1.5)
+        duration = (distance / 0.15) + (abs(abs(cur_yaw) - abs(target_yaw)) / 1.5)
         
         # TODO should change
         if duration < 1 and distance < 1:
@@ -483,7 +483,6 @@ class AmclSubscriber(Node):
                 progress = "Waiting"
         else:
             progress = "Driving"
-
         return duration, progress
 
 class PathSubscriber(Node):
@@ -565,6 +564,7 @@ class RobotCallSubscriber(Node):
         )
     
     def robot_call_callback(self, msg):
+        print("RobotCallSubscriber")
         office_num = msg.office_number
         request_time = msg.date
         robot_type = msg.robot_type
