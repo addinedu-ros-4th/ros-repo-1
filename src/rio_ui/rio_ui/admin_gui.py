@@ -33,7 +33,6 @@ robot_colors = {
         'guidebot': Qt.darkGreen,
         'cleanerbot': Qt.gray,
         'patrolbot': Qt.red,
-        'minibot': Qt.magenta
     }
 
 space_loc_info = {
@@ -62,7 +61,6 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.tts.run_tts("admin_greeting")
 
         self.db_connector = DBConnector()
-        # self.db_manager = db_manager
         tables = self.db_connector.show_all_tables()
         self.select_table_update(tables)
         self.selectRobotTask.currentIndexChanged.connect(self.request_table_update)
@@ -110,7 +108,6 @@ class AdminGUI(QMainWindow, admin_ui):
             'deliverybot': [],
             'patrolbot': [],
             'cleanerbot': [],
-            'minibot': []
         }
 
         self.robot_last_task = {
@@ -118,7 +115,6 @@ class AdminGUI(QMainWindow, admin_ui):
             'deliverybot': "",
             'patrolbot': "",
             'cleanerbot': "",
-            'minibot': ""
         }
         
         self.robot_task_info = {
@@ -126,20 +122,25 @@ class AdminGUI(QMainWindow, admin_ui):
             'deliverybot': [],
             'patrolbot': [],
             'cleanerbot': [],
-            'minibot': []
         }
 
         last_task = self.load_last_task()
         for robot, task in last_task.items():
             self.robot_last_task[robot] = task
 
+        self.location_info = self.load_loc_space()
+
         self.robot_states_uiEdit = {
             'guidebot': [self.robot_cn_guide, self.robot_ts_guide, self.location_guide, False],
             'deliverybot': [self.robot_cn_delivery, self.robot_ts_delivery, self.location_delivery, False],
             'patrolbot': [self.robot_cn_patrol, self.robot_ts_patrol, self.location_patrol, False],
             'cleanerbot': [self.robot_cn_clean, self.robot_ts_clean, self.location_clean, False],
-            'minibot': [self.yLine, self.yawLine, self.xLine, False]
         }
+
+    def load_loc_space(self):
+        with open(os.path.join(get_package_share_directory("rio_ui"), "data", "space.yaml"), 'r') as f:
+            location_info = yaml.full_load(f)
+        return location_info
 
     def load_last_task(self):
         with open(os.path.join(get_package_share_directory("rio_ui"), "data", "last_task.yaml"), 'r') as f:
@@ -179,6 +180,7 @@ class AdminGUI(QMainWindow, admin_ui):
 
     def update_amcl_pose(self, robot_states):
         self.robot_states = robot_states
+        # print(self.robot_states['cleanerbot'])
 
     # def update_path_distance(self, distance):
     #     if distance < 0.4:
@@ -224,7 +226,7 @@ class AdminGUI(QMainWindow, admin_ui):
         
 
     def click_robot_task_stop(self):
-        selected = self.cb_robot_type.currentText().lower()
+        selected = self.cb_robot_type.currentText()
         if selected not in robot_types:
             print("[WARN] Select Robot First.")
             return
@@ -244,6 +246,9 @@ class AdminGUI(QMainWindow, admin_ui):
             mode = "moving"
         self.robot_states_uiEdit[robot][-1] = flag
 
+        self.task_stop(robot, mode)
+
+    def task_stop(self, robot, mode):
         last_task = self.load_last_task()
         for r, t in last_task.items():
             self.robot_last_task[r] = t
@@ -255,19 +260,14 @@ class AdminGUI(QMainWindow, admin_ui):
 
         self.robot_last_task[robot] = task_id
 
-        # print(task_id)
-        self.task_stop(robot, mode, task_id)
-
-    def task_stop(self, robot, mode, task_id):
         self.task_requester.mode_change(robot, mode, task_id)
 
         data = self.load_last_task()
         data[robot] = task_id
-        # print(data)
         self.save_last_task(data)
 
     def click_robot_ctl_task(self):
-        selected = self.cb_robot_type.currentText().lower()
+        selected = self.cb_robot_type.currentText()
 
         if selected not in robot_types:
             print("[WARN] Select Robot First.")
@@ -275,11 +275,12 @@ class AdminGUI(QMainWindow, admin_ui):
         else:
             robot = selected
 
-            if robot == "guidebot":
-                robot = "minibot" # minibot test
-
             goal = self.task_goal_loc.currentText()
-            self.dispatch_task(robot, goal)
+
+            params = self.dispatch_task(robot, goal)
+
+            task = [params, False, False]
+            self.robot_task_stack[robot].append(task)
 
     def dispatch_task(self, robot, goal):
         params = {
@@ -287,12 +288,10 @@ class AdminGUI(QMainWindow, admin_ui):
             'robot': robot + "_1", 
             'place': goal,
         }
+        return params
+    
+    def pub_rmf_task(self, params):
         self.task_requester.task_msg_pub(params)
-
-        task = [params, False]
-        self.robot_task_stack[robot].append(task)
-
-        # print(self.robot_task_stack[robot])
 
     def update_robot_status(self):
         self.Map_label.setPixmap(self.pixmap)
@@ -301,6 +300,25 @@ class AdminGUI(QMainWindow, admin_ui):
         for robot, states in self.robot_states.items():
             self.update_robot_health(robot, states, painter)
         painter.end()
+
+    def cal_remain(self, robot, goal):
+        dest = self.location_info[goal]
+        print(dest)
+        x1, x2, y1, y2 = robot['x'], dest[0], robot['y'], dest[1]
+        dist = ((abs(abs(x1) - abs(x2))) ** 2 + (abs(abs(y1) - abs(y2))) ** 2) ** 0.5
+        print(dist)
+        cur_yaw = robot['yaw']
+        print(cur_yaw)
+        print(x1, x2, y1, y2)
+        angle = np.arctan2(y2-y1, x2-x1)
+        print(angle)
+        duration = (dist / 0.15) + (abs(abs(cur_yaw) - abs(angle)) / 1.5)
+        print(dist, duration)
+
+        if dist < 0.5 :
+            return True
+        else : 
+            return False
 
     def update_robot_health(self, robot, states, painter):
         if states['connection'] >= 20:
@@ -315,6 +333,24 @@ class AdminGUI(QMainWindow, admin_ui):
             # status = self.update_task_progress(robot)
             status = self.robot_states[robot]['progress']
             self.robot_states_uiEdit[robot][1].setText(status)
+
+            try:
+                if len(self.robot_task_stack[robot]) > 0:
+                    robot_task = self.robot_task_stack[robot]
+                    if not robot_task[0][-1]:
+                        robot_task[0][-1] = True
+                        print(robot_task)
+                        self.pub_rmf_task(robot_task[0][0])
+                    
+                    if robot_task[0][-1] == True and robot_task[0][1] == False:
+                        goal = robot_task[0][0]['place']
+                        robot_task[0][1] = self.cal_remain(states, goal)
+
+                    if robot_task[0][1] :
+                        robot_task.pop(0)
+            except Exception as e:
+                print(e)
+                pass
 
         elif 0 < states['connection'] < 20:
             self.robot_states_uiEdit[robot][0].setStyleSheet("color: blue;")
@@ -398,13 +434,16 @@ class AdminGUI(QMainWindow, admin_ui):
                 
     def closeEvent(self, event):
         self.timer.stop()
-        if self.db_connector and self.db_connector.db_manager:
-            self.db_connector.db_manager.close()
+        try:
+            if self.db_connector and self.db_connector.db_manager:
+                self.db_connector.db_manager.close()
 
-        for robot in robot_types:
-            self.robot_last_task[robot] = self.robot_states[robot]['task_id']
+            for robot in robot_types:
+                self.robot_last_task[robot] = self.robot_states[robot]['task_id']
 
-        self.save_last_task(self.robot_last_task)
+            self.save_last_task(self.robot_last_task)
+        except Exception as e:
+            print(e)
 
         rclpy.shutdown()
         self.tts.stop_tts()
@@ -537,6 +576,7 @@ class OfficeManagerGUI(QDialog, office_manage_ui):
         confirmation.buttonClicked.connect(self.close_office)
         confirmation.exec_()
         
+
     def close_office(self):
         office_num = self.officeNumCBX.currentText()
         close_date = self.openDate.date().toPyDate()
@@ -557,7 +597,6 @@ class OfficeManagerGUI(QDialog, office_manage_ui):
         
     def close_complete(self, button):
         self.accept() 
-        
         
         
 class AddUserGUI(QDialog, add_user_ui):
