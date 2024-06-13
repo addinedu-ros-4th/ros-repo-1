@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1349</width>
+    <width>1220</width>
     <height>772</height>
    </rect>
   </property>
@@ -35,9 +35,9 @@
   <widget class="QGroupBox" name="robot_st_group">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>580</x>
      <y>80</y>
-     <width>761</width>
+     <width>631</width>
      <height>441</height>
     </rect>
    </property>
@@ -289,7 +289,7 @@
      <rect>
       <x>450</x>
       <y>90</y>
-      <width>141</width>
+      <width>171</width>
       <height>31</height>
      </rect>
     </property>
@@ -300,22 +300,22 @@
     </item>
     <item>
      <property name="text">
-      <string>Guidebot</string>
+      <string>guidebot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Deliverybot</string>
+      <string>deliverybot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Patrolbot</string>
+      <string>patrolbot</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Cleanerbot</string>
+      <string>cleanerbot</string>
      </property>
     </item>
     <item>
@@ -361,8 +361,8 @@
      <rect>
       <x>450</x>
       <y>250</y>
-      <width>141</width>
-      <height>51</height>
+      <width>171</width>
+      <height>71</height>
      </rect>
     </property>
     <property name="font">
@@ -475,7 +475,7 @@
      <rect>
       <x>450</x>
       <y>150</y>
-      <width>141</width>
+      <width>171</width>
       <height>31</height>
      </rect>
     </property>
@@ -487,9 +487,9 @@
     <property name="geometry">
      <rect>
       <x>450</x>
-      <y>300</y>
-      <width>141</width>
-      <height>131</height>
+      <y>320</y>
+      <width>171</width>
+      <height>111</height>
      </rect>
     </property>
     <property name="font">
@@ -510,7 +510,7 @@
    <widget class="QPushButton" name="btn_clean_loc">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>300</y>
       <width>71</width>
       <height>51</height>
@@ -531,7 +531,7 @@
    <widget class="QPushButton" name="btn_patrol_loc">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>760</x>
       <y>300</y>
       <width>71</width>
       <height>51</height>
@@ -552,7 +552,7 @@
    <widget class="QPushButton" name="btn_sell_loc">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>760</x>
       <y>250</y>
       <width>71</width>
       <height>51</height>
@@ -573,7 +573,7 @@
    <widget class="QLabel" name="Task_Custom">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>30</y>
       <width>131</width>
       <height>31</height>
@@ -596,7 +596,7 @@
    <widget class="QComboBox" name="task_custom_loc">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>90</y>
       <width>141</width>
       <height>31</height>
@@ -791,7 +791,7 @@
    <widget class="QLabel" name="label_24">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>70</y>
       <width>100</width>
       <height>17</height>
@@ -807,7 +807,7 @@
    <widget class="QPushButton" name="btn_add_loc">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>130</y>
       <width>141</width>
       <height>41</height>
@@ -828,7 +828,7 @@
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>180</y>
       <width>141</width>
       <height>61</height>
@@ -838,7 +838,7 @@
    <widget class="QPushButton" name="btn_custom_task">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>250</y>
       <width>71</width>
       <height>51</height>
@@ -861,7 +861,7 @@
      <rect>
       <x>450</x>
       <y>210</y>
-      <width>141</width>
+      <width>171</width>
       <height>31</height>
      </rect>
     </property>
@@ -1165,7 +1165,7 @@
    <widget class="QPushButton" name="btn_patrol_loc_2">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>360</y>
       <width>141</width>
       <height>71</height>
@@ -1287,7 +1287,7 @@
     <rect>
      <x>580</x>
      <y>560</y>
-     <width>741</width>
+     <width>631</width>
      <height>191</height>
     </rect>
    </property>

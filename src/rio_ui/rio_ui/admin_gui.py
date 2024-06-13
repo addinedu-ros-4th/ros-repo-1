@@ -443,8 +443,8 @@ class AdminGUI(QMainWindow, admin_ui):
                         self.task_stop(robot, "pause")
                 else:
                     self.robot_states[robot]['progress'] = "Waiting"
-                    status = self.robot_states[robot]['progress']
-                    self.robot_states_uiEdit[robot][1].setText(status)
+                status = self.robot_states[robot]['progress']
+                self.robot_states_uiEdit[robot][1].setText(status)
             except Exception as e:
                 print("update_robot_health : ",e)
                 pass
