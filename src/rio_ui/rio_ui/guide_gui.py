@@ -14,11 +14,10 @@ import rclpy as rp
 from rclpy.executors import MultiThreadedExecutor
 
 import cv2
-import struct
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.guide_service import *
-# from guide_service import *
+# from guide_service3 import *
 
 # print(ui_file)
 
@@ -33,8 +32,8 @@ from rio_ui.guide_service import *
 
 # import resource_rc
 
-# ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "guide_service.ui")
-# guide_ui = uic.loadUiType(ui_file)[0]
+ui_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "guide_service.ui")
+guide_ui = uic.loadUiType(ui_file)[0]
 
 
 class GuideGUI(QMainWindow, guide_ui):
@@ -46,13 +45,23 @@ class GuideGUI(QMainWindow, guide_ui):
         self.current_mode = "main"
         self.pixmap = QPixmap()
 
+        # self.pushNormal.show()
+        # self.mainGroup.hide()
+        # self.QRGroup.hide()
+        # self.registerGroup.hide()
+        # self.registerGroup2.hide()
+        # self.cameraGroup.hide()
+        # self.video_confGroup.hide()
+
         self.setmain()
         self.QR_bt.setEnabled(True)
         self.tenant_group_bt.setEnabled(True)
 
         # self.pushRegister.setEnabled(True)
-        # # self.pushVisitor.setEnabled(False)
+        # self.pushQR.setEnabled(True)
         # self.pushCommute.setEnabled(True)
+
+        # self.pushNormal.clicked.connect(self.setmain)
 
         self.pushRegister.clicked.connect(self.register)
         self.pushRetake.clicked.connect(self.retake)
@@ -73,13 +82,16 @@ class GuideGUI(QMainWindow, guide_ui):
         self.decode_thread = None
         self.tcpip_server = None
 
+        self.namelist = ["ho", "wook", "kyu", "bin"] # DB에 등록된 사람 이름 리스트
+        self.is_working = True # 출/퇴근 상태 flag -> DB
+
         # self.register_service = RegisterService()
 
-        # self.timer = QTimer(self)
+        self.timer = QTimer(self)
         # self.timer.timeout.connect(self.register_service.send_service_request)
         
         self.signals = ROSGuideNodeSignals()
-        self.signals.update_image_signal.connect(self.update_image)
+        self.signals.update_name_signal.connect(self.update_name)
         self.signals.face_registration.connect(self.face_registration)
         self.signals.qr_service_signal.connect(self.qrcheck_success)
 
@@ -88,11 +100,14 @@ class GuideGUI(QMainWindow, guide_ui):
         # self.guideserver = GuideVideoServer('192.168.0.10', 5600, self.video_conf_frame)
         # threading.Thread(target=self.guideserver.receive_images, daemon=True).start()
 
+        # self.info_registrator = UserRegisterInfo()
+
         # self.signals.update_mode_signal = pyqtSignal(str)
 
     def setmain(self):
         self.current_mode = "main"
         # self.signals.update_mode_signal.emit(self.current_mode)
+        # self.pushNormal.hide()
         self.maingroup.show()
         self.tenant_service_group.hide()
         self.registerGroup.hide()
@@ -100,12 +115,19 @@ class GuideGUI(QMainWindow, guide_ui):
         self.cameraGroup.hide()
         self.QRGroup.hide()
         self.video_confGroup.hide()
-        # self.timer.stop()
+        # if self.camera is not None and self.camera.isRunning():
+        #     self.camera.stop()
+        #     self.decode_thread.stop()
+        #     self.camera = None
+        #     self.decode_thread = None
+
+        # self.timer.stop()  
 
     def setmain2(self):
         self.current_mode = "main"
         # self.signals.update_mode_signal.emit(self.current_mode)
         self.QRframe.clear()
+        # self.pushNormal.hide()
         self.maingroup.show()
         self.tenant_service_group.hide()
         self.registerGroup.hide()
@@ -119,7 +141,7 @@ class GuideGUI(QMainWindow, guide_ui):
             self.camera = None
             self.decode_thread = None
 
-        # self.timer.stop()        
+        self.timer.stop()  
 
     def tenant_service(self):
         self.QRframe.clear()
@@ -130,10 +152,11 @@ class GuideGUI(QMainWindow, guide_ui):
         self.cameraGroup.hide()
         self.QRGroup.hide()
         self.video_confGroup.hide()
-        
+
     def register(self):
         self.current_mode = "register"
         # self.signals.update_mode_signal.emit(self.current_mode)
+        # self.pushNormal.hide()
         self.maingroup.hide()
         self.tenant_service_group.hide()
         self.registerGroup.show()
@@ -142,15 +165,25 @@ class GuideGUI(QMainWindow, guide_ui):
         self.QRGroup.hide()
         self.video_confGroup.hide()
         self.label.setText("카메라상에 얼굴이 잘 인식되도록 위치시켜 주세요")
+        
+        self.register_cam = RegisterCam()
+        self.register_cam.daemon = True
+        self.camera_start()
+        self.register_cam.update.connect(self.update_camera)
 
-        # self.guide_service.send_service_request()
-        # self.timer.start(2000)
+        self.register_service = RegisterService()
+        self.timer.timeout.connect(self.register_service.send_service_request)
+
+        self.guide_service.send_service_request()
+        self.timer.start(2000)
 
     def qrcheck(self):
         self.current_mode = "qrcheck"
         # self.signals.update_mode_signal.emit(self.current_mode)
-        self.maingroup.hide()
+        # self.pushNormal.hide()
+        self.QRGroup.show()
         self.tenant_service_group.hide()
+        # self.mainGroup.hide()
         self.registerGroup.hide()
         self.registerGroup2.hide()
         self.cameraGroup.hide()    
@@ -198,6 +231,7 @@ class GuideGUI(QMainWindow, guide_ui):
             print("Not all required landmarks are available!")
 
     def info_registration(self, saved_face):
+        # self.pushNormal.hide()
         self.maingroup.hide()
         self.tenant_service_group.hide()
         self.registerGroup.hide()
@@ -205,12 +239,13 @@ class GuideGUI(QMainWindow, guide_ui):
         self.cameraGroup.hide()
         self.QRGroup.hide()
         self.video_confGroup.hide()
-        # self.timer.stop()
+        self.timer.stop()
         scaled_pixmap = saved_face.scaled(self.frame3.size(), QtCore.Qt.KeepAspectRatio)
         self.frame3.setPixmap(scaled_pixmap)
 
     def retake(self):
         self.register()
+        self.frame3.clear()
 
     def registerinfo(self):
         name = self.nameEdit.text()
@@ -228,6 +263,8 @@ class GuideGUI(QMainWindow, guide_ui):
             "user_face": user_face
         }
 
+        # self.info_registrator.registerinfo(data)
+
     def image_to_binary(self, pixmap):
         if pixmap:
             qimage = pixmap.toImage()
@@ -244,6 +281,7 @@ class GuideGUI(QMainWindow, guide_ui):
     def setcamera(self):
         self.current_mode = "commute"
         # self.signals.update_mode_signal.emit(self.current_mode)
+        # self.pushNormal.hide()
         self.maingroup.hide()
         self.tenant_service_group.hide()
         self.registerGroup.hide()
@@ -251,19 +289,45 @@ class GuideGUI(QMainWindow, guide_ui):
         self.cameraGroup.show()
         self.QRGroup.hide()
         self.video_confGroup.hide()
-        # self.timer.stop()
+        self.timer.stop()
+
+        self.commute_cam = CommuteCam()
+        self.commute_cam.daemon = True
+        self.camera_start()
+        self.commute_cam.update.connect(self.update_camera)
+
+    def update_name(self, names):
+        self.name = names[0]
+        print('update_name_signal')
+        print(self.name, self.current_mode)
+        if self.name in self.namelist and self.current_mode == "commute":
+            if self.is_working:
+                self.commute_label.setText(f"{names[0]}님 출근 처리 완료되샸습니다!!")
+                self.is_working = False
+            else:
+                self.commute_label.setText(f"{names[0]}님 퇴근 처리 되셨습니다!!")
+                self.is_working = True
+            time.sleep(5) 
+            self.camera_stop()
+        elif names[0] == "Unknown" or names[0] =="":
+            self.commute_label.setText("얼굴 정면이 보이게 카메라를 바라봐주세요!!")
 
     # @pyqtSlot(np.ndarray, list, bool)
-    def update_image(self, cv_img, names):
-        is_register_mode = (self.current_mode == "register")
-        print("is_register_mode : ", is_register_mode)
-        if is_register_mode:
-            qt_img = self.cv_to_pixmap(cv_img, self.frame.width(), self.frame.height())
-            self.frame.setPixmap(qt_img)
-        else:
-            image = self.add_text_to_image(cv_img, names)
-            qt_img = self.cv_to_pixmap(image, self.frame2.width(), self.frame2.height())
-            self.frame2.setPixmap(qt_img)
+    # def update_image(self, qt_img):
+    #     # is_register_mode = (self.current_mode == "register")
+    #     # print("is_register_mode : ", is_register_mode)
+    #     # if is_register_mode:
+    #     if self.current_mode == "register":
+    #         qt_img = self.cv_to_pixmap(qt_img, self.frame.width(), self.frame.height())
+    #         self.frame.setPixmap(qt_img)
+    #     # elif self.current_mode == "qrcheck":
+    #     #     qt_img = self.cv_to_pixmap(cv_img, self.frame.width(), self.frame.height())
+    #     #     self.frame.setPixmap(qt_img)
+    #     else:
+    #         image = self.add_text_to_image(qt_img, self.names)
+    #         qt_img = self.cv_to_pixmap(image, self.frame2.width(), self.frame2.height())
+    #         self.frame2.setPixmap(qt_img)
+        
 
     def cv_to_pixmap(self, cv_img, width, height):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -272,10 +336,11 @@ class GuideGUI(QMainWindow, guide_ui):
         qt_img_scaled = qimage.scaled(width, height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(qt_img_scaled)
 
-    def add_text_to_image(self, cv_img, names):
-        for i, name in enumerate(names):
-            cv2.putText(cv_img, name, (10, 30 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-        return cv_img
+    # def add_text_to_image(self, cv_img, names):
+    #     if names is not None:
+    #         for i, name in enumerate(names):
+    #             cv2.putText(cv_img, name, (10, 30 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    #     return cv_img
     
     @pyqtSlot(QImage)
     def update_qr_image(self, image):
@@ -286,6 +351,8 @@ class GuideGUI(QMainWindow, guide_ui):
         self.qr_client.send_request(decoded_data)
 
     def video_conf(self):
+        self.current_mode = "conference"
+        # self.pushNormal.hide()
         self.maingroup.hide()
         self.tenant_service_group.hide()
         self.registerGroup.hide()
@@ -299,8 +366,17 @@ class GuideGUI(QMainWindow, guide_ui):
         self.mycam.update.connect(self.update_camera)
 
     def camera_start(self):
-        self.mycam.running = True
-        self.mycam.start()
+
+        if self.current_mode == "conference":
+            self.mycam.running = True
+            self.mycam.start()
+        elif self.current_mode == "register":
+            self.register_cam.running = True
+            self.register_cam.start()
+        elif self.current_mode == "commute":
+            self.commute_cam.running = True
+            self.commute_cam.start()
+
         self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
         if not self.cap.isOpened():
             print("cannot open camera")
@@ -309,18 +385,30 @@ class GuideGUI(QMainWindow, guide_ui):
             self.tcpip_server = GuideTCPIPServer(self.image_updater)
     
     def camera_stop(self):
-        self.mycam.running = False
+
+        if self.current_mode == "conference":
+            self.mycam.running = False
+        elif self.current_mode == "register":
+            self.register_cam.running = False
+        elif self.current_mode == "commute":
+            self.commute_cam.running = False
+
         self.cap.release()
 
     def update_camera(self):
+
         ret, image = self.cap.read()
         if ret:
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            h, w, c = rgb_image.shape
-            qimage = QImage(rgb_image.data, w, h, w * c, QImage.Format_RGB888)
-            qt_img_scaled = qimage.scaled(self.video_conf_frame_2.width(), self.video_conf_frame_2.height(), Qt.KeepAspectRatio)
-            self.pixmap = self.pixmap.fromImage(qt_img_scaled)
-            self.video_conf_frame_2.setPixmap(self.pixmap)
+            if self.current_mode == "conference":
+                qt_img_scaled = self.cv_to_pixmap(image, self.video_conf_frame_2.width(), self.video_conf_frame_2.height())
+                self.video_conf_frame_2.setPixmap(qt_img_scaled)
+            elif self.current_mode == "register":
+                qt_img_scaled = self.cv_to_pixmap(image, self.frame.width(), self.frame.height())
+                self.frame.setPixmap(qt_img_scaled)
+            elif self.current_mode == "commute":
+                # image = self.add_text_to_image(image, names)
+                qt_img_scaled = self.cv_to_pixmap(image, self.frame2.width(), self.frame2.height())
+                self.frame2.setPixmap(qt_img_scaled)
             
             self.image_updater.update_image(image)
 
@@ -337,7 +425,6 @@ class GuideGUI(QMainWindow, guide_ui):
         pixmap = QPixmap.fromImage(qt_img_scaled)
         self.video_conf_frame.setPixmap(pixmap)
 
-
     def closeEvent(self, event):
         if self.camera is not None:
             self.camera.stop()
@@ -346,7 +433,7 @@ class GuideGUI(QMainWindow, guide_ui):
             self.qr_client.destroy_node()
             rp.shutdown()
         event.accept()        
-
+    
 class Camera(QThread):
     frame_captured_signal = pyqtSignal(np.ndarray)
     update_image_signal = pyqtSignal(QImage)
@@ -381,6 +468,40 @@ class Camera(QThread):
         self.quit()
 
 class MyCam(QThread):
+    #시그널 종류 생성
+    update = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        
+    def run(self):
+        while self.running == True:
+
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
+
+class RegisterCam(QThread):
+    #시그널 종류 생성
+    update = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        
+    def run(self):
+        while self.running == True:
+
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
+
+class CommuteCam(QThread):
     #시그널 종류 생성
     update = pyqtSignal()
     
@@ -434,16 +555,16 @@ def main():
     signals = myWindows.signals
     executor = MultiThreadedExecutor()
 
-    image_subscriber = ImageSubscriber(signals)
+    # image_subscriber = ImageSubscriber(signals)
     # myWindows.current_mode = "wooktest"
     # image_subscriber.mode = myWindows.current_mode
     # print("여기", image_subscriber.mode)
-    face_name_subscriber = FacenameSubscriber(signals, image_subscriber)
+    face_name_subscriber = FacenameSubscriber(signals)
     face_details_subscriber = FacelandmarkSubscriber(signals)
 
     # myWindows.signals.update_mode_signal.connect(lambda mode: setattr(image_subscriber, 'mode', mode))
 
-    executor.add_node(image_subscriber)
+    # executor.add_node(image_subscriber)
     executor.add_node(face_name_subscriber)
     executor.add_node(face_details_subscriber)
 
