@@ -428,7 +428,7 @@ class AdminGUI(QMainWindow, admin_ui):
                     status = self.robot_states[robot]['progress']
                     self.robot_states_uiEdit[robot][1].setText(status)
             except Exception as e:
-                print(e)
+                print("update_robot_health : ",e)
                 pass
 
         elif 0 < states['connection'] < 20:
@@ -460,11 +460,19 @@ class AdminGUI(QMainWindow, admin_ui):
         painter.drawPoint(int(posx), int(posy))
         painter.drawText(int(posx-2), int(posy-11), str(robot))
 
+        dest_x, dest_y = states['dest'][0], states['dest'][1]
+
+        if states['progress'] == "Driving" and [dest_x, dest_y] != [0.0, 0.0]:
+            dx, dy = self.calc_coord(dest_x, dest_y)
+            posdx = dx * label_w_r  /100
+            posdy = label_h_r - abs(dy * label_h_r / 100)
+            painter.setPen(QPen(pen_color, 3, Qt.DotLine))
+            painter.drawLine(int(posx), int(posy), int(posdx), int(posdy))
+
     def calc_coord(self, x, y):
         pos_x = (x - self.map_origin[0]) / self.map_resolution
         pos_y = (y - self.map_origin[1]) / self.map_resolution
         return pos_x, pos_y
-
 
     def pub_task(self):
         order = [0, 0, 0, 0, 0, 0]
