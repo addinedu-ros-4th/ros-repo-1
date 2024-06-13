@@ -440,6 +440,7 @@ class AdminGUI(QMainWindow, admin_ui):
                     if robot_task[0][1] :
                         robot_task.pop(0)
                         self.robot_task_info[robot].pop(0)
+                        self.task_stop(robot, "pause")
                 else:
                     self.robot_states[robot]['progress'] = "Waiting"
                     status = self.robot_states[robot]['progress']
