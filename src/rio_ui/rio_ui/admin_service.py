@@ -749,7 +749,7 @@ class QRCheckServer(Node):
                     time_int = int(time_str)
                                 
                     msg = RobotCall()
-                    msg.office_number = ""
+                    msg.office_number = 0
                     msg.date = time_int
                     msg.robot_type = "guidebot"
                     msg.robot_mode = "guide"
