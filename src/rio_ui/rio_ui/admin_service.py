@@ -77,7 +77,7 @@ class GenerateQRServer(Node):
         if visitor_info:
             try:
                 visit_info = json.loads(visitor_info)
-                print(visit_info)
+                # print(visit_info)
                 data_to_hash = f"{visit_info['name']}{visit_info['phone_number']}{visit_info['visit_datetime']}"
                 hashed_data = self.hash_data(data_to_hash)
 
@@ -959,8 +959,8 @@ class ServiceOverSubscriber(Node):
         )
         
     def over_callback(self, data):
-        self.ui.is_deli_service_over = data
-        print(self.ui.is_deli_service_over)
+        if data:
+            self.task_stop("deliverybot", "move")
         
 
 class TTSAlertService():     
