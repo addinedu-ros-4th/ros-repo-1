@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/QRCheck.srv"
   "srv/VisitorAlert.srv"
   "msg/RobotCall.msg"
+  "msg/RobotService.msg"
   DEPENDENCIES std_msgs
 )
 

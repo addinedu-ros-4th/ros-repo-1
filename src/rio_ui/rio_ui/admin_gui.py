@@ -19,6 +19,7 @@ from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
 
 from rio_ui.admin_service import *
+from rio_ui_msgs.msg import RobotService
 
 
 admin_file = os.path.join(get_package_share_directory("rio_ui"), "ui", "admin_service.ui")
@@ -54,8 +55,11 @@ class AdminGUI(QMainWindow, admin_ui):
         self.timer.start(10)
         
         self.order = []
-        self.node = rclpy.create_node("robot_task_node")
-        self.task_publisher = self.node.create_publisher(Int64MultiArray, "/robot_task_1", 10)
+        self.node = rclpy.create_node("robot_task_node_deli")
+        self.task_publisher_delisrv = self.node.create_publisher(Int64MultiArray, "/robot_service_deli", 10)
+        
+        self.node = rclpy.create_node("robot_task_node_guide")
+        self.task_publisher_guidesrv = self.node.create_publisher(Int64MultiArray, "/robot_service_guide", 10)
 
         self.tts = TTSAlertService()
         # self.tts.run_tts("admin_greeting")
@@ -72,6 +76,7 @@ class AdminGUI(QMainWindow, admin_ui):
         # self.signals.path_distance_received.connect(self.update_path_distance)
         # self.signals.task_request_received.connect(self.update_task_request)
         self.signals.visitor_alert_received.connect(self.visitor_alert_to_user)
+        self.signals.service_signal_received.connect(self.publish_robot_service)
 
         with open(os.path.join(get_package_share_directory("rio_main"), "maps", "office.yaml")) as f:
             map_data = yaml.full_load(f)
@@ -96,7 +101,9 @@ class AdminGUI(QMainWindow, admin_ui):
         header = self.requestTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        self.task_requester = TaskRequester()
+        self.task_requester = TaskRequester(self.signals)
+        
+        self.is_deli_service_over = True
 
 
     def init_robot_info(self):
@@ -122,6 +129,14 @@ class AdminGUI(QMainWindow, admin_ui):
             'deliverybot': [],
             'patrolbot': [],
             'cleanerbot': [],
+        }
+        
+        self.service_info = {
+            'guidebot': [],
+            'deliverybot': [],
+            'patrolbot': [],
+            'cleanerbot': [],
+            'minibot': []
         }
 
         last_task = self.load_last_task()
@@ -152,12 +167,23 @@ class AdminGUI(QMainWindow, admin_ui):
             yaml.dump(data, f)
             
     def request_table_update(self):
+        self.requestTable.clearContents()
+        self.requestTable.setRowCount(0)
+        
         select_robot_type = self.selectRobotTask.currentText()
         task_list = self.robot_task_info[select_robot_type]
+        
+        # row_position = self.requestTable.rowCount()
+        # self.requestTable.insertRow(row_position)
         try:
-            for row_position in range(len(task_list)):
-                for i, value in enumerate():
-                    self.ui.requestTable.setItem(row_position, i, QTableWidgetItem(value))
+            print(task_list)
+            for row in task_list:
+                if self.selectRobotTask.currentText() == select_robot_type:
+                    row_position = self.requestTable.rowCount()
+                    self.requestTable.insertRow(row_position)
+                    for i, info in enumerate(row):
+                        self.requestTable.setItem(row_position, i, QTableWidgetItem(info))
+    
         except Exception as e:
             print(e)
 
@@ -180,7 +206,53 @@ class AdminGUI(QMainWindow, admin_ui):
 
     def update_amcl_pose(self, robot_states):
         self.robot_states = robot_states
-        # print(self.robot_states['cleanerbot'])
+        
+    def publish_robot_service(self, robot_service_start):
+        data = []
+        msg = Int64MultiArray()
+        
+        
+        if self.robot_task_info[robot_service_start[0]][0][0] == "delivery":
+            mode = 1
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "order":
+            mode = 2
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "sale":
+            mode = 3
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "ready":
+            mode = 0
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "guide":
+            mode = 1
+        elif self.robot_task_info[robot_service_start[0]][0][0] == "ready":
+            mode = 0
+            
+        data.append(mode)
+        
+        order_info = self.service_info[robot_service_start[0]][0][1].replace(" ", "")
+        order_list_str = order_info.split(",")
+        self.order_list = [0, 0, 0, 0]
+        for order in order_list_str:
+            menu_info = order.split(":")
+            if menu_info[0] == "americano":
+                self.order_list[0] = int(menu_info[1])
+            elif menu_info[0] == "latte":
+                self.order_list[1] = int(menu_info[1])
+            elif menu_info[0] == "coke":
+                self.order_list[2] = int(menu_info[1])
+            elif menu_info[0] == "snack":
+                self.order_list[3] = int(menu_info[1])
+        data.extend(self.order_list)
+        print(self.order_list)
+        
+        msg.data = data
+        print(self.robot_task_info[robot_service_start[0]][0][4])
+        
+        if "load" in self.robot_task_info[robot_service_start[0]][0][4]:
+            if robot_service_start[0] == "deliverybot":
+                self.task_publisher_delisrv.publish(msg)
+            elif robot_service_start[0] == "guidebot":
+                self.task_publisher_guidesrv.publish(msg)
+        
+        
 
     # def update_path_distance(self, distance):
     #     if distance < 0.4:
@@ -741,6 +813,7 @@ def main():
     order_subscriber = OrderSubscriber(myWindow)
     rfid_node = RFIDSubscriber(db_manager) 
     qr_check_server = QRCheckServer(signals)
+    service_over_subscriber = ServiceOverSubscriber(myWindow)
 
 
     executor.add_node(amcl_subscriber)
@@ -750,6 +823,7 @@ def main():
     executor.add_node(order_subscriber)
     executor.add_node(rfid_node)
     executor.add_node(qr_check_server)
+    executor.add_node(service_over_subscriber)
 
     thread = threading.Thread(target=executor.spin)
     thread.start()
