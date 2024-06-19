@@ -9,4 +9,10 @@
 
 ![image](https://github.com/addinedu-ros-4th/ros-repo-1/assets/103230856/8bf57157-61e4-42d1-89d0-8897e1ce82e8)
 
+- 사용 로봇
 
+![image](https://github.com/addinedu-ros-4th/ros-repo-1/assets/157225712/c768ea90-85c9-4aa7-b5fd-2c4cb3400c49)
+
+- 담당 역할
+
+![image](https://github.com/addinedu-ros-4th/ros-repo-1/assets/157225712/8d0c5e69-9a6a-478f-a241-8191d7819ea3)
