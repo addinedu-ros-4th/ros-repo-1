@@ -3,7 +3,7 @@
 
 파이널 프로젝트 1조 저장소. 공유 오피스 서비스 로봇
 
-[![Watch the video](https://img.youtube.com/vi/CVczQl1wNjA/maxresdefault.jpg)](https://youtu.be/CVczQl1wNjA?si=TjkUe1N4TRQgIuI7)
+[![Watch the video](https://img.youtube.com/vi/nT9EtDkc5_Q/maxresdefault.jpg)](https://youtu.be/nT9EtDkc5_Q?si=TjkUe1N4TRQgIuI7)
 
 - 시스템 구성도
 
